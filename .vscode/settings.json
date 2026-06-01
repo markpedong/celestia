@@ -1,0 +1,16 @@
+{
+  "scss.lint.unknownAtRules": "ignore",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.tabSize": 2,
+  "editor.wordWrap": "on",
+  "prettier.printWidth": 100,
+  "prettier.tabWidth": 2,
+  "prettier.trailingComma": "all",
+  "prettier.singleQuote": true,
+  "prettier.semi": true,
+  "prettier.arrowParens": "always",
+  "editor.indentSize": "tabSize",
+  "editor.codeActionsOnSave": {
+    "source.removeUnusedImports": "explicit"
+  }
+}

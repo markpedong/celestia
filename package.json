@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:push": "prisma db push && prisma generate"
   },
   "dependencies": {
     "@neondatabase/auth": "^0.3.0-beta",
