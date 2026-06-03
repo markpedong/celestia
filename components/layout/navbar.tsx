@@ -1,8 +1,9 @@
-import { Search } from 'lucide-react';
+import { Bell, Search } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from '../ui/input';
 import { cn } from '@/lib/utils';
-import { buttonVariants } from '../ui/button';
+import { Button, buttonVariants } from '../ui/button';
+import { SignedIn, SignedOut, UserButton } from '@neondatabase/auth/react';
 
 const Navbar = () => {
   return (
@@ -28,30 +29,30 @@ const Navbar = () => {
           />
         </div>
 
-        {/* <SignedIn>
-        <Link
-          href='/submit'
-          className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'hidden sm:inline-flex')}
-        >
-          Create
-        </Link>
-
-        <Button variant='ghost' size='icon' className='text-muted-foreground' aria-label='Notifications'>
-          <Bell className='size-5' />
-        </Button>
-        <UserButton />
-        </SignedIn> */}
-
-        {/* <SignedOut> */}
-        <div className='ml-auto flex items-center gap-2'>
-          <Link href={'/auth/sign-in'} className={cn(buttonVariants({ variant: 'ghost', size: 'default' }))}>
-            Log In
+        <SignedIn>
+          <Link
+            href='/submit'
+            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'hidden sm:inline-flex')}
+          >
+            Create
           </Link>
-          <Link href={'/auth/sign-up'} className={cn(buttonVariants({ variant: 'default' }))}>
-            Sign Up
-          </Link>
-        </div>
-        {/* </SignedOut> */}
+
+          <Button variant='ghost' size='icon' className='text-muted-foreground' aria-label='Notifications'>
+            <Bell className='size-5' />
+          </Button>
+          <UserButton />
+        </SignedIn>
+
+        <SignedOut>
+          <div className='ml-auto flex items-center gap-2'>
+            <Link href={'/auth/sign-in'} className={cn(buttonVariants({ variant: 'ghost', size: 'default' }))}>
+              Log In
+            </Link>
+            <Link href={'/auth/sign-up'} className={cn(buttonVariants({ variant: 'default' }))}>
+              Sign Up
+            </Link>
+          </div>
+        </SignedOut>
       </div>
     </header>
   );
