@@ -1,7 +1,5 @@
 
-type Props = {};
-
-const FeedSortTabs = (props: Props) => {
+const FeedSortTabs = () => {
   return <div>FeedSortTabs</div>;
 };
 

@@ -1,8 +1,4 @@
-import { FC } from 'react';
-
-type Props = {};
-
-const LeftTags: FC<Props> = (props: Props) => {
+const LeftTags = () => {
   return <div>LeftTags</div>;
 };
 
