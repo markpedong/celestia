@@ -1,6 +1,6 @@
 import { PostModel } from "../generated/prisma/models";
 import { prisma } from "../prisma";
-import { FeedSort, Post, User } from "../types";
+import { FeedSort, Post, Tag, User } from "../types";
 
 export const batchAuthorsForIds = async (authorIds: string[]): Promise<Map<string, User>> => {
   const unique = [...new Set(authorIds)];
@@ -65,6 +65,15 @@ export const listPostSorted = async (sort: FeedSort, tagFilter: string) => {
   }
 
   return mapped.map(row => ({ post: row.post, score: row.voteScore, userVote: row.userVote }));
+}
+
+export const listTags = async (): Promise<Tag[]> => {
+  const rows = await prisma.tag.findMany({ orderBy: { slug: "asc" } });
+  return rows.map((t) => ({
+    slug: t.slug,
+    label: t.label,
+    hashColor: t.hashColor,
+  }));
 }
 
 const tagsForPosts = async (postIds: string[]): Promise<Map<string, string[]>> => {

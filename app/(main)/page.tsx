@@ -1,6 +1,6 @@
 import FeedSortTabs from '@/components/feed/feed-sort-tabs';
 import PostCard from '@/components/feed/post-card';
-import { batchAuthorsForIds, listPostSorted } from '@/lib/db/queries';
+import { batchAuthorsForIds, listPostSorted, listTags } from '@/lib/db/queries';
 import { FeedSort } from '@/lib/types';
 import { FC } from 'react';
 
@@ -17,6 +17,8 @@ const Home: FC<Props> = async ({ searchParams }) => {
   const tagFilter = tag?.toLowerCase() ?? '';
 
   const rows = await listPostSorted(sort, tagFilter);
+  const tags = await listTags();
+  const tagsMap = new Map(tags.map(t => [t.slug, t]));
   const authorIds = [...new Set(rows.map(row => row.post.authorId))];
   const authorById = await batchAuthorsForIds(authorIds);
 
@@ -25,21 +27,14 @@ const Home: FC<Props> = async ({ searchParams }) => {
     if (!author) return null;
 
     return (
-      <PostCard
-        key={row.post.id}
-        post={row.post}
-        author={author}
-        tagsBySlug={new Map()}
-        score={row.score}
-        userVote={0}
-      />
+      <PostCard key={row.post.id} post={row.post} author={author} tagsBySlug={tagsMap} score={row.score} userVote={0} />
     );
   });
 
   return (
     <div className='flex gap-8'>
       <div className='min-w-0 flex-1'>
-        <FeedSortTabs />
+        <FeedSortTabs current={sort} tag={tagFilter} />
         <div className='space-y-4'>
           {cards}
           {rows.length === 0 && (
