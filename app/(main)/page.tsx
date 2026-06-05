@@ -1,5 +1,6 @@
 import FeedSortTabs from '@/components/feed/feed-sort-tabs';
 import PostCard from '@/components/feed/post-card';
+import { getSessionUser } from '@/lib/auth';
 import { batchAuthorsForIds, listPostSorted, listTags } from '@/lib/db/queries';
 import { FeedSort } from '@/lib/types';
 import { FC } from 'react';
@@ -9,14 +10,14 @@ type Props = {
 };
 
 const Home: FC<Props> = async ({ searchParams }) => {
-  // const sessionUser = await getSessionUser();
+  const sessionUser = await getSessionUser();
   const query = await searchParams;
 
   const sort = (Array.isArray(query.sort) ? query.sort[0] : query.sort) as FeedSort;
   const tag = Array.isArray(query.tag) ? query.tag[0] : query.tag;
   const tagFilter = tag?.toLowerCase() ?? '';
 
-  const rows = await listPostSorted(sort, tagFilter);
+  const rows = await listPostSorted(sort, tagFilter, sessionUser?.id);
   const tags = await listTags();
   const tagsMap = new Map(tags.map(t => [t.slug, t]));
   const authorIds = [...new Set(rows.map(row => row.post.authorId))];
