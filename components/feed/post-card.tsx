@@ -1,10 +1,11 @@
 import { Post, Tag, User } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { UserAvatar } from '@neondatabase/auth/react';
-import { MessageSquare, Share2, Triangle } from 'lucide-react';
+import { MessageSquare, Share2 } from 'lucide-react';
 import Link from 'next/link';
 import { FC } from 'react';
 import { formatRelativeTime } from '@/lib/format';
+import VoteButtons from './vote-buttons';
 
 type Props = {
   post: Post;
@@ -23,14 +24,10 @@ function snippet(body: string, max = 160) {
 const PostCard: FC<Props> = ({ post, author, tagsBySlug, score, userVote }) => {
   const primarySlug = post.tagSlugs[0];
   const primaryTag = primarySlug ? tagsBySlug.get(primarySlug) : undefined;
-  const voteTone = userVote > 0 ? 'text-upvote' : userVote < 0 ? 'text-downvote' : 'text-muted-foreground';
 
   return (
     <article className='flex gap-2 rounded-xl border border-border bg-card p-3 transition-colors hover:border-border'>
-      <div className={cn('flex w-10 shrink-0 flex-col items-center gap-1 text-xs font-semibold', voteTone)}>
-        <Triangle className='size-4 fill-current' aria-hidden />
-        <span>{score}</span>
-      </div>
+      <VoteButtons target='post' targetID={post.id} score={score} userVote={userVote} />
 
       <div className='min-w-0 flex-1'>
         <div className='mb-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground'>

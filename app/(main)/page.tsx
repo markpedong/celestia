@@ -28,7 +28,14 @@ const Home: FC<Props> = async ({ searchParams }) => {
     if (!author) return null;
 
     return (
-      <PostCard key={row.post.id} post={row.post} author={author} tagsBySlug={tagsMap} score={row.score} userVote={0} />
+      <PostCard
+        key={row.post.id}
+        post={row.post}
+        author={author}
+        tagsBySlug={tagsMap}
+        score={row.score}
+        userVote={row.userVote}
+      />
     );
   });
 
