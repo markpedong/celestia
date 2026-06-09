@@ -1,6 +1,6 @@
 import { PostModel } from "../generated/prisma/models";
 import { prisma } from "../prisma";
-import { FeedSort, Post, Tag, User } from "../types";
+import { FeedSort, Post, Tag, User, VoteTarget } from "../types";
 
 export const batchAuthorsForIds = async (authorIds: string[]): Promise<Map<string, User>> => {
   const unique = [...new Set(authorIds)];
@@ -162,4 +162,22 @@ const mapPostRow = (row: PostModel, tagSlugs: string[], commentCount: number): P
     createdAt: row.createdAt.toISOString(),
     commentCount,
   };
+}
+
+export const getUserVote = async (userId: string | undefined, type: VoteTarget, targetId: string): Promise<-1 | 0 | 1> => {
+  if (!userId) return 0;
+
+  const row = await prisma.vote.findUnique({
+    where: {
+      userId_targetType_targetId: {
+        userId,
+        targetType: type,
+        targetId,
+      },
+    },
+  });
+
+  const v = row?.value;
+
+  return v === -1 || v === 1 ? v : 0;
 }

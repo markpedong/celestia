@@ -1,5 +1,7 @@
 'use client';
 
+import { voteCommentAction } from '@/lib/actions/comments';
+import { votePostAction } from '@/lib/actions/posts';
 import { cn } from '@/lib/utils';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -17,19 +19,19 @@ const VoteButtons: FC<Props> = ({ target, targetID, score, userVote }) => {
   const router = useRouter();
   const isPost = target === 'post';
 
-  function vote(value: -1 | 1) {
+  const vote = (value: -1 | 1) => {
     startTransition(async () => {
       void targetID;
       void value;
 
       if (isPost) {
-        // await votePostAction(targetId, value);
+        await votePostAction(targetID, value);
       } else {
-        // await voteCommentAction(targetId, value);
+        await voteCommentAction(targetID, value);
       }
       router.refresh();
     });
-  }
+  };
 
   const iconClass = isPost ? 'size-6' : 'size-4';
   const stackClass = isPost
