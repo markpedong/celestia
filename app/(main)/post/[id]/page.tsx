@@ -1,5 +1,6 @@
 import VoteButtons from '@/components/feed/vote-buttons';
 import CommentComposer from '@/components/post/comment-composer';
+import CommentThread from '@/components/post/comment-thread';
 import { Separator } from '@/components/ui/separator';
 import { getSessionUser } from '@/lib/auth';
 import { getAuthorByID, getPostByID, getPostScore, getUserVote, listTags } from '@/lib/db/queries';
@@ -94,7 +95,7 @@ const Page: FC<Props> = async ({ params }) => {
             </p>
           )}
 
-          {/* <CommentThread tree={commentTree} postAuthorId={post.authorId} sessionUser={sessionUser} /> */}
+          <CommentThread tree={commentTree} postAuthorId={post.authorId} sessionUser={sessionUser} />
         </section>
       </div>
     </div>
