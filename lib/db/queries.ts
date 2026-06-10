@@ -181,3 +181,16 @@ export const getUserVote = async (userId: string | undefined, type: VoteTarget, 
 
   return v === -1 || v === 1 ? v : 0;
 }
+
+export const getPostByID = async (id: string): Promise<Post | undefined> => {
+  const row = await prisma.post.findUnique({ where: { id } });
+  if (!row) return undefined;
+
+  const [tagMap, ccMap] = await Promise.all([
+    tagsForPosts([id]),
+    commentCountsForPosts([id]),
+  ]);
+
+  return mapPostRow(row, tagMap.get(id) ?? [], ccMap.get(id) ?? 0);
+
+}

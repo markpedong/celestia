@@ -21,9 +21,6 @@ const VoteButtons: FC<Props> = ({ target, targetID, score, userVote }) => {
 
   const vote = (value: -1 | 1) => {
     startTransition(async () => {
-      void targetID;
-      void value;
-
       if (isPost) {
         await votePostAction(targetID, value);
       } else {
