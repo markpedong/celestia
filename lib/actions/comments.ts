@@ -8,10 +8,7 @@ import { getUserVote } from "../db/queries";
 
 export type CommentFormState = { error?: string; ok?: boolean } | null;
 
-export async function createCommentAction(
-  _prev: CommentFormState,
-  formData: FormData,
-): Promise<CommentFormState> {
+export const createCommentAction = async (_prev: CommentFormState, formData: FormData): Promise<CommentFormState> => {
   const userId = await getCurrentUserID();
   if (!userId) {
     return { error: "You must be signed in to comment." };
@@ -59,7 +56,7 @@ export async function addComment(input: {
   };
 }
 
-export async function voteCommentAction(commentId: string, value: -1 | 1) {
+export const voteCommentAction = async (commentId: string, value: -1 | 1) => {
   const userId = await getCurrentUserID();
   if (!userId) {
     return { error: "Sign in to vote." };
@@ -98,9 +95,7 @@ export async function voteComment(
   }
 }
 
-export async function findCommentById(
-  id: string,
-): Promise<Comment | undefined> {
+export const findCommentById = async (id: string): Promise<Comment | undefined> => {
   const c = await prisma.comment.findUnique({ where: { id } });
   if (!c) return undefined;
   return {
