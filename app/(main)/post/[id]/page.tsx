@@ -1,7 +1,11 @@
 import VoteButtons from '@/components/feed/vote-buttons';
+import CommentComposer from '@/components/post/comment-composer';
 import { Separator } from '@/components/ui/separator';
-import { getPostByID } from '@/lib/db/queries';
+import { getSessionUser } from '@/lib/auth';
+import { getAuthorByID, getPostByID, getPostScore, getUserVote, listTags } from '@/lib/db/queries';
 import { formatRelativeTime } from '@/lib/format';
+import { cn } from '@/lib/utils';
+import { UserAvatar } from '@neondatabase/auth/react';
 import { ArrowLeft, MessageSquare, Share2 } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -14,8 +18,18 @@ type Props = {
 const Page: FC<Props> = async ({ params }) => {
   const { id } = await params;
   const post = await getPostByID(id);
-
   if (!post) return notFound();
+
+  const author = await getAuthorByID(post.authorId);
+  const sessionUser = await getSessionUser();
+  if (!author) return notFound();
+
+  const score = await getPostScore(post.id);
+  const userVote = await getUserVote(sessionUser?.id, 'post', post.id);
+
+  const tags = await listTags();
+  const primarySlug = post.tagSlugs[0];
+  const primaryTag = primarySlug ? tags.find(t => t.slug === primarySlug) : undefined;
 
   return (
     <div className='flex gap-8'>
@@ -30,13 +44,13 @@ const Page: FC<Props> = async ({ params }) => {
 
         <article className='rounded-xl border border-border bg-card p-4 md:p-6'>
           <div className='mb-4 flex flex-wrap items-center gap-2 text-sm text-muted-foreground'>
-            {/* <UserAvatar user={author} size='sm' /> */}
-            {/* <span className='font-medium text-foreground'>u/{author.username}</span> */}
+            <UserAvatar user={author} size='sm' />
+            <span className='font-medium text-foreground'>u/{author.username}</span>
             <span>·</span>
             <span>{formatRelativeTime(post.createdAt)}</span>
           </div>
           <h1 className='text-balance text-2xl font-bold leading-tight text-foreground md:text-3xl'>{post.title}</h1>
-          {/* {primaryTag ? (
+          {primaryTag ? (
             <div className='mt-3'>
               <Link
                 href={`/?tag=${encodeURIComponent(primaryTag.slug)}`}
@@ -45,12 +59,12 @@ const Page: FC<Props> = async ({ params }) => {
                 #{primaryTag.label}
               </Link>
             </div>
-          ) : null} */}
+          ) : null}
           <div className='mt-6 whitespace-pre-wrap text-base leading-relaxed text-muted-foreground'>{post.body}</div>
           <Separator className='my-6' />
           <div className='flex flex-wrap items-center gap-4'>
             <div className='flex items-center gap-3'>
-              <VoteButtons target='post' targetID={post.id} score={0} userVote={0} />
+              <VoteButtons target='post' targetID={post.id} score={score} userVote={userVote} />
               <span className='inline-flex items-center gap-1 text-sm text-muted-foreground'>
                 <MessageSquare className='size-4' />
                 {post.commentCount} Comments
@@ -67,9 +81,9 @@ const Page: FC<Props> = async ({ params }) => {
           <div className='mb-4 flex flex-wrap items-center justify-between gap-3'>
             <h2 className='text-lg font-semibold'>{post.commentCount} Comments</h2>
           </div>
-          {/* {sessionUser ? (
+          {sessionUser ? (
             <div className='mb-8'>
-              <CommentComposer postId={post.id} user={sessionUser} />
+              <CommentComposer postID={post.id} user={sessionUser} />
             </div>
           ) : (
             <p className='mb-8 rounded-lg border border-dashed border-border bg-muted/30 p-4 text-sm text-muted-foreground'>
@@ -78,7 +92,7 @@ const Page: FC<Props> = async ({ params }) => {
               </Link>{' '}
               to join the discussion.
             </p>
-          )} */}
+          )}
 
           {/* <CommentThread tree={commentTree} postAuthorId={post.authorId} sessionUser={sessionUser} /> */}
         </section>

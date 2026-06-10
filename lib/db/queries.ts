@@ -125,9 +125,9 @@ const tagsForPosts = async (postIds: string[]): Promise<Map<string, string[]>> =
     where: { postId: { in: postIds } },
   });
 
-  for (const pid of postIds) m.set(pid, []);
+  for (const pid of postIds) m.set(pid, []); // nagawa ng empty m ap from parameter postids
   for (const r of rows) {
-    const list = m.get(r.postId) ?? [];
+    const list = m.get(r.postId) ?? []; // kinukuha niya yung naunang gawa na map from parameter postids
     list.push(r.tagSlug);
     m.set(r.postId, list);
   }
@@ -193,4 +193,19 @@ export const getPostByID = async (id: string): Promise<Post | undefined> => {
 
   return mapPostRow(row, tagMap.get(id) ?? [], ccMap.get(id) ?? 0);
 
+}
+
+export const getAuthorByID = async (authorID: string): Promise<User> => {
+  const row = await prisma.userProfile.findUnique({ where: { id: authorID } });
+  return row
+    ? { id: row.id, username: row.username }
+    : { id: authorID, username: `user_${authorID.slice(0, 6)}` };
+}
+
+export const getPostScore = async (postId: string): Promise<number> => {
+  const agg = await prisma.vote.aggregate({
+    where: { targetType: "post", targetId: postId },
+    _sum: { value: true },
+  });
+  return Number(agg._sum.value ?? 0);
 }
