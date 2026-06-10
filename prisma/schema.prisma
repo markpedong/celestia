@@ -73,6 +73,6 @@ model Vote {
   targetId   String @map("target_id") @db.Uuid
   value      Int    @db.SmallInt
 
-  @@id([userId, targetType, targetId])
+  @@id([userId, targetType, targetId]) // basically just a unique ID for each vote
   @@map("votes")
 }

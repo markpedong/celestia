@@ -24,10 +24,11 @@ export async function votePost(
   postId: string,
   value: -1 | 1,
 ): Promise<void> {
-  const current = await getUserVote(userId, "post", postId);
-  let next: -1 | 0 | 1 = value;
-  if (current === value) next = 0;
+  const current = await getUserVote(userId, "post", postId); // if you already voted
+  let next: -1 | 0 | 1 = value; // new vote
+  if (current === value) next = 0; // if same, then you unvote, meaning you can be neutral.
 
+  // reason for this is becuase there can only be one vote per post.
   await prisma.vote.deleteMany({
     where: {
       userId,
