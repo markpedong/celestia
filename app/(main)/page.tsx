@@ -1,7 +1,9 @@
 import FeedSortTabs from '@/components/feed/feed-sort-tabs';
 import PostCard from '@/components/feed/post-card';
+import { RightTrending } from '@/components/layout/right-trending';
 import { getSessionUser } from '@/lib/auth';
 import { batchAuthorsForIds, listPostSorted, listTags } from '@/lib/db/queries';
+import { getTrendingToday } from '@/lib/trending';
 import { FeedSort } from '@/lib/types';
 import { FC } from 'react';
 
@@ -22,6 +24,8 @@ const Home: FC<Props> = async ({ searchParams }) => {
   const tagsMap = new Map(tags.map(t => [t.slug, t]));
   const authorIds = [...new Set(rows.map(row => row.post.authorId))];
   const authorById = await batchAuthorsForIds(authorIds);
+
+  const trending = getTrendingToday();
 
   const cards = rows.map(row => {
     const author = authorById.get(row.post.authorId);
@@ -53,7 +57,7 @@ const Home: FC<Props> = async ({ searchParams }) => {
         </div>
       </div>
       <aside className='hidden w-72 shrink-0 space-y-6 lg:block'>
-        {/* <RightTrending items={trending} /> */}
+        <RightTrending items={trending} />
         {/* <RightTopTags /> */}
       </aside>
     </div>

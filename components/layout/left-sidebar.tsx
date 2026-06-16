@@ -7,6 +7,7 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { FC } from 'react';
 import LeftTags from './left-tags';
 import JoinCtaCard from './join-cta';
+import { Tag } from '@/lib/types';
 
 const nav = [
   { href: '/', label: 'Home', icon: Home, match: 'home' as const },
@@ -19,7 +20,13 @@ const nav = [
   },
 ];
 
-const LeftSidebar: FC<{ showCta: boolean }> = ({ showCta }) => {
+const LeftSidebar: FC<{
+  showCta: boolean;
+  tags: {
+    tag: Tag;
+    count: number;
+  }[];
+}> = ({ showCta, tags }) => {
   const pathname = usePathname();
   const params = useSearchParams();
   const sort = params.get('sort');
@@ -49,7 +56,7 @@ const LeftSidebar: FC<{ showCta: boolean }> = ({ showCta }) => {
       </nav>
       <div className='mt-8'>
         <p className='mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground'>Top Tags</p>
-        <LeftTags />
+        <LeftTags tags={tags} />
       </div>
       {showCta && (
         <div className='mt-8'>

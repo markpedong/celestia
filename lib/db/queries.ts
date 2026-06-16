@@ -285,3 +285,17 @@ export const listCommentsForPost = async (postID: string): Promise<Comment[]> =>
     createdAt: c.createdAt.toISOString(),
   }))
 }
+
+export const tagsPostCounts = async (): Promise<{ tag: Tag, count: number }[]> => {
+  const allTags = await listTags();
+  const rows = await prisma.postTag.groupBy({
+    by: ["tagSlug"],
+    _count: { _all: true },
+  })
+
+  const countMap = new Map(rows.map(r => [r.tagSlug, r._count._all]))
+  return allTags.map(tag => ({
+    tag,
+    count: countMap.get(tag.slug) ?? 0
+  }))
+}
