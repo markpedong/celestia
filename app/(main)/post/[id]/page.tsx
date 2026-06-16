@@ -3,7 +3,7 @@ import CommentComposer from '@/components/post/comment-composer';
 import CommentThread from '@/components/post/comment-thread';
 import { Separator } from '@/components/ui/separator';
 import { getSessionUser } from '@/lib/auth';
-import { getAuthorByID, getPostByID, getPostScore, getUserVote, listTags } from '@/lib/db/queries';
+import { getAuthorByID, getCommentTree, getPostByID, getPostScore, getUserVote, listTags } from '@/lib/db/queries';
 import { formatRelativeTime } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { UserAvatar } from '@neondatabase/auth/react';
@@ -31,6 +31,8 @@ const Page: FC<Props> = async ({ params }) => {
   const tags = await listTags();
   const primarySlug = post.tagSlugs[0];
   const primaryTag = primarySlug ? tags.find(t => t.slug === primarySlug) : undefined;
+
+  const commentTree = await getCommentTree(post.id, sessionUser?.id);
 
   return (
     <div className='flex gap-8'>

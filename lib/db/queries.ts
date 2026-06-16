@@ -1,6 +1,7 @@
+import { EnrichedCommentNode, nestCommentRows } from "../comment-tree";
 import { PostModel } from "../generated/prisma/models";
 import { prisma } from "../prisma";
-import { FeedSort, Post, Tag, User, VoteTarget } from "../types";
+import { Comment, FeedSort, Post, Tag, User, VoteTarget } from "../types";
 
 export const batchAuthorsForIds = async (authorIds: string[]): Promise<Map<string, User>> => {
   const unique = [...new Set(authorIds)];
@@ -208,4 +209,79 @@ export const getPostScore = async (postId: string): Promise<number> => {
     _sum: { value: true },
   });
   return Number(agg._sum.value ?? 0);
+}
+
+export const getCommentTree = async (postID: string, sessionID?: string): Promise<EnrichedCommentNode[]> => {
+  const flat = await listCommentsForPost(postID)
+  if (flat.length === 0) return []
+
+  const authorIDs = [...new Set(flat.map(c => c.authorId))]
+  const authorMap = await batchAuthorsForIds(authorIDs)
+
+  const commentIDs = flat.map(c => c.id)
+  const scoreMap = await batchCommentScores(commentIDs);
+  const voteMap = sessionID ? await batchUserVotesForComments(sessionID, commentIDs) : new Map<string, -1 | 0 | 1>();
+
+  const enriched = flat.map(c => {
+    const author = authorMap.get(c.authorId)
+    if (!author) return null;
+
+    return {
+      ...c,
+      author,
+      score: scoreMap.get(c.id) ?? 0,
+      userVote: voteMap.get(c.id) ?? 0,
+    }
+  }).filter((c): c is NonNullable<typeof c> => c !== null);
+
+  return nestCommentRows(enriched);
+}
+
+export const batchUserVotesForComments = async (userID: string, commentIDs: string[]): Promise<Map<string, -1 | 0 | 1>> => {
+  if (commentIDs.length === 0) return new Map();
+  const rows = await prisma.vote.findMany({
+    where: {
+      userId: userID,
+      targetType: "comment",
+      targetId: { in: commentIDs },
+    },
+  });
+  const m = new Map<string, -1 | 0 | 1>();
+  for (const r of rows) {
+    m.set(r.targetId, r.value === -1 || r.value === 1 ? r.value : 0);
+  }
+  return m;
+}
+
+export const batchCommentScores = async (commentIDs: string[]): Promise<Map<string, number>> => {
+  if (commentIDs.length === 0) return new Map();
+
+  const rows = await prisma.vote.groupBy({
+    by: ["targetId"],
+    where: {
+      targetType: "comment",
+      targetId: { in: commentIDs }
+    },
+    _sum: { value: true }
+  })
+
+  const m = new Map<string, number>();
+  for (const r of rows) {
+    m.set(r.targetId, Number(r._sum.value ?? 0));
+  }
+
+  return m
+}
+
+export const listCommentsForPost = async (postID: string): Promise<Comment[]> => {
+  const rows = await prisma.comment.findMany({ where: { postId: postID } });
+
+  return rows.map(c => ({
+    id: c.id,
+    postId: c.postId,
+    authorId: c.authorId,
+    parentId: c.parentId,
+    body: c.body,
+    createdAt: c.createdAt.toISOString(),
+  }))
 }
