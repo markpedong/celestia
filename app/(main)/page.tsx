@@ -44,19 +44,25 @@ const Home: FC<Props> = async ({ searchParams }) => {
   });
 
   return (
-    <div className='flex gap-8'>
+    <div className='flex gap-6'>
       <div className='min-w-0 flex-1'>
         <FeedSortTabs current={sort} tag={tagFilter} />
-        <div className='space-y-4'>
+        <div className='space-y-3'>
           {cards}
           {rows.length === 0 && (
-            <p className='rounded-xl border border-border bg-card p-8 text-center text-sm text-muted-foreground'>
-              No posts match this filter.
-            </p>
+            <div className='flex flex-col items-center justify-center rounded-xl border border-border bg-card px-6 py-20 text-center'>
+              <div className='mb-4 flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-[0_0_24px_rgba(124,106,247,0.12)]'>
+                <span className='font-mono text-lg'>∅</span>
+              </div>
+              <h2 className='text-base font-semibold text-muted-foreground'>No signals in this orbit yet</h2>
+              <p className='mt-2 max-w-72 text-sm leading-relaxed text-muted-foreground/70'>
+                Be the first to start a discussion in this space.
+              </p>
+            </div>
           )}
         </div>
       </div>
-      <aside className='hidden w-72 shrink-0 space-y-6 lg:block'>
+      <aside className='sticky top-14 hidden h-[calc(100vh-3.5rem)] w-72 shrink-0 space-y-6 overflow-y-auto py-6 xl:block'>
         <RightTrending items={trending} />
         {/* <RightTopTags /> */}
       </aside>

@@ -1,0 +1,54 @@
+@reference "./globals.css";
+
+@mixin celestial-glow($color: rgba(124, 106, 247, 0.08)) {
+  box-shadow: 0 0 34px $color;
+}
+
+@mixin gradient-brand {
+  background: linear-gradient(135deg, #7c6af7 0%, #4fc3f7 100%);
+}
+
+.celestia-card {
+  @apply rounded-xl border border-border bg-card;
+  @include celestial-glow(rgba(124, 106, 247, 0.05));
+}
+
+.celestia-card-hover {
+  @apply transition-all duration-200 hover:border-primary/20;
+
+  &:hover {
+    @include celestial-glow(rgba(124, 106, 247, 0.07));
+  }
+}
+
+.celestia-brand-mark {
+  @apply flex items-center justify-center rounded-lg text-primary-foreground;
+  @include gradient-brand;
+  @include celestial-glow(rgba(124, 106, 247, 0.35));
+}
+
+.celestia-primary-action {
+  @apply bg-primary text-primary-foreground hover:opacity-90;
+  background: linear-gradient(135deg, #7c6af7 0%, #6355e8 100%);
+  box-shadow: 0 0 18px rgba(124, 106, 247, 0.25);
+}
+
+.celestia-surface-control {
+  @apply rounded-lg bg-secondary/80 shadow-inner;
+}
+
+.celestia-subtle-action {
+  @apply rounded-lg transition-colors hover:bg-white/5 hover:text-foreground;
+}
+
+.celestia-topic-dot {
+  @apply shrink-0 rounded-full shadow-[0_0_6px_currentColor];
+}
+
+.celestia-meta {
+  @apply font-mono text-[11px] text-muted-foreground;
+}
+
+.celestia-panel-label {
+  @apply flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-muted-foreground;
+}

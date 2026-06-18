@@ -2,7 +2,6 @@ import { FeedSort } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Flame, Sparkles, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
-import { FC } from 'react';
 
 type Props = {
   current: FeedSort;
@@ -17,7 +16,7 @@ function hrefFor(sort: FeedSort, tag?: string) {
   return q ? `/?${q}` : '/';
 }
 
-const FeedSortTabs: FC<Props> = ({ current, tag }) => {
+const FeedSortTabs = ({ current, tag }: Props) => {
   const tabs: { id: FeedSort; label: string; icon: typeof Flame }[] = [
     { id: 'hot', label: 'Hot', icon: Flame },
     { id: 'new', label: 'New', icon: Sparkles },
@@ -25,8 +24,12 @@ const FeedSortTabs: FC<Props> = ({ current, tag }) => {
   ];
 
   return (
-    <div className='mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3'>
-      <div className='flex gap-1'>
+    <div className='mb-5 flex flex-wrap items-center justify-between gap-3'>
+      <div>
+        <h1 className='text-base font-semibold text-foreground'>{tag ? 'Filtered Signals' : 'Community Feed'}</h1>
+        <p className='mt-1 text-xs text-muted-foreground'>{tag ? `Topic orbit: ${tag}` : 'Latest discussions across Celestia'}</p>
+      </div>
+      <div className='celestia-surface-control flex items-center p-0.5'>
         {tabs.map(({ id, label, icon: Icon }) => {
           const active = current === id;
 
@@ -35,11 +38,11 @@ const FeedSortTabs: FC<Props> = ({ current, tag }) => {
               key={id}
               href={hrefFor(id, tag)}
               className={cn(
-                'inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors',
-                active ? 'bg-muted text-primary' : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+                'inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-all',
+                active ? 'bg-primary/15 text-foreground' : 'text-muted-foreground hover:bg-white/5 hover:text-foreground'
               )}
             >
-              <Icon />
+              <Icon className={cn('size-3.5', active ? 'text-primary' : 'text-muted-foreground')} />
               {label}
             </Link>
           );

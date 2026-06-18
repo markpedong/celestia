@@ -2,22 +2,29 @@ import Link from 'next/link';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Telescope } from 'lucide-react';
 
 const JoinCtaCard = () => {
   return (
-    <Card className='border-border bg-card'>
+    <Card className='celestia-card'>
       <CardHeader className='pb-2'>
-        <div className='mb-2 flex size-12 items-center justify-center rounded-full bg-primary/15 text-2xl' aria-hidden>
-          🤖
+        <div className='celestia-brand-mark mb-2 size-11 rounded-xl'>
+          <Telescope className='size-5' aria-hidden />
         </div>
-        <CardTitle className='text-base'>Join the conversation</CardTitle>
+        <CardTitle className='text-base'>Join the orbit</CardTitle>
         <CardDescription className='text-muted-foreground'>
-          Create posts, vote, and follow tags you care about.
+          Create signals, vote, and follow topics you care about.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Link href='/auth/sign-up' className={cn(buttonVariants({ variant: 'default' }), 'w-full justify-center')}>
-          Sign up
+        <Link
+          href='/auth/sign-up'
+          className={cn(
+            buttonVariants({ variant: 'default' }),
+            'celestia-primary-action w-full justify-center'
+          )}
+        >
+          Join Celestia
         </Link>
       </CardContent>
     </Card>

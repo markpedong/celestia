@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { Flame, Home, LayoutGrid } from 'lucide-react';
+import { Flame, Globe, Hash, Home } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { FC } from 'react';
@@ -12,12 +12,7 @@ import { Tag } from '@/lib/types';
 const nav = [
   { href: '/', label: 'Home', icon: Home, match: 'home' as const },
   { href: '/?sort=hot', label: 'Popular', icon: Flame, match: 'hot' as const },
-  {
-    href: '/?sort=new',
-    label: 'All Posts',
-    icon: LayoutGrid,
-    match: 'new' as const,
-  },
+  { href: '/?sort=new', label: 'All Posts', icon: Globe, match: 'new' as const },
 ];
 
 const LeftSidebar: FC<{
@@ -32,8 +27,8 @@ const LeftSidebar: FC<{
   const sort = params.get('sort');
 
   return (
-    <aside className='hidden w-52 shrink-0 lg:block'>
-      <nav className='space-y-1 pr-2'>
+    <aside className='sticky top-14 hidden h-[calc(100vh-3.5rem)] w-56 shrink-0 border-r border-border/70 lg:block'>
+      <nav className='space-y-1 p-4'>
         {nav.map(item => {
           const active =
             pathname === '/' &&
@@ -44,8 +39,8 @@ const LeftSidebar: FC<{
               key={item.href}
               href={item.href}
               className={cn(
-                'flex items-center gap-3 rounded-lg border-l-2 border-transparent px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground',
-                active && 'border-primary bg-muted/60 text-foreground'
+                'group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-white/5 hover:text-foreground',
+                active && 'bg-primary/10 text-foreground shadow-[inset_0_0_0_1px_rgba(124,106,247,0.08)]'
               )}
             >
               <item.icon className={cn('size-5 shrink-0', active ? 'text-primary' : 'text-muted-foreground')} />
@@ -54,15 +49,21 @@ const LeftSidebar: FC<{
           );
         })}
       </nav>
-      <div className='mt-8'>
-        <p className='mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground'>Top Tags</p>
+      <div className='mt-4 px-4'>
+        <p className='mb-3 flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-muted-foreground'>
+          <Hash className='size-3' />
+          Topics
+        </p>
         <LeftTags tags={tags} />
       </div>
       {showCta && (
-        <div className='mt-8'>
+        <div className='mt-8 px-4'>
           <JoinCtaCard />
         </div>
       )}
+      <p className='mt-auto px-7 pb-4 pt-8 font-mono text-[10px] leading-relaxed text-muted-foreground/50'>
+        Celestia v0.9 · Community Discussion
+      </p>
     </aside>
   );
 };

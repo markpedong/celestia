@@ -7,6 +7,7 @@ import { formatRelativeTime } from '@/lib/format';
 import { useState } from 'react';
 import VoteButtons from '../feed/vote-buttons';
 import CommentComposer from './comment-composer';
+import { Clock, CornerDownRight, Share2 } from 'lucide-react';
 
 export function CommentNode({
   node,
@@ -22,33 +23,41 @@ export function CommentNode({
 
   return (
     <li className='relative'>
-      <div className='flex gap-2'>
-        <VoteButtons target='comment' targetID={node.id} score={node.score} userVote={node.userVote} />
-        <div className='min-w-0 flex-1 border-l border-border pl-3'>
-          <div className='mb-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground'>
-            <span className='font-medium text-foreground'>u/{node.author.username}</span>
+      <div className='rounded-xl border border-border bg-secondary/30 p-4'>
+        <div className='mb-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground'>
+            <span className='font-medium text-muted-foreground'>{node.author.displayName ?? node.author.username}</span>
             {isOp ? (
-              <Badge variant='secondary' className='h-5 px-1.5 text-[10px] font-semibold uppercase'>
+              <Badge variant='secondary' className='h-5 border-primary/20 bg-primary/10 px-1.5 text-[10px] font-semibold uppercase text-primary'>
                 OP
               </Badge>
             ) : null}
-            <span>·</span>
-            <span>{formatRelativeTime(node.createdAt)}</span>
+            <span className='text-muted-foreground/40'>·</span>
+            <span className='flex items-center gap-1 font-mono text-[11px]'>
+              <Clock className='size-3' />
+              {formatRelativeTime(node.createdAt)}
+            </span>
           </div>
-          <p className='whitespace-pre-wrap text-sm leading-relaxed text-foreground'>{node.body}</p>
-          <div className='mt-2 flex flex-wrap items-center gap-3 text-xs font-medium text-muted-foreground'>
+          <p className='whitespace-pre-wrap text-sm leading-7 text-foreground'>{node.body}</p>
+          <div className='mt-3 flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground'>
+            <VoteButtons target='comment' targetID={node.id} score={node.score} userVote={node.userVote} />
             {sessionUser ? (
-              <button type='button' onClick={() => setShowReply(v => !v)} className='hover:text-foreground'>
+              <button
+                type='button'
+                onClick={() => setShowReply(v => !v)}
+                className='inline-flex items-center gap-1 rounded-lg px-2 py-1 transition-colors hover:bg-white/5 hover:text-foreground'
+              >
+                <CornerDownRight className='size-3' />
                 Reply
               </button>
             ) : null}
-            <button type='button' className='hover:text-foreground'>
+            <button type='button' className='inline-flex items-center gap-1 rounded-lg px-2 py-1 transition-colors hover:bg-white/5 hover:text-foreground'>
+              <Share2 className='size-3' />
               Share
             </button>
           </div>
 
           {sessionUser && showReply && (
-            <div className='mt-3 border-t border-border pt-3'>
+            <div className='mt-3 border-t border-border/70 pt-3'>
               <CommentComposer
                 postID={node.postId}
                 user={sessionUser}
@@ -60,13 +69,12 @@ export function CommentNode({
           )}
 
           {node.children.length > 0 && (
-            <ul className='mt-4 space-y-4 border-l border-border/80 pl-3'>
+            <ul className='mt-4 space-y-4 border-l border-primary/20 pl-4'>
               {node.children.map(ch => (
                 <CommentNode key={ch.id} node={ch} postAuthorId={postAuthorId} sessionUser={sessionUser} />
               ))}
             </ul>
           )}
-        </div>
       </div>
     </li>
   );

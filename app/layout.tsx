@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist_Mono, Inter } from 'next/font/google';
 import './globals.css';
+import './design.scss';
 
 import NeonAuthProviders from '@/providers/neon-auth-ui-provider';
 
@@ -25,7 +26,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang='en' className={`dark ${inter.variable} ${geistMono.variable} h-full antialiased`}>
+    <html
+      lang='en'
+      className={`dark ${inter.variable} ${geistMono.variable} h-full antialiased`}
+      style={{ colorScheme: 'dark' }}
+      suppressHydrationWarning
+    >
       <body className='min-h-full flex flex-col bg-background text-foreground'>
         <NeonAuthProviders>{children}</NeonAuthProviders>
       </body>

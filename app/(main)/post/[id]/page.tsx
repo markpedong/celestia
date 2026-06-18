@@ -5,18 +5,16 @@ import { Separator } from '@/components/ui/separator';
 import { getSessionUser } from '@/lib/auth';
 import { getAuthorByID, getCommentTree, getPostByID, getPostScore, getUserVote, listTags } from '@/lib/db/queries';
 import { formatRelativeTime } from '@/lib/format';
-import { cn } from '@/lib/utils';
 import { UserAvatar } from '@neondatabase/auth/react';
-import { ArrowLeft, MessageSquare, Share2 } from 'lucide-react';
+import { ArrowLeft, Clock, MessageSquare, Share2 } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { FC } from 'react';
 
 type Props = {
   params: Promise<{ id: string }>;
 };
 
-const Page: FC<Props> = async ({ params }) => {
+const Page = async ({ params }: Props) => {
   const { id } = await params;
   const post = await getPostByID(id);
   if (!post) return notFound();
@@ -35,52 +33,61 @@ const Page: FC<Props> = async ({ params }) => {
   const commentTree = await getCommentTree(post.id, sessionUser?.id);
 
   return (
-    <div className='flex gap-8'>
-      <div className='min-w-0 flex-1'>
+    <div className='flex gap-6'>
+      <div className='min-w-0 flex-1 max-w-3xl'>
         <Link
           href='/'
-          className='mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground'
+          className='mb-5 inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground'
         >
           <ArrowLeft className='size-4' />
           Back to feed
         </Link>
 
-        <article className='rounded-xl border border-border bg-card p-4 md:p-6'>
-          <div className='mb-4 flex flex-wrap items-center gap-2 text-sm text-muted-foreground'>
+        <article className='rounded-xl border border-border bg-card p-5 shadow-[0_0_34px_rgba(124,106,247,0.06)] md:p-6'>
+          <div className='mb-4 flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground'>
+            <div className='flex items-center gap-2'>
             <UserAvatar user={author} size='sm' />
-            <span className='font-medium text-foreground'>u/{author.username}</span>
-            <span>·</span>
-            <span>{formatRelativeTime(post.createdAt)}</span>
-          </div>
-          <h1 className='text-balance text-2xl font-bold leading-tight text-foreground md:text-3xl'>{post.title}</h1>
-          {primaryTag ? (
-            <div className='mt-3'>
+            <span className='font-medium text-muted-foreground'>{author.displayName ?? author.username}</span>
+            <span className='text-muted-foreground/40'>·</span>
+            <span className='flex items-center gap-1 font-mono text-[11px]'>
+              <Clock className='size-3' />
+              {formatRelativeTime(post.createdAt)}
+            </span>
+            </div>
+            {primaryTag ? (
               <Link
                 href={`/?tag=${encodeURIComponent(primaryTag.slug)}`}
-                className={cn('inline-flex rounded-md px-2 py-0.5 text-sm font-medium', 'bg-tag-bg text-tag-text')}
+                className='inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs font-medium'
+                style={{
+                  backgroundColor: `${primaryTag.hashColor}14`,
+                  borderColor: `${primaryTag.hashColor}30`,
+                  color: primaryTag.hashColor,
+                }}
               >
-                #{primaryTag.label}
+                <span className='size-1 rounded-full shadow-[0_0_4px_currentColor]' style={{ background: primaryTag.hashColor }} />
+                {primaryTag.label}
               </Link>
-            </div>
-          ) : null}
-          <div className='mt-6 whitespace-pre-wrap text-base leading-relaxed text-muted-foreground'>{post.body}</div>
+            ) : null}
+          </div>
+          <h1 className='text-balance text-2xl font-bold leading-tight text-foreground md:text-3xl'>{post.title}</h1>
+          <div className='mt-6 whitespace-pre-wrap text-base leading-8 text-muted-foreground'>{post.body}</div>
           <Separator className='my-6' />
-          <div className='flex flex-wrap items-center gap-4'>
-            <div className='flex items-center gap-3'>
+          <div className='flex flex-wrap items-center justify-between gap-3'>
+            <div className='flex flex-wrap items-center gap-3'>
               <VoteButtons target='post' targetID={post.id} score={score} userVote={userVote} />
-              <span className='inline-flex items-center gap-1 text-sm text-muted-foreground'>
+              <span className='inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground'>
                 <MessageSquare className='size-4' />
-                {post.commentCount} Comments
+                {post.commentCount}
               </span>
             </div>
-            <button type='button' className='inline-flex items-center gap-1 hover:text-foreground'>
+            <button type='button' className='inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-white/5 hover:text-foreground'>
               <Share2 className='size-4' />
               Share
             </button>
           </div>
         </article>
 
-        <section className='mt-8 rounded-xl border border-border bg-card p-4 md:p-6'>
+        <section className='mt-5 rounded-xl border border-border bg-card p-4 shadow-[0_0_34px_rgba(124,106,247,0.04)] md:p-6'>
           <div className='mb-4 flex flex-wrap items-center justify-between gap-3'>
             <h2 className='text-lg font-semibold'>{post.commentCount} Comments</h2>
           </div>
@@ -89,9 +96,9 @@ const Page: FC<Props> = async ({ params }) => {
               <CommentComposer postID={post.id} user={sessionUser} />
             </div>
           ) : (
-            <p className='mb-8 rounded-lg border border-dashed border-border bg-muted/30 p-4 text-sm text-muted-foreground'>
+            <p className='mb-8 rounded-xl border border-dashed border-primary/25 bg-primary/5 p-4 text-sm text-muted-foreground'>
               <Link href='/auth/sign-in' className='font-medium text-primary hover:underline'>
-                Log in
+                Sign in
               </Link>{' '}
               to join the discussion.
             </p>
