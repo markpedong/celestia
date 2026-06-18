@@ -25,7 +25,7 @@ const AuthMethodButton = ({
   <button
     type='button'
     onClick={onClick}
-    className='relative flex h-14 w-full items-center justify-center rounded-full border border-border bg-white px-5 text-base font-medium text-zinc-950 shadow-sm transition hover:bg-zinc-100'
+    className='relative flex h-[52px] w-full items-center justify-center rounded-full border border-border bg-white px-5 text-base font-medium text-zinc-950 shadow-sm transition hover:bg-zinc-100'
   >
     <span className='absolute left-5 flex size-6 items-center justify-center text-zinc-950'>{icon}</span>
     {children}

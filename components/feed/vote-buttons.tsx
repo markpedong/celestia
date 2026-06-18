@@ -36,16 +36,16 @@ const VoteButtons = ({ target, targetID, score, userVote }: Props) => {
   };
 
   const iconClass = isPost ? 'size-4' : 'size-3.5';
-  const buttonClass = isPost ? 'px-2 py-1.5' : 'px-1.5 py-1';
-  const scoreClass = isPost ? 'min-w-10 px-1 text-xs' : 'min-w-8 px-1 text-[11px]';
+  const buttonClass = isPost ? 'p-1.5' : 'p-1';
+  const scoreClass = isPost ? 'min-w-9 text-xs' : 'min-w-8 text-[11px]';
 
   return (
-    <div className='celestia-surface-control inline-flex items-center overflow-hidden text-sm'>
+    <div className={cn('inline-flex items-center overflow-hidden text-sm', isPost ? 'flex-col gap-0.5 rounded-none border-0 bg-transparent shadow-none' : 'celestia-surface-control')}>
       <button
         onClick={() => vote(1)}
         disabled={pending}
         className={cn(
-          'flex items-center transition-colors hover:bg-white/5 disabled:opacity-50',
+          'flex items-center rounded-lg transition-all hover:scale-110 hover:bg-white/5 disabled:opacity-50',
           buttonClass,
           userVote === 1 ? 'text-upvote' : 'text-muted-foreground hover:text-upvote'
         )}
@@ -60,7 +60,7 @@ const VoteButtons = ({ target, targetID, score, userVote }: Props) => {
         onClick={() => vote(-1)}
         disabled={pending}
         className={cn(
-          'flex items-center transition-colors hover:bg-white/5 disabled:opacity-50',
+          'flex items-center rounded-lg transition-all hover:scale-110 hover:bg-white/5 disabled:opacity-50',
           buttonClass,
           userVote === -1 ? 'text-downvote' : 'text-muted-foreground hover:text-downvote'
         )}

@@ -17,7 +17,7 @@ const MainLayout: FC<Props> = async ({ children }) => {
       <Navbar />
       <div className='mx-auto flex max-w-320 gap-0 px-4 pb-16'>
         <LeftSidebar showCta={!user} tags={tags} />
-        <div className='min-w-0 flex-1 pt-6 lg:px-6'>{children}</div>
+        <main className='min-w-0 flex-1 pt-6 lg:px-6'>{children}</main>
       </div>
     </>
   );

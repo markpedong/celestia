@@ -50,15 +50,15 @@ const CommentComposer = ({ postID, user, compact, parentId, placeholder }: Props
           required
           placeholder={placeholder}
           rows={compact ? 2 : 3}
-          className='min-h-0 resize-y border-border bg-secondary/80 text-sm leading-7 focus-visible:border-primary/40 focus-visible:ring-primary/20'
+          className='min-h-0 resize-y rounded-xl border-border bg-secondary/80 text-sm leading-7 focus-visible:border-primary/40 focus-visible:ring-primary/20'
         />
         {error ? (
           <p className='text-xs text-destructive' role='alert'>
             {error}
           </p>
         ) : null}
-        <Button type='submit' size='sm' disabled={pending} className='celestia-primary-action'>
-          {pending ? 'Posting...' : parentId ? 'Reply' : 'Comment'}
+        <Button type='submit' size='sm' disabled={pending} className='celestia-primary-action rounded-xl'>
+          {pending ? 'Posting...' : parentId ? 'Reply' : 'Transmit Comment'}
         </Button>
       </div>
     </form>

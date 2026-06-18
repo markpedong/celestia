@@ -12,7 +12,7 @@ const LeftTags = ({ tags }: Props) => {
         <li key={tag.slug}>
           <Link
             href={`/?tag=${encodeURIComponent(tag.slug)}`}
-            className='group flex items-center justify-between gap-2 rounded-lg px-3 py-1.5 text-sm transition-colors hover:bg-white/5 hover:text-foreground'
+            className='group flex items-center justify-between gap-2 rounded-xl px-3 py-2 text-sm transition-colors hover:bg-white/5 hover:text-foreground'
           >
             <span className='flex min-w-0 items-center gap-2.5'>
               <span

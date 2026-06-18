@@ -61,39 +61,39 @@
 
 :root,
 .dark {
-  --background: #070a13;
-  --foreground: #e2e8f0;
-  --card: #0c1020;
+  --background: #050814;
+  --foreground: #f1f5f9;
+  --card: #0b1020;
   --card-foreground: #e2e8f0;
-  --popover: #111827;
-  --popover-foreground: #e2e8f0;
-  --primary: #7c6af7;
-  --primary-hover: #6355e8;
+  --popover: #0f1628;
+  --popover-foreground: #f1f5f9;
+  --primary: #8b5cf6;
+  --primary-hover: #7c3aed;
   --primary-foreground: #ffffff;
-  --secondary: #111827;
-  --secondary-foreground: #94a3b8;
-  --muted: #0f1623;
+  --secondary: #0f1628;
+  --secondary-foreground: #cbd5e1;
+  --muted: #0b1020;
   --muted-foreground: #64748b;
-  --accent: #1e1b4b;
-  --accent-foreground: #a5b4fc;
+  --accent: #22d3ee;
+  --accent-foreground: #050814;
   --destructive: #f87171;
-  --border: rgba(148, 163, 184, 0.08);
-  --input: #111827;
+  --border: rgba(148, 163, 184, 0.1);
+  --input: rgba(5, 8, 20, 0.7);
   --ring: #7c6af7;
   --chart-1: #7c6af7;
   --chart-2: #4fc3f7;
   --chart-3: #34d399;
   --chart-4: #f59e0b;
   --chart-5: #f87171;
-  --radius: 0.5rem;
-  --sidebar: #0c1020;
-  --sidebar-foreground: #94a3b8;
-  --sidebar-primary: #7c6af7;
+  --radius: 0.875rem;
+  --sidebar: #0b1020;
+  --sidebar-foreground: #e2e8f0;
+  --sidebar-primary: #8b5cf6;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #111827;
-  --sidebar-accent-foreground: #e2e8f0;
+  --sidebar-accent: rgba(139, 92, 246, 0.12);
+  --sidebar-accent-foreground: #c084fc;
   --sidebar-border: rgba(148, 163, 184, 0.08);
-  --sidebar-ring: #7c6af7;
+  --sidebar-ring: rgba(139, 92, 246, 0.5);
 }
 
 @layer base {
@@ -103,8 +103,9 @@
   body {
     @apply bg-background text-foreground antialiased;
     background-image:
-      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(124, 106, 247, 0.1) 0%, transparent 60%),
-      radial-gradient(ellipse 50% 30% at 85% 85%, rgba(79, 195, 247, 0.07) 0%, transparent 55%);
+      radial-gradient(ellipse 85% 55% at 45% -18%, rgba(139, 92, 246, 0.15) 0%, transparent 62%),
+      radial-gradient(ellipse 55% 35% at 90% 70%, rgba(34, 211, 238, 0.1) 0%, transparent 58%),
+      linear-gradient(180deg, rgba(5, 8, 20, 0.86), rgba(5, 8, 20, 1));
     background-attachment: fixed;
   }
   html {

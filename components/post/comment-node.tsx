@@ -23,7 +23,7 @@ export function CommentNode({
 
   return (
     <li className='relative'>
-      <div className='rounded-xl border border-border bg-secondary/30 p-4'>
+      <div className='rounded-2xl border border-border bg-secondary/35 p-4 shadow-[0_0_24px_rgba(0,0,0,0.16)]'>
         <div className='mb-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground'>
             <span className='font-medium text-muted-foreground'>{node.author.displayName ?? node.author.username}</span>
             {isOp ? (
@@ -37,7 +37,7 @@ export function CommentNode({
               {formatRelativeTime(node.createdAt)}
             </span>
           </div>
-          <p className='whitespace-pre-wrap text-sm leading-7 text-foreground'>{node.body}</p>
+          <p className='whitespace-pre-wrap text-sm leading-7 text-slate-200'>{node.body}</p>
           <div className='mt-3 flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground'>
             <VoteButtons target='comment' targetID={node.id} score={node.score} userVote={node.userVote} />
             {sessionUser ? (
@@ -69,7 +69,7 @@ export function CommentNode({
           )}
 
           {node.children.length > 0 && (
-            <ul className='mt-4 space-y-4 border-l border-primary/20 pl-4'>
+            <ul className='mt-4 space-y-4 border-l border-primary/25 pl-4'>
               {node.children.map(ch => (
                 <CommentNode key={ch.id} node={ch} postAuthorId={postAuthorId} sessionUser={sessionUser} />
               ))}

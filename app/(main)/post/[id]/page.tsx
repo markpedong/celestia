@@ -6,7 +6,7 @@ import { getSessionUser } from '@/lib/auth';
 import { getAuthorByID, getCommentTree, getPostByID, getPostScore, getUserVote, listTags } from '@/lib/db/queries';
 import { formatRelativeTime } from '@/lib/format';
 import { UserAvatar } from '@neondatabase/auth/react';
-import { ArrowLeft, Clock, MessageSquare, Share2 } from 'lucide-react';
+import { ArrowLeft, Bookmark, Clock, MessageSquare, Radio, Share2, Users } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
@@ -33,8 +33,8 @@ const Page = async ({ params }: Props) => {
   const commentTree = await getCommentTree(post.id, sessionUser?.id);
 
   return (
-    <div className='flex gap-6'>
-      <div className='min-w-0 flex-1 max-w-3xl'>
+    <div className='grid gap-6 xl:grid-cols-[minmax(0,1fr)_18rem]'>
+      <div className='min-w-0 max-w-3xl'>
         <Link
           href='/'
           className='mb-5 inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground'
@@ -43,51 +43,62 @@ const Page = async ({ params }: Props) => {
           Back to feed
         </Link>
 
-        <article className='rounded-xl border border-border bg-card p-5 shadow-[0_0_34px_rgba(124,106,247,0.06)] md:p-6'>
-          <div className='mb-4 flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground'>
-            <div className='flex items-center gap-2'>
-            <UserAvatar user={author} size='sm' />
-            <span className='font-medium text-muted-foreground'>{author.displayName ?? author.username}</span>
-            <span className='text-muted-foreground/40'>·</span>
-            <span className='flex items-center gap-1 font-mono text-[11px]'>
-              <Clock className='size-3' />
-              {formatRelativeTime(post.createdAt)}
-            </span>
-            </div>
-            {primaryTag ? (
-              <Link
-                href={`/?tag=${encodeURIComponent(primaryTag.slug)}`}
-                className='inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs font-medium'
-                style={{
-                  backgroundColor: `${primaryTag.hashColor}14`,
-                  borderColor: `${primaryTag.hashColor}30`,
-                  color: primaryTag.hashColor,
-                }}
-              >
-                <span className='size-1 rounded-full shadow-[0_0_4px_currentColor]' style={{ background: primaryTag.hashColor }} />
-                {primaryTag.label}
-              </Link>
-            ) : null}
-          </div>
-          <h1 className='text-balance text-2xl font-bold leading-tight text-foreground md:text-3xl'>{post.title}</h1>
-          <div className='mt-6 whitespace-pre-wrap text-base leading-8 text-muted-foreground'>{post.body}</div>
-          <Separator className='my-6' />
-          <div className='flex flex-wrap items-center justify-between gap-3'>
-            <div className='flex flex-wrap items-center gap-3'>
+        <article className='celestia-card overflow-hidden'>
+          <div className='flex'>
+            <div className='flex min-w-[58px] flex-col items-center justify-start border-r border-border/70 bg-black/15 px-3 py-6'>
               <VoteButtons target='post' targetID={post.id} score={score} userVote={userVote} />
-              <span className='inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground'>
-                <MessageSquare className='size-4' />
-                {post.commentCount}
-              </span>
             </div>
-            <button type='button' className='inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-white/5 hover:text-foreground'>
-              <Share2 className='size-4' />
-              Share
-            </button>
+            <div className='min-w-0 flex-1 p-5 md:p-6'>
+              <div className='mb-4 flex flex-wrap items-center gap-2 text-sm text-muted-foreground'>
+                <UserAvatar user={author} size='sm' />
+                <span className='font-medium text-slate-300'>{author.displayName ?? author.username}</span>
+                <span className='text-muted-foreground/40'>·</span>
+                <span className='flex items-center gap-1 font-mono text-[11px]'>
+                  <Clock className='size-3' />
+                  {formatRelativeTime(post.createdAt)}
+                </span>
+                {primaryTag ? (
+                  <>
+                    <span className='text-muted-foreground/40'>·</span>
+                    <Link
+                      href={`/?tag=${encodeURIComponent(primaryTag.slug)}`}
+                      className='inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-xs font-semibold'
+                      style={{
+                        backgroundColor: `${primaryTag.hashColor}18`,
+                        borderColor: `${primaryTag.hashColor}38`,
+                        color: primaryTag.hashColor,
+                      }}
+                    >
+                      {primaryTag.label}
+                    </Link>
+                  </>
+                ) : null}
+              </div>
+              <h1 className='text-balance text-2xl font-bold leading-tight text-foreground md:text-3xl'>{post.title}</h1>
+              <div className='celestia-orbit-thumb mt-5 h-52 rounded-2xl border border-border/80' />
+              <div className='mt-6 whitespace-pre-wrap text-base leading-8 text-muted-foreground'>{post.body}</div>
+              <Separator className='my-6' />
+              <div className='flex flex-wrap items-center justify-between gap-3'>
+                <div className='flex flex-wrap items-center gap-3'>
+                  <span className='inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground'>
+                    <MessageSquare className='size-4' />
+                    {post.commentCount}
+                  </span>
+                  <button type='button' className='inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-white/5 hover:text-primary'>
+                    <Bookmark className='size-4' />
+                    Save
+                  </button>
+                </div>
+                <button type='button' className='inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-white/5 hover:text-foreground'>
+                  <Share2 className='size-4' />
+                  Share
+                </button>
+              </div>
+            </div>
           </div>
         </article>
 
-        <section className='mt-5 rounded-xl border border-border bg-card p-4 shadow-[0_0_34px_rgba(124,106,247,0.04)] md:p-6'>
+        <section className='celestia-card mt-5 p-4 md:p-6'>
           <div className='mb-4 flex flex-wrap items-center justify-between gap-3'>
             <h2 className='text-lg font-semibold'>{post.commentCount} Comments</h2>
           </div>
@@ -107,6 +118,33 @@ const Page = async ({ params }: Props) => {
           <CommentThread tree={commentTree} postAuthorId={post.authorId} sessionUser={sessionUser} />
         </section>
       </div>
+      <aside className='hidden xl:block'>
+        <div className='sticky top-20 space-y-4'>
+          <section className='celestia-card p-4'>
+            <h3 className='mb-3 flex items-center gap-2 text-xs font-semibold text-foreground'>
+              <Radio className='size-3 text-primary' />
+              Related Signals
+            </h3>
+            <div className='space-y-3 text-xs text-muted-foreground'>
+              <Link href='/?sort=hot' className='block rounded-xl bg-white/[0.025] p-3 leading-5 transition-colors hover:bg-white/[0.045] hover:text-foreground'>
+                Explore the highest velocity discussions in this orbit.
+              </Link>
+              <Link href='/' className='block rounded-xl bg-white/[0.025] p-3 leading-5 transition-colors hover:bg-white/[0.045] hover:text-foreground'>
+                Return to live signals from all communities.
+              </Link>
+            </div>
+          </section>
+          <section className='celestia-card p-4'>
+            <h3 className='mb-3 flex items-center gap-2 text-xs font-semibold text-foreground'>
+              <Users className='size-3 text-cyan-300' />
+              Community Pulse
+            </h3>
+            <p className='text-xs leading-6 text-muted-foreground'>
+              Keep replies threaded and specific. Deep discussions stay nested so context travels with every response.
+            </p>
+          </section>
+        </div>
+      </aside>
     </div>
   );
 };
