@@ -3,7 +3,8 @@ import Link from 'next/link';
 import { Input } from '../ui/input';
 import { cn } from '@/lib/utils';
 import { Button, buttonVariants } from '../ui/button';
-import { SignedIn, SignedOut, UserButton } from '@neondatabase/auth/react';
+import { SignedIn, SignedOut } from '@neondatabase/auth/react';
+import AccountMenu from '@/components/auth/account-menu';
 
 const Navbar = () => {
   return (
@@ -42,7 +43,7 @@ const Navbar = () => {
             <Bell className='size-5' />
             <span className='absolute right-2 top-2 size-1.5 rounded-full bg-primary shadow-[0_0_6px_rgba(124,106,247,0.8)]' />
           </Button>
-          <UserButton />
+          <AccountMenu />
         </SignedIn>
 
         <SignedOut>

@@ -1,4 +1,5 @@
 import { AuthView } from '@neondatabase/auth/react';
+import AuthMethods from '@/components/auth/auth-methods';
 import { Telescope } from 'lucide-react';
 import Link from 'next/link';
 
@@ -17,7 +18,13 @@ const AuthPage = async ({ params }: { params: Promise<{ pathname: string }> }) =
         </span>
       </Link>
       <div className='celestia-card w-full max-w-md p-6'>
-        <AuthView pathname={pathname} />
+        <AuthMethods />
+        <div className='my-6 flex items-center gap-3'>
+          <div className='h-px flex-1 bg-border' />
+          <span className='text-xs font-medium uppercase tracking-wide text-muted-foreground'>or</span>
+          <div className='h-px flex-1 bg-border' />
+        </div>
+        <AuthView pathname={pathname} redirectTo='/' />
       </div>
     </div>
   );
