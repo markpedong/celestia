@@ -1,7 +1,7 @@
 import { Post, Tag, User } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { UserAvatar } from '@neondatabase/auth/react';
-import { Bookmark, Clock, MessageSquare, Share2 } from 'lucide-react';
+import { Clock, MessageSquare, Share2 } from 'lucide-react';
 import Link from 'next/link';
 import { formatRelativeTime } from '@/lib/format';
 import VoteButtons from './vote-buttons';
@@ -72,9 +72,6 @@ const PostCard = ({ post, author, tagsBySlug, score, userVote }: Props) => {
             <button type='button' className='inline-flex items-center gap-1 transition-colors hover:text-primary'>
               <Share2 className='size-3.5' />
               Share
-            </button>
-            <button type='button' className='ml-auto inline-flex items-center gap-1 transition-colors hover:text-primary' aria-label='Bookmark post'>
-              <Bookmark className='size-3.5' />
             </button>
           </div>
         </div>

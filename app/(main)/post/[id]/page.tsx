@@ -6,7 +6,7 @@ import { getSessionUser } from '@/lib/auth';
 import { getAuthorByID, getCommentTree, getPostByID, getPostScore, getUserVote, listTags } from '@/lib/db/queries';
 import { formatRelativeTime } from '@/lib/format';
 import { UserAvatar } from '@neondatabase/auth/react';
-import { ArrowLeft, Bookmark, Clock, MessageSquare, Radio, Share2, Users } from 'lucide-react';
+import { ArrowLeft, Clock, MessageSquare, Radio, Share2, Users } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
@@ -86,10 +86,6 @@ const Page = async ({ params }: Props) => {
                     <MessageSquare className='size-4' />
                     {post.commentCount}
                   </span>
-                  <button type='button' className='inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground celestia-hover-surface hover:text-primary'>
-                    <Bookmark className='size-4' />
-                    Save
-                  </button>
                 </div>
                 <button type='button' className='inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground celestia-hover-surface'>
                   <Share2 className='size-4' />

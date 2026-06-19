@@ -3,7 +3,7 @@
 import type { TrendingItem } from '@/lib/trending';
 import type { SearchPostSuggestion, SearchTagSuggestion } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { Clock, Hash, Search, Sparkles, TrendingUp, X, Zap } from 'lucide-react';
+import { Clock, Hash, Search, TrendingUp, X, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { FormEvent, MouseEvent, ReactNode, useEffect, useMemo, useRef, useState } from 'react';
@@ -183,13 +183,6 @@ const SearchBox = ({ trending, communities }: Props) => {
           </button>
         ) : null}
         <span className='h-6 w-px bg-border/80' aria-hidden />
-        <Link
-          href='/submit'
-          className='flex h-full shrink-0 items-center gap-1.5 px-3 font-semibold text-foreground transition-colors hover:text-primary'
-        >
-          <Sparkles className='size-4 text-primary' />
-          Ask
-        </Link>
       </form>
 
       {isOpen ? (
@@ -197,29 +190,31 @@ const SearchBox = ({ trending, communities }: Props) => {
           {!trimmedQuery ? (
             <div className='max-h-[min(72vh,720px)] overflow-y-auto'>
               <SearchSection title='Recent'>
-                {recentSearches.length ? recentSearches.map(term => (
-                  <div
-                    key={term}
-                    className='flex items-center gap-4 px-5 py-3 text-[15px] text-popover-foreground celestia-hover-surface'
-                  >
-                    <button
-                      type='button'
-                      onClick={() => runSearch(term)}
-                      className='flex min-w-0 flex-1 items-center gap-4 text-left'
+                {recentSearches.length ? (
+                  recentSearches.map(term => (
+                    <div
+                      key={term}
+                      className='flex items-center gap-4 px-5 py-3 text-[15px] text-popover-foreground celestia-hover-surface'
                     >
-                      <Clock className='size-5 shrink-0 text-muted-foreground' />
-                      <span className='min-w-0 flex-1 truncate'>{term}</span>
-                    </button>
-                    <button
-                      type='button'
-                      onClick={event => removeRecentSearch(event, term)}
-                      className='grid size-7 place-items-center text-muted-foreground transition-colors hover:text-foreground'
-                      aria-label={`Remove ${term} from recent searches`}
-                    >
-                      <X className='size-4' />
-                    </button>
-                  </div>
-                )) : (
+                      <button
+                        type='button'
+                        onClick={() => runSearch(term)}
+                        className='flex min-w-0 flex-1 items-center gap-4 text-left'
+                      >
+                        <Clock className='size-5 shrink-0 text-muted-foreground' />
+                        <span className='min-w-0 flex-1 truncate'>{term}</span>
+                      </button>
+                      <button
+                        type='button'
+                        onClick={event => removeRecentSearch(event, term)}
+                        className='grid size-7 place-items-center text-muted-foreground transition-colors hover:text-foreground'
+                        aria-label={`Remove ${term} from recent searches`}
+                      >
+                        <X className='size-4' />
+                      </button>
+                    </div>
+                  ))
+                ) : (
                   <p className='px-5 py-3 text-sm text-muted-foreground'>No recent searches yet.</p>
                 )}
               </SearchSection>
@@ -235,7 +230,9 @@ const SearchBox = ({ trending, communities }: Props) => {
                     <TrendingUp className='size-5 shrink-0 text-popover-foreground' />
                     <span className='min-w-0'>
                       <span className='block truncate text-[15px] text-popover-foreground'>{item.title}</span>
-                      <span className='block truncate text-xs text-muted-foreground'>Based on what people are discussing</span>
+                      <span className='block truncate text-xs text-muted-foreground'>
+                        Based on what people are discussing
+                      </span>
                     </span>
                   </button>
                 ))}
@@ -257,7 +254,9 @@ const SearchBox = ({ trending, communities }: Props) => {
                     </span>
                     <span className='min-w-0'>
                       <span className='block truncate text-[15px] text-popover-foreground'>r/{community.slug}</span>
-                      <span className='block truncate text-xs text-muted-foreground'>{community.postCount} posts in this topic</span>
+                      <span className='block truncate text-xs text-muted-foreground'>
+                        {community.postCount} posts in this topic
+                      </span>
                     </span>
                   </Link>
                 ))}
@@ -298,7 +297,9 @@ const SearchBox = ({ trending, communities }: Props) => {
                     </span>
                     <span className='min-w-0'>
                       <span className='block truncate text-[15px] text-popover-foreground'>r/{tag.slug}</span>
-                      <span className='block truncate text-xs text-muted-foreground'>{tag.postCount} posts in this topic</span>
+                      <span className='block truncate text-xs text-muted-foreground'>
+                        {tag.postCount} posts in this topic
+                      </span>
                     </span>
                   </Link>
                 ))}
@@ -314,7 +315,9 @@ const SearchBox = ({ trending, communities }: Props) => {
                   >
                     <Hash className='mt-0.5 size-5 shrink-0 text-popover-foreground' />
                     <span className='min-w-0'>
-                      <span className='block truncate text-[15px] font-semibold text-popover-foreground'>{post.title}</span>
+                      <span className='block truncate text-[15px] font-semibold text-popover-foreground'>
+                        {post.title}
+                      </span>
                       <span className='block truncate text-xs text-muted-foreground'>{getSnippet(post.body)}</span>
                     </span>
                   </Link>

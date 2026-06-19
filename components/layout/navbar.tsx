@@ -1,7 +1,7 @@
-import { Activity, Bell, Plus, Zap } from 'lucide-react';
+import { Plus, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { Button, buttonVariants } from '../ui/button';
+import { buttonVariants } from '../ui/button';
 import { SignedIn, SignedOut } from '@neondatabase/auth/react';
 import AccountMenu from '@/components/auth/account-menu';
 import SearchBox from './search-box';
@@ -16,7 +16,7 @@ type Props = {
 const Navbar = ({ trending, communities }: Props) => {
   return (
     <header className='celestia-nav-shadow sticky top-0 z-50 border-b border-border/80 bg-background/88 backdrop-blur-xl'>
-      <div className='mx-auto flex h-14 max-w-320 items-center gap-3 px-4'>
+      <div className='mx-auto flex h-14 max-w-7xl  items-center gap-3 px-4'>
         <Link href='/' className='group flex shrink-0 items-center gap-2 font-semibold tracking-tight text-foreground'>
           <span className='celestia-brand-mark size-8'>
             <Zap className='size-4 fill-current' aria-hidden />
@@ -38,18 +38,6 @@ const Navbar = ({ trending, communities }: Props) => {
               <Plus className='size-3.5' />
               New Post
             </Link>
-
-            <Button asChild variant='ghost' size='icon' className='hidden rounded-xl border border-border bg-secondary/60 text-muted-foreground hover:bg-muted hover:text-accent sm:inline-flex' aria-label='Activity'>
-              <Link href='/profile'>
-                <Activity className='size-4' />
-              </Link>
-            </Button>
-            <Button asChild variant='ghost' size='icon' className='relative rounded-xl border border-border bg-secondary/60 text-muted-foreground hover:bg-muted hover:text-primary' aria-label='Notifications'>
-              <Link href='/profile'>
-                <Bell className='size-5' />
-                <span className='absolute right-2 top-2 size-1.5 rounded-full bg-primary shadow-[0_0_6px] shadow-primary/40' />
-              </Link>
-            </Button>
             <AccountMenu />
           </div>
         </SignedIn>
@@ -61,10 +49,7 @@ const Navbar = ({ trending, communities }: Props) => {
             </Link>
             <Link
               href={'/auth/sign-up'}
-              className={cn(
-                buttonVariants({ variant: 'default' }),
-                'celestia-primary-action'
-              )}
+              className={cn(buttonVariants({ variant: 'default' }), 'celestia-primary-action')}
             >
               Join
             </Link>
