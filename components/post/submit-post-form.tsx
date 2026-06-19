@@ -13,7 +13,7 @@ export function SubmitPostForm() {
   return (
     <form action={action} className='celestia-card space-y-4 p-4 md:p-5'>
       <div className='space-y-2'>
-        <Label htmlFor='title' className='text-sm text-slate-200'>Post title</Label>
+        <Label htmlFor='title' className='text-sm text-card-foreground'>Post title</Label>
         <Input
           id='title'
           name='title'
@@ -25,7 +25,7 @@ export function SubmitPostForm() {
         />
       </div>
       <div className='space-y-2'>
-        <Label htmlFor='body' className='text-sm text-slate-200'>Body</Label>
+        <Label htmlFor='body' className='text-sm text-card-foreground'>Body</Label>
         <Textarea
           id='body'
           name='body'
@@ -35,7 +35,7 @@ export function SubmitPostForm() {
         />
       </div>
       <div className='space-y-2'>
-        <Label htmlFor='tags' className='text-sm text-slate-200'>Topics</Label>
+        <Label htmlFor='tags' className='text-sm text-card-foreground'>Topics</Label>
         <Input
           id='tags'
           name='tags'
@@ -46,12 +46,12 @@ export function SubmitPostForm() {
       </div>
 
       <div className='grid gap-3 sm:grid-cols-2'>
-        <button type='button' className='flex items-center justify-center gap-2 rounded-xl border border-border bg-secondary/60 px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-white/5 hover:text-foreground'>
+        <button type='button' className='flex items-center justify-center gap-2 rounded-xl border border-border bg-secondary/60 px-3 py-2 text-sm text-muted-foreground celestia-hover-surface'>
           <ImageIcon className='size-4 text-primary' />
           Add image
         </button>
-        <button type='button' className='flex items-center justify-center gap-2 rounded-xl border border-border bg-secondary/60 px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-white/5 hover:text-foreground'>
-          <Link2 className='size-4 text-cyan-300' />
+        <button type='button' className='flex items-center justify-center gap-2 rounded-xl border border-border bg-secondary/60 px-3 py-2 text-sm text-muted-foreground celestia-hover-surface'>
+          <Link2 className='size-4 text-accent' />
           Attach link
         </button>
       </div>

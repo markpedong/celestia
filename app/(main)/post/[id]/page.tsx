@@ -45,13 +45,13 @@ const Page = async ({ params }: Props) => {
 
         <article className='celestia-card overflow-hidden'>
           <div className='flex'>
-            <div className='flex min-w-[58px] flex-col items-center justify-start border-r border-border/70 bg-black/15 px-3 py-6'>
+            <div className='celestia-vote-rail flex min-w-[58px] flex-col items-center justify-start border-r border-border/70 px-3 py-6'>
               <VoteButtons target='post' targetID={post.id} score={score} userVote={userVote} />
             </div>
             <div className='min-w-0 flex-1 p-5 md:p-6'>
               <div className='mb-4 flex flex-wrap items-center gap-2 text-sm text-muted-foreground'>
                 <UserAvatar user={author} size='sm' />
-                <span className='font-medium text-slate-300'>{author.displayName ?? author.username}</span>
+                <span className='font-medium text-card-foreground'>{author.displayName ?? author.username}</span>
                 <span className='text-muted-foreground/40'>·</span>
                 <span className='flex items-center gap-1 font-mono text-[11px]'>
                   <Clock className='size-3' />
@@ -84,12 +84,12 @@ const Page = async ({ params }: Props) => {
                     <MessageSquare className='size-4' />
                     {post.commentCount}
                   </span>
-                  <button type='button' className='inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-white/5 hover:text-primary'>
+                  <button type='button' className='inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground celestia-hover-surface hover:text-primary'>
                     <Bookmark className='size-4' />
                     Save
                   </button>
                 </div>
-                <button type='button' className='inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-white/5 hover:text-foreground'>
+                <button type='button' className='inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground celestia-hover-surface'>
                   <Share2 className='size-4' />
                   Share
                 </button>
@@ -126,17 +126,17 @@ const Page = async ({ params }: Props) => {
               Related Posts
             </h3>
             <div className='space-y-3 text-xs text-muted-foreground'>
-              <Link href='/?sort=hot' className='block rounded-xl bg-white/[0.025] p-3 leading-5 transition-colors hover:bg-white/[0.045] hover:text-foreground'>
+              <Link href='/?sort=hot' className='celestia-hover-surface block rounded-xl bg-muted/40 p-3 leading-5'>
                 Explore the most active discussions right now.
               </Link>
-              <Link href='/' className='block rounded-xl bg-white/[0.025] p-3 leading-5 transition-colors hover:bg-white/[0.045] hover:text-foreground'>
+              <Link href='/' className='celestia-hover-surface block rounded-xl bg-muted/40 p-3 leading-5'>
                 Return to the latest posts from all communities.
               </Link>
             </div>
           </section>
           <section className='celestia-card p-4'>
             <h3 className='mb-3 flex items-center gap-2 text-xs font-semibold text-foreground'>
-              <Users className='size-3 text-cyan-300' />
+              <Users className='size-3 text-accent' />
               Community Pulse
             </h3>
             <p className='text-xs leading-6 text-muted-foreground'>

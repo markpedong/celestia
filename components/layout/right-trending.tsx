@@ -4,7 +4,7 @@ import { Flame, Minus, Sparkles, TrendingUp, Users } from 'lucide-react';
 
 const MomentumIcon = ({ index }: { index: number }) => {
   if (index === 0) return <Flame className='size-3 text-amber-400' />;
-  if (index === 1) return <TrendingUp className='size-3 text-emerald-400' />;
+  if (index === 1) return <TrendingUp className='size-3 text-success' />;
   if (index === 2) return <Sparkles className='size-3 text-primary' />;
   return <Minus className='size-3 text-muted-foreground' />;
 };
@@ -19,10 +19,10 @@ export function RightTrending({ items }: { items: TrendingItem[] }) {
       </h3>
       <div className='space-y-2'>
         {items.map((t, index) => (
-          <div key={t.rank} className='group flex items-center gap-2.5 rounded-xl px-2 py-2 text-sm transition-colors hover:bg-white/5'>
+          <div key={t.rank} className='group flex items-center gap-2.5 rounded-xl px-2 py-2 text-sm celestia-hover-surface'>
             <span className='w-4 shrink-0 text-right font-mono text-[10px] text-muted-foreground/60'>{t.rank}</span>
             <div className='min-w-0 flex-1'>
-              <p className='truncate text-sm font-medium leading-snug text-card-foreground transition-colors group-hover:text-white'>
+              <p className='truncate text-sm font-medium leading-snug text-card-foreground transition-colors group-hover:text-foreground'>
                 {t.title}
               </p>
               <p className='font-mono text-[11px] text-muted-foreground'>{t.postCount} posts</p>
@@ -37,7 +37,7 @@ export function RightTrending({ items }: { items: TrendingItem[] }) {
     </section>
     <section className='celestia-card p-4'>
       <h3 className='mb-3 flex items-center gap-2 text-xs font-semibold text-foreground'>
-        <span className='size-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.9)]' />
+        <span className='size-1.5 rounded-full bg-success shadow-[0_0_6px] shadow-success/40' />
         Active Now
       </h3>
       <div className='flex items-center'>
@@ -55,7 +55,7 @@ export function RightTrending({ items }: { items: TrendingItem[] }) {
     </section>
     <section className='celestia-card p-4'>
       <h3 className='mb-3 flex items-center gap-2 text-xs font-semibold text-foreground'>
-        <Users className='size-3 text-cyan-300' />
+        <Users className='size-3 text-accent' />
         Top Communities
       </h3>
       <div className='space-y-2.5'>

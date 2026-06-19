@@ -48,18 +48,63 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
-  --color-upvote: #7c6af7;
-  --color-downvote: #f87171;
-  --color-success: #34d399;
-  --color-error: #f87171;
-  --color-tag-bg: rgba(124, 106, 247, 0.12);
-  --color-tag-text: #a5b4fc;
-  --color-surface: #0c1020;
-  --color-surface-elevated: #111827;
-  --color-orbit: #4fc3f7;
+  --color-upvote: var(--upvote);
+  --color-downvote: var(--downvote);
+  --color-success: var(--success);
+  --color-error: var(--error);
+  --color-tag-bg: var(--tag-bg);
+  --color-tag-text: var(--tag-text);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-orbit: var(--orbit);
 }
 
 :root,
+.light {
+  --background: #f7f9fc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #1e293b;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #7c3aed;
+  --primary-hover: #6d28d9;
+  --primary-foreground: #ffffff;
+  --secondary: #eef2f7;
+  --secondary-foreground: #334155;
+  --muted: #eef2f7;
+  --muted-foreground: #64748b;
+  --accent: #0891b2;
+  --accent-foreground: #ffffff;
+  --destructive: #dc2626;
+  --border: rgba(15, 23, 42, 0.12);
+  --input: rgba(226, 232, 240, 0.9);
+  --ring: #7c3aed;
+  --chart-1: #7c3aed;
+  --chart-2: #0891b2;
+  --chart-3: #059669;
+  --chart-4: #d97706;
+  --chart-5: #dc2626;
+  --upvote: #6d28d9;
+  --downvote: #dc2626;
+  --success: #059669;
+  --error: #dc2626;
+  --tag-bg: rgba(124, 58, 237, 0.1);
+  --tag-text: #6d28d9;
+  --surface: #f8fafc;
+  --surface-elevated: #ffffff;
+  --orbit: #0891b2;
+  --radius: 0.875rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1e293b;
+  --sidebar-primary: #7c3aed;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgba(124, 58, 237, 0.1);
+  --sidebar-accent-foreground: #6d28d9;
+  --sidebar-border: rgba(15, 23, 42, 0.08);
+  --sidebar-ring: rgba(124, 58, 237, 0.45);
+}
+
 .dark {
   --background: #050814;
   --foreground: #f1f5f9;
@@ -85,6 +130,15 @@
   --chart-3: #34d399;
   --chart-4: #f59e0b;
   --chart-5: #f87171;
+  --upvote: #7c6af7;
+  --downvote: #f87171;
+  --success: #34d399;
+  --error: #f87171;
+  --tag-bg: rgba(124, 106, 247, 0.12);
+  --tag-text: #a5b4fc;
+  --surface: #0c1020;
+  --surface-elevated: #111827;
+  --orbit: #4fc3f7;
   --radius: 0.875rem;
   --sidebar: #0b1020;
   --sidebar-foreground: #e2e8f0;

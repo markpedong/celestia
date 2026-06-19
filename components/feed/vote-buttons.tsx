@@ -45,7 +45,7 @@ const VoteButtons = ({ target, targetID, score, userVote }: Props) => {
         onClick={() => vote(1)}
         disabled={pending}
         className={cn(
-          'flex items-center rounded-lg transition-all hover:scale-110 hover:bg-white/5 disabled:opacity-50',
+          'flex items-center rounded-lg transition-all hover:scale-110 hover:bg-muted disabled:opacity-50',
           buttonClass,
           userVote === 1 ? 'text-upvote' : 'text-muted-foreground hover:text-upvote'
         )}
@@ -60,7 +60,7 @@ const VoteButtons = ({ target, targetID, score, userVote }: Props) => {
         onClick={() => vote(-1)}
         disabled={pending}
         className={cn(
-          'flex items-center rounded-lg transition-all hover:scale-110 hover:bg-white/5 disabled:opacity-50',
+          'flex items-center rounded-lg transition-all hover:scale-110 hover:bg-muted disabled:opacity-50',
           buttonClass,
           userVote === -1 ? 'text-downvote' : 'text-muted-foreground hover:text-downvote'
         )}

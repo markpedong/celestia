@@ -23,7 +23,7 @@ export function CommentNode({
 
   return (
     <li className='relative'>
-      <div className='rounded-2xl border border-border bg-secondary/35 p-4 shadow-[0_0_24px_rgba(0,0,0,0.16)]'>
+      <div className='rounded-2xl border border-border bg-secondary/35 p-4 shadow-lg shadow-foreground/5'>
         <div className='mb-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground'>
             <span className='font-medium text-muted-foreground'>{node.author.displayName ?? node.author.username}</span>
             {isOp ? (
@@ -37,20 +37,20 @@ export function CommentNode({
               {formatRelativeTime(node.createdAt)}
             </span>
           </div>
-          <p className='whitespace-pre-wrap text-sm leading-7 text-slate-200'>{node.body}</p>
+          <p className='whitespace-pre-wrap text-sm leading-7 text-card-foreground'>{node.body}</p>
           <div className='mt-3 flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground'>
             <VoteButtons target='comment' targetID={node.id} score={node.score} userVote={node.userVote} />
             {sessionUser ? (
               <button
                 type='button'
                 onClick={() => setShowReply(v => !v)}
-                className='inline-flex items-center gap-1 rounded-lg px-2 py-1 transition-colors hover:bg-white/5 hover:text-foreground'
+                className='inline-flex items-center gap-1 rounded-lg px-2 py-1 celestia-hover-surface'
               >
                 <CornerDownRight className='size-3' />
                 Reply
               </button>
             ) : null}
-            <button type='button' className='inline-flex items-center gap-1 rounded-lg px-2 py-1 transition-colors hover:bg-white/5 hover:text-foreground'>
+            <button type='button' className='inline-flex items-center gap-1 rounded-lg px-2 py-1 celestia-hover-surface'>
               <Share2 className='size-3' />
               Share
             </button>

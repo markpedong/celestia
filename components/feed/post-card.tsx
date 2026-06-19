@@ -26,14 +26,14 @@ const PostCard = ({ post, author, tagsBySlug, score, userVote }: Props) => {
 
   return (
     <article className='celestia-card celestia-card-hover group flex overflow-hidden last:mb-7'>
-      <div className='flex min-w-[52px] flex-col items-center justify-center border-r border-border/60 bg-black/15 px-3 py-4'>
+      <div className='celestia-vote-rail flex min-w-[52px] flex-col items-center justify-center border-r border-border/60 px-3 py-4'>
         <VoteButtons target='post' targetID={post.id} score={score} userVote={userVote} />
       </div>
       <div className='flex min-w-0 flex-1 gap-4 p-4'>
         <div className='min-w-0 flex-1'>
           <div className='mb-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground'>
             <UserAvatar user={author} size='sm' />
-            <Link href={`/post/${post.id}`} className='truncate text-xs font-medium text-slate-300 hover:text-foreground'>
+            <Link href={`/post/${post.id}`} className='truncate text-xs font-medium text-card-foreground hover:text-foreground'>
               {author.displayName ?? author.username}
             </Link>
             <span className='text-muted-foreground/40'>·</span>
@@ -59,13 +59,13 @@ const PostCard = ({ post, author, tagsBySlug, score, userVote }: Props) => {
             ) : null}
           </div>
           <Link href={`/post/${post.id}`} className='block'>
-            <h2 className='text-[15px] font-semibold leading-snug text-foreground transition-colors group-hover:text-violet-100'>
+            <h2 className='text-[15px] font-semibold leading-snug text-foreground transition-colors group-hover:text-primary'>
               {post.title}
             </h2>
             <p className='mt-2 line-clamp-2 text-sm leading-relaxed text-muted-foreground'>{snippet(post.body)}</p>
           </Link>
           <div className='mt-3 flex items-center gap-3 text-xs font-medium text-muted-foreground'>
-            <Link href={`/post/${post.id}`} className='inline-flex items-center gap-1 transition-colors hover:text-cyan-300'>
+            <Link href={`/post/${post.id}`} className='inline-flex items-center gap-1 transition-colors hover:text-accent'>
               <MessageSquare className='size-3.5' />
               {post.commentCount}
             </Link>
@@ -80,7 +80,7 @@ const PostCard = ({ post, author, tagsBySlug, score, userVote }: Props) => {
         </div>
         <Link
           href={`/post/${post.id}`}
-          className='celestia-orbit-thumb hidden h-20 w-28 shrink-0 self-center rounded-xl border border-border/80 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)] sm:block'
+          className='celestia-orbit-thumb hidden h-20 w-28 shrink-0 self-center rounded-xl border border-border/80 shadow-inner sm:block'
           aria-label={post.title}
         />
       </div>

@@ -1,14 +1,21 @@
-import { Activity, Bell, Plus, Search, Zap } from 'lucide-react';
+import { Activity, Bell, Plus, Zap } from 'lucide-react';
 import Link from 'next/link';
-import { Input } from '../ui/input';
 import { cn } from '@/lib/utils';
 import { Button, buttonVariants } from '../ui/button';
 import { SignedIn, SignedOut } from '@neondatabase/auth/react';
 import AccountMenu from '@/components/auth/account-menu';
+import SearchBox from './search-box';
+import type { TrendingItem } from '@/lib/trending';
+import type { SearchTagSuggestion } from '@/lib/types';
 
-const Navbar = () => {
+type Props = {
+  trending: TrendingItem[];
+  communities: SearchTagSuggestion[];
+};
+
+const Navbar = ({ trending, communities }: Props) => {
   return (
-    <header className='sticky top-0 z-50 border-b border-border/80 bg-background/88 shadow-[0_1px_40px_rgba(0,0,0,0.32)] backdrop-blur-xl'>
+    <header className='celestia-nav-shadow sticky top-0 z-50 border-b border-border/80 bg-background/88 backdrop-blur-xl'>
       <div className='mx-auto flex h-14 max-w-320 items-center gap-3 px-4'>
         <Link href='/' className='group flex shrink-0 items-center gap-2 font-semibold tracking-tight text-foreground'>
           <span className='celestia-brand-mark size-8'>
@@ -17,15 +24,7 @@ const Navbar = () => {
           <span className='hidden text-lg font-bold tracking-wide sm:inline'>Celestia</span>
         </Link>
 
-        <div className='relative mx-auto max-w-xl flex-1'>
-          <Search className='pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground' />
-          <Input
-            readOnly
-            placeholder='Search posts, topics, people...'
-            className='h-9 w-full rounded-xl border-border bg-secondary/80 pl-10 pr-4 text-sm shadow-inner focus-visible:border-primary/50 focus-visible:ring-primary/20'
-            aria-label='Search posts'
-          />
-        </div>
+        <SearchBox trending={trending} communities={communities} />
 
         <SignedIn>
           <Link
@@ -39,12 +38,12 @@ const Navbar = () => {
             New Post
           </Link>
 
-          <Button variant='ghost' size='icon' className='hidden rounded-xl border border-border bg-secondary/60 text-muted-foreground hover:bg-white/5 hover:text-cyan-300 sm:inline-flex' aria-label='Activity'>
+          <Button variant='ghost' size='icon' className='hidden rounded-xl border border-border bg-secondary/60 text-muted-foreground hover:bg-muted hover:text-accent sm:inline-flex' aria-label='Activity'>
             <Activity className='size-4' />
           </Button>
-          <Button variant='ghost' size='icon' className='relative rounded-xl border border-border bg-secondary/60 text-muted-foreground hover:bg-white/5 hover:text-primary' aria-label='Notifications'>
+          <Button variant='ghost' size='icon' className='relative rounded-xl border border-border bg-secondary/60 text-muted-foreground hover:bg-muted hover:text-primary' aria-label='Notifications'>
             <Bell className='size-5' />
-            <span className='absolute right-2 top-2 size-1.5 rounded-full bg-primary shadow-[0_0_6px_rgba(124,106,247,0.8)]' />
+            <span className='absolute right-2 top-2 size-1.5 rounded-full bg-primary shadow-[0_0_6px] shadow-primary/40' />
           </Button>
           <AccountMenu />
         </SignedIn>

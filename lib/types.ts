@@ -33,3 +33,14 @@ export type Comment = {
 export type FeedSort = "hot" | "new" | "top";
 
 export type VoteTarget = "post" | "comment";
+
+export type SearchPostSuggestion = {
+  id: string;
+  title: string;
+  body: string;
+  tagSlugs: string[];
+};
+
+export type SearchTagSuggestion = Tag & {
+  postCount: number;
+};

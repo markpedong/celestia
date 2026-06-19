@@ -1,7 +1,8 @@
 import { EnrichedCommentNode, nestCommentRows } from "../comment-tree";
+import { Prisma } from "../generated/prisma/client";
 import { PostModel } from "../generated/prisma/models";
 import { prisma } from "../prisma";
-import { Comment, FeedSort, Post, Tag, User, VoteTarget } from "../types";
+import { Comment, FeedSort, Post, SearchPostSuggestion, SearchTagSuggestion, Tag, User, VoteTarget } from "../types";
 
 export const batchAuthorsForIds = async (authorIds: string[]): Promise<Map<string, User>> => {
   const unique = [...new Set(authorIds)];
@@ -32,8 +33,36 @@ export type FeedPostRow = {
   userVote: -1 | 0 | 1
 }
 
-export const listPostSorted = async (sort: FeedSort, tagFilter: string, userId: string | undefined) => {
-  const where = tagFilter ? { postTags: { some: { tagSlug: tagFilter.toLowerCase() } } } : undefined;
+const buildPostSearchWhere = (searchQuery: string): Prisma.PostWhereInput | undefined => {
+  const term = searchQuery.trim();
+  if (!term) return undefined;
+
+  return {
+    OR: [
+      { title: { contains: term, mode: 'insensitive' } },
+      { body: { contains: term, mode: 'insensitive' } },
+      {
+        postTags: {
+          some: {
+            OR: [
+              { tagSlug: { contains: term.toLowerCase(), mode: 'insensitive' } },
+              { tag: { label: { contains: term, mode: 'insensitive' } } },
+            ],
+          },
+        },
+      },
+    ],
+  };
+};
+
+export const listPostSorted = async (sort: FeedSort, tagFilter: string, userId: string | undefined, searchQuery = '') => {
+  const filters: Prisma.PostWhereInput[] = [];
+  if (tagFilter) filters.push({ postTags: { some: { tagSlug: tagFilter.toLowerCase() } } });
+
+  const searchWhere = buildPostSearchWhere(searchQuery);
+  if (searchWhere) filters.push(searchWhere);
+
+  const where: Prisma.PostWhereInput | undefined = filters.length ? { AND: filters } : undefined;
   const postRows = await prisma.post.findMany({ where, orderBy: { createdAt: "desc" }, take: 50 })
   const ids = postRows.map((row) => row.id);
 
@@ -117,6 +146,58 @@ export const listTags = async (): Promise<Tag[]> => {
     hashColor: t.hashColor,
   }));
 }
+
+export const searchSuggestions = async (searchQuery: string): Promise<{
+  posts: SearchPostSuggestion[];
+  tags: SearchTagSuggestion[];
+}> => {
+  const term = searchQuery.trim().slice(0, 80);
+  if (!term) return { posts: [], tags: [] };
+
+  const [posts, tags] = await Promise.all([
+    prisma.post.findMany({
+      where: buildPostSearchWhere(term),
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+    }),
+    prisma.tag.findMany({
+      where: {
+        OR: [
+          { slug: { contains: term.toLowerCase(), mode: 'insensitive' } },
+          { label: { contains: term, mode: 'insensitive' } },
+        ],
+      },
+      orderBy: { slug: 'asc' },
+      take: 5,
+    }),
+  ]);
+
+  const [tagMap, tagCounts] = await Promise.all([
+    tagsForPosts(posts.map(post => post.id)),
+    prisma.postTag.groupBy({
+      by: ['tagSlug'],
+      where: { tagSlug: { in: tags.map(tag => tag.slug) } },
+      _count: { _all: true },
+    }),
+  ]);
+
+  const countMap = new Map(tagCounts.map(row => [row.tagSlug, row._count._all]));
+
+  return {
+    posts: posts.map(post => ({
+      id: post.id,
+      title: post.title,
+      body: post.body,
+      tagSlugs: tagMap.get(post.id) ?? [],
+    })),
+    tags: tags.map(tag => ({
+      slug: tag.slug,
+      label: tag.label,
+      hashColor: tag.hashColor,
+      postCount: countMap.get(tag.slug) ?? 0,
+    })),
+  };
+};
 
 const tagsForPosts = async (postIds: string[]): Promise<Map<string, string[]>> => {
   const m = new Map<string, string[]>();

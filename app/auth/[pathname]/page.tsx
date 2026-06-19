@@ -17,7 +17,7 @@ const AuthPage = async ({ params }: { params: Promise<{ pathname: string }> }) =
           {pathname === 'sign-up' ? 'Create your account to participate' : 'Sign in to continue the conversation'}
         </span>
       </Link>
-      <div className='celestia-card w-full max-w-md p-6 shadow-[0_0_60px_rgba(139,92,246,0.12)]'>
+      <div className='celestia-card w-full max-w-md p-6 shadow-2xl shadow-primary/10'>
         <AuthMethods />
         <div className='my-6 flex items-center gap-3'>
           <div className='h-px flex-1 bg-border' />
