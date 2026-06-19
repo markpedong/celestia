@@ -6,6 +6,9 @@ import { formatCount, formatRelativeTime } from '@/lib/format';
 import { AtSign, CakeSlice, MessageSquare, Plus, Shield, Trophy } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import Image from 'next/image';
+import { UserAvatar } from '@/components/ui/user-avatar';
+import { ProfileMediaEditor } from '@/components/profile/profile-media-editor';
 
 type Props = {
   params: Promise<{ username: string }>;
@@ -41,13 +44,15 @@ export default async function UserPage({ params }: Props) {
     <div className='grid gap-6 xl:grid-cols-[minmax(0,1fr)_18rem]'>
       <div className='min-w-0'>
         <section className='celestia-card mb-4 overflow-hidden'>
-          <div className='h-24 border-b border-border/70 bg-[linear-gradient(135deg,var(--primary),var(--accent))]' />
+          <div className='relative h-28 overflow-hidden border-b border-border/70 bg-[linear-gradient(135deg,var(--primary),var(--accent))]'>
+            {profile.coverUrl ? (
+              <Image src={profile.coverUrl} alt='' fill unoptimized sizes='(max-width: 1280px) 100vw, 900px' className='object-cover' />
+            ) : null}
+          </div>
           <div className='px-5 pb-5'>
             <div className='flex flex-wrap items-end justify-between gap-4'>
               <div className='-mt-8 flex min-w-0 items-end gap-3'>
-                <span className='grid size-16 shrink-0 place-items-center rounded-full border-4 border-card bg-primary text-2xl font-black text-primary-foreground shadow-lg'>
-                  {profile.username.slice(0, 1).toUpperCase()}
-                </span>
+                <UserAvatar user={author} size='lg' className='size-16 border-4 border-card shadow-lg' />
                 <div className='min-w-0 pb-1'>
                   <p className='text-sm font-semibold text-muted-foreground'>u/{profile.username}</p>
                   <h1 className='truncate text-2xl font-bold tracking-tight text-foreground'>
@@ -76,6 +81,7 @@ export default async function UserPage({ params }: Props) {
               <Stat label='Posts' value={formatCount(stats.postCount)} />
               <Stat label='Comments' value={formatCount(stats.commentCount)} />
             </div>
+            {isSelf ? <ProfileMediaEditor className='mt-4' /> : null}
           </div>
         </section>
 

@@ -27,7 +27,8 @@ export const ensureUserProfile = async (neon: {
       id: existing.id,
       username: existing.username,
       displayName: neon.name,
-      avatarUrl: neon.image ?? undefined,
+      avatarUrl: existing.avatarUrl ?? neon.image ?? undefined,
+      coverUrl: existing.coverUrl ?? undefined,
     };
   }
 

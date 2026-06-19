@@ -15,6 +15,8 @@ datasource db {
 model UserProfile {
   id        String   @id
   username  String   @unique
+  avatarUrl String?  @map("avatar_url")
+  coverUrl  String?  @map("cover_url")
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   @@map("user_profiles")
@@ -25,6 +27,7 @@ model Post {
   authorId  String   @map("author_id")
   title     String
   body      String
+  imageUrl  String?  @map("image_url")
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   postTags PostTag[]

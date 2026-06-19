@@ -28,7 +28,12 @@ export const batchAuthorsForIds = async (authorIds: string[]): Promise<Map<strin
   const result = new Map<string, User>();
 
   for (const row of rows) {
-    result.set(row.id, { id: row.id, username: row.username });
+    result.set(row.id, {
+      id: row.id,
+      username: row.username,
+      avatarUrl: row.avatarUrl ?? undefined,
+      coverUrl: row.coverUrl ?? undefined,
+    });
   }
 
   for (const id of unique) {
@@ -290,6 +295,7 @@ const mapPostRow = (row: PostModel, tagSlugs: string[], commentCount: number): P
     authorId: row.authorId,
     title: row.title,
     body: row.body,
+    imageUrl: row.imageUrl ?? undefined,
     tagSlugs,
     createdAt: row.createdAt.toISOString(),
     commentCount,
@@ -330,14 +336,26 @@ export const getPostByID = async (id: string): Promise<Post | undefined> => {
 export const getAuthorByID = async (authorID: string): Promise<User> => {
   const row = await prisma.userProfile.findUnique({ where: { id: authorID } });
   return row
-    ? { id: row.id, username: row.username, createdAt: row.createdAt.toISOString() }
+    ? {
+      id: row.id,
+      username: row.username,
+      avatarUrl: row.avatarUrl ?? undefined,
+      coverUrl: row.coverUrl ?? undefined,
+      createdAt: row.createdAt.toISOString(),
+    }
     : fallbackUserForId(authorID);
 }
 
 export const getUserByUsername = async (username: string): Promise<User | undefined> => {
   const row = await prisma.userProfile.findUnique({ where: { username } });
   if (row) {
-    return { id: row.id, username: row.username, createdAt: row.createdAt.toISOString() };
+    return {
+      id: row.id,
+      username: row.username,
+      avatarUrl: row.avatarUrl ?? undefined,
+      coverUrl: row.coverUrl ?? undefined,
+      createdAt: row.createdAt.toISOString(),
+    };
   }
 
   const [postAuthors, commentAuthors] = await Promise.all([

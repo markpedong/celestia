@@ -1,10 +1,11 @@
 import { Post, Tag, User } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { UserAvatar } from '@neondatabase/auth/react';
 import { Clock, MessageSquare, Share2 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { formatRelativeTime } from '@/lib/format';
 import VoteButtons from './vote-buttons';
+import { UserAvatar } from '@/components/ui/user-avatar';
 
 type Props = {
   post: Post;
@@ -77,9 +78,16 @@ const PostCard = ({ post, author, tagsBySlug, score, userVote }: Props) => {
         </div>
         <Link
           href={`/post/${post.id}`}
-          className='celestia-orbit-thumb hidden h-20 w-28 shrink-0 self-center rounded-xl border border-border/80 shadow-inner sm:block'
+          className={cn(
+            'relative hidden h-20 w-28 shrink-0 self-center overflow-hidden rounded-xl border border-border/80 shadow-inner sm:block',
+            !post.imageUrl && 'celestia-orbit-thumb',
+          )}
           aria-label={post.title}
-        />
+        >
+          {post.imageUrl ? (
+            <Image src={post.imageUrl} alt='' fill unoptimized sizes='112px' className='object-cover' />
+          ) : null}
+        </Link>
       </div>
     </article>
   );

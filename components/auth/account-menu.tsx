@@ -58,7 +58,7 @@ const applyDisplayMode = (displayMode: DisplayMode) => {
   root.style.colorScheme = resolvedMode;
 };
 
-const AccountMenu = () => {
+const AccountMenu = ({ avatarUrl }: { avatarUrl?: string }) => {
   const { data: session } = authClient.useSession();
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [displayMode, setDisplayMode] = useState<DisplayMode>(() => {
@@ -107,7 +107,7 @@ const AccountMenu = () => {
       <DropdownMenuTrigger asChild>
         <button type='button' className='inline-flex size-8 shrink-0 items-center justify-center rounded-full outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'>
           <Avatar>
-            <AvatarImage src={user.image ?? undefined} alt={user.name || user.email} />
+            <AvatarImage src={avatarUrl ?? user.image ?? undefined} alt={user.name || user.email} />
             <AvatarFallback>{getInitials(user.name, user.email)}</AvatarFallback>
           </Avatar>
           <span className='sr-only'>Open account menu</span>

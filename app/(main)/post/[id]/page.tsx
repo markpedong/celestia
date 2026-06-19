@@ -5,10 +5,11 @@ import { Separator } from '@/components/ui/separator';
 import { getSessionUser } from '@/lib/auth';
 import { getAuthorByID, getCommentTree, getPostByID, getPostScore, getUserVote, listTags } from '@/lib/db/queries';
 import { formatRelativeTime } from '@/lib/format';
-import { UserAvatar } from '@neondatabase/auth/react';
 import { ArrowLeft, Clock, MessageSquare, Radio, Share2, Users } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
+import { UserAvatar } from '@/components/ui/user-avatar';
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -77,7 +78,20 @@ const Page = async ({ params }: Props) => {
                 ) : null}
               </div>
               <h1 className='text-balance text-2xl font-bold leading-tight text-foreground md:text-3xl'>{post.title}</h1>
-              <div className='celestia-orbit-thumb mt-5 h-52 rounded-2xl border border-border/80' />
+              {post.imageUrl ? (
+                <div className='relative mt-5 aspect-[16/9] overflow-hidden rounded-2xl border border-border/80 bg-muted'>
+                  <Image
+                    src={post.imageUrl}
+                    alt={`Image attached to ${post.title}`}
+                    fill
+                    unoptimized
+                    sizes='(max-width: 768px) calc(100vw - 8rem), 672px'
+                    className='object-contain'
+                  />
+                </div>
+              ) : (
+                <div className='celestia-orbit-thumb mt-5 h-52 rounded-2xl border border-border/80' />
+              )}
               <div className='mt-6 whitespace-pre-wrap text-base leading-8 text-muted-foreground'>{post.body}</div>
               <Separator className='my-6' />
               <div className='flex flex-wrap items-center justify-between gap-3'>

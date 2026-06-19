@@ -1,6 +1,6 @@
 'use client';
 import { createPostAction } from '@/lib/actions/posts';
-import { useActionState } from 'react';
+import { useActionState, useRef, useState } from 'react';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
@@ -9,9 +9,11 @@ import { Image as ImageIcon, Link2, Send } from 'lucide-react';
 
 export function SubmitPostForm() {
   const [state, action, pending] = useActionState(createPostAction, null);
+  const imageInput = useRef<HTMLInputElement>(null);
+  const [imageName, setImageName] = useState<string | null>(null);
 
   return (
-    <form action={action} className='celestia-card space-y-4 p-4 md:p-5'>
+    <form action={action} encType='multipart/form-data' className='celestia-card space-y-4 p-4 md:p-5'>
       <div className='space-y-2'>
         <Label htmlFor='title' className='text-sm text-card-foreground'>Post title</Label>
         <Input
@@ -46,9 +48,22 @@ export function SubmitPostForm() {
       </div>
 
       <div className='grid gap-3 sm:grid-cols-2'>
-        <button type='button' className='flex items-center justify-center gap-2 rounded-xl border border-border bg-secondary/60 px-3 py-2 text-sm text-muted-foreground celestia-hover-surface'>
+        <input
+          ref={imageInput}
+          id='image'
+          name='image'
+          type='file'
+          accept='image/png,image/jpeg,image/webp,image/gif'
+          className='sr-only'
+          onChange={event => setImageName(event.target.files?.[0]?.name ?? null)}
+        />
+        <button
+          type='button'
+          onClick={() => imageInput.current?.click()}
+          className='flex min-w-0 items-center justify-center gap-2 rounded-xl border border-border bg-secondary/60 px-3 py-2 text-sm text-muted-foreground celestia-hover-surface'
+        >
           <ImageIcon className='size-4 text-primary' />
-          Add image
+          <span className='truncate'>{imageName ?? 'Add image'}</span>
         </button>
         <button type='button' className='flex items-center justify-center gap-2 rounded-xl border border-border bg-secondary/60 px-3 py-2 text-sm text-muted-foreground celestia-hover-surface'>
           <Link2 className='size-4 text-accent' />

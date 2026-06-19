@@ -3,6 +3,7 @@ export type User = {
   username: string;
   displayName?: string;
   avatarUrl?: string;
+  coverUrl?: string;
   createdAt?: string;
 };
 
@@ -17,6 +18,7 @@ export type Post = {
   authorId: string;
   title: string;
   body: string;
+  imageUrl?: string;
   tagSlugs: string[];
   createdAt: string;
   commentCount: number;

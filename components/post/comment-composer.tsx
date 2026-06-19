@@ -2,11 +2,11 @@
 
 import { createCommentAction } from '@/lib/actions/comments';
 import { User } from '@/lib/types';
-import { UserAvatar } from '@neondatabase/auth/react';
 import { useRouter } from 'next/navigation';
 import { useRef, useState, useTransition } from 'react';
 import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
+import { UserAvatar } from '../ui/user-avatar';
 
 type Props = {
   postID: string;

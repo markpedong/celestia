@@ -11,9 +11,10 @@ import type { SearchTagSuggestion } from '@/lib/types';
 type Props = {
   trending: TrendingItem[];
   communities: SearchTagSuggestion[];
+  avatarUrl?: string;
 };
 
-const Navbar = ({ trending, communities }: Props) => {
+const Navbar = ({ trending, communities, avatarUrl }: Props) => {
   return (
     <header className='celestia-nav-shadow sticky top-0 z-50 border-b border-border/80 bg-background/88 backdrop-blur-xl'>
       <div className='mx-auto flex h-14 max-w-7xl  items-center gap-3 px-4'>
@@ -38,7 +39,7 @@ const Navbar = ({ trending, communities }: Props) => {
               <Plus className='size-3.5' />
               New Post
             </Link>
-            <AccountMenu />
+            <AccountMenu avatarUrl={avatarUrl} />
           </div>
         </SignedIn>
 

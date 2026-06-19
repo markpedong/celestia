@@ -7,6 +7,7 @@ import { prisma } from "../prisma";
 import { Post } from "../types";
 import { PostModel } from "../generated/prisma/models";
 import { redirect } from "next/navigation";
+import { imageDataUrlFromFile } from "../media";
 
 export async function votePostAction(postId: string, value: -1 | 1) {
   const userId = await getCurrentUserID();
@@ -63,6 +64,7 @@ export async function createPostAction(
   const title = String(formData.get("title") ?? "");
   const body = String(formData.get("body") ?? "");
   const tagsRaw = String(formData.get("tags") ?? "");
+  const image = formData.get("image");
 
   if (title.trim().length < 4) {
     return { error: "Title is too short." };
@@ -73,11 +75,19 @@ export async function createPostAction(
     .map((s) => s.trim().toLowerCase())
     .slice(0, 5);
 
+  let imageUrl: string | undefined;
+  try {
+    imageUrl = await imageDataUrlFromFile(image);
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "Unable to upload image." };
+  }
+
   const post = await addPost({
     authorId: userId,
     title,
     body,
     tagSlugs,
+    imageUrl,
   });
 
   revalidatePath("/");
@@ -90,6 +100,7 @@ export async function addPost(input: {
   title: string;
   body: string;
   tagSlugs: string[];
+  imageUrl?: string;
 }): Promise<Post> {
   const tagSlugs = input.tagSlugs.length ? input.tagSlugs : ["webdev"];
   await prisma.tag.createMany({
@@ -106,6 +117,7 @@ export async function addPost(input: {
       authorId: input.authorId,
       title: input.title.trim(),
       body: input.body.trim(),
+      imageUrl: input.imageUrl,
     },
   });
 
@@ -129,6 +141,7 @@ function mapPostRow(
     authorId: row.authorId,
     title: row.title,
     body: row.body,
+    imageUrl: row.imageUrl ?? undefined,
     tagSlugs,
     createdAt: row.createdAt.toISOString(),
     commentCount,
