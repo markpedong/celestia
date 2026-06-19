@@ -2,204 +2,82 @@
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { createAuthClient } from '@neondatabase/auth/next';
-import { AppleIcon, GoogleIcon } from '@neondatabase/auth/react';
-import { Link2, Phone } from 'lucide-react';
+import { createSupabaseBrowserClient } from '@/lib/supabase/client';
+import { KeyRound, Mail } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { FormEvent, ReactNode, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 
-type Method = 'phone' | 'email' | null;
-type Provider = 'google' | 'apple';
-
-const authClient = createAuthClient();
-
-const getAuthErrorMessage = (error: unknown, provider?: Provider) => {
-  if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string') {
-    const message = error.message;
-
-    if (message.includes('400') && provider === 'apple') {
-      return 'Apple sign-in is not configured for this Neon Auth project yet. Check the Apple provider settings in Neon Auth.';
-    }
-
-    return message;
-  }
-
-  return provider ? `Could not continue with ${provider}.` : 'Authentication failed. Please try again.';
+type Props = {
+  mode: 'sign-in' | 'sign-up';
 };
 
-const AuthMethodButton = ({
-  children,
-  icon,
-  onClick,
-}: {
-  children: ReactNode;
-  icon: ReactNode;
-  onClick: () => void;
-}) => (
-  <button
-    type='button'
-    onClick={onClick}
-    className='relative flex h-[52px] w-full items-center justify-center rounded-full border border-border bg-card px-5 text-base font-medium text-card-foreground shadow-sm transition hover:bg-muted'
-  >
-    <span className='absolute left-5 flex size-6 items-center justify-center text-foreground'>{icon}</span>
-    {children}
-  </button>
-);
+const supabase = createSupabaseBrowserClient();
 
-const AuthMethods = () => {
+const AuthMethods = ({ mode }: Props) => {
   const router = useRouter();
-  const [activeMethod, setActiveMethod] = useState<Method>(null);
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState('');
+  const [password, setPassword] = useState('');
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [otpSent, setOtpSent] = useState(false);
   const [pending, startTransition] = useTransition();
+  const isSignUp = mode === 'sign-up';
 
-  const resetStatus = () => {
+  const submit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setError(null);
     setMessage(null);
-  };
-
-  const continueWithSocial = (provider: Provider) => {
-    resetStatus();
 
     startTransition(async () => {
-      try {
-        const result = await authClient.signIn.social({
-          provider,
-          callbackURL: '/',
-          errorCallbackURL: '/auth/sign-in',
-        });
-
-        if (result.error) {
-          setError(result.error.message ?? `Could not continue with ${provider}.`);
-          return;
-        }
-
-        if (result.data?.url) {
-          window.location.href = result.data.url;
-        }
-      } catch (error) {
-        setError(getAuthErrorMessage(error, provider));
-      }
-    });
-  };
-
-  const sendEmailOtp = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    resetStatus();
-
-    startTransition(async () => {
-      const result = await authClient.emailOtp.sendVerificationOtp({
-        email,
-        type: 'sign-in',
-      });
+      const result = isSignUp
+        ? await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { full_name: name.trim() || email.split('@')[0] },
+            emailRedirectTo: `${window.location.origin}/auth/sign-in`,
+          },
+        })
+        : await supabase.auth.signInWithPassword({ email, password });
 
       if (result.error) {
-        setError(result.error.message ?? 'Could not send the one-time code.');
+        setError(result.error.message);
         return;
       }
 
-      setOtpSent(true);
-      setMessage('Check your email for the one-time code.');
-    });
-  };
-
-  const verifyEmailOtp = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    resetStatus();
-
-    startTransition(async () => {
-      const result = await authClient.signIn.emailOtp({
-        email,
-        otp,
-      });
-
-      if (result.error) {
-        setError(result.error.message ?? 'The code could not be verified.');
+      if (isSignUp && !result.data.session) {
+        setMessage('Check your inbox to confirm your account, then sign in.');
         return;
       }
 
-      router.push('/');
+      router.replace('/');
       router.refresh();
     });
   };
 
   return (
-    <div className='space-y-3'>
-      <AuthMethodButton
-        icon={<Phone className='size-5' strokeWidth={2.2} />}
-        onClick={() => {
-          resetStatus();
-          setActiveMethod('phone');
-        }}
-      >
-        Continue with Phone Number
-      </AuthMethodButton>
-      <AuthMethodButton icon={<GoogleIcon className='size-6' />} onClick={() => continueWithSocial('google')}>
-        Continue with Google
-      </AuthMethodButton>
-      <AuthMethodButton icon={<AppleIcon className='size-6' />} onClick={() => continueWithSocial('apple')}>
-        Continue with Apple
-      </AuthMethodButton>
-      <AuthMethodButton
-        icon={<Link2 className='size-5' strokeWidth={2.4} />}
-        onClick={() => {
-          resetStatus();
-          setActiveMethod('email');
-        }}
-      >
-        Email me a one-time code
-      </AuthMethodButton>
-
-      {activeMethod === 'phone' ? (
-        <div className='rounded-xl border border-border bg-secondary/60 p-4 text-sm text-muted-foreground'>
-          Phone sign-in needs a phone/SMS provider configured in Neon Auth before it can be enabled here.
+    <form onSubmit={submit} className='space-y-4'>
+      {isSignUp ? (
+        <div className='space-y-2'>
+          <label htmlFor='name' className='text-sm font-medium text-card-foreground'>Display name</label>
+          <Input id='name' value={name} onChange={(event) => setName(event.target.value)} placeholder='Your name' className='h-11 bg-background' />
         </div>
       ) : null}
-
-      {activeMethod === 'email' ? (
-        <div className='rounded-xl border border-border bg-secondary/60 p-4'>
-          {!otpSent ? (
-            <form onSubmit={sendEmailOtp} className='space-y-3'>
-              <Input
-                type='email'
-                value={email}
-                onChange={event => setEmail(event.target.value)}
-                placeholder='you@example.com'
-                required
-                className='h-10 bg-background'
-              />
-              <Button type='submit' disabled={pending} className='celestia-primary-action w-full'>
-                {pending ? 'Sending...' : 'Send one-time code'}
-              </Button>
-            </form>
-          ) : (
-            <form onSubmit={verifyEmailOtp} className='space-y-3'>
-              <Input
-                inputMode='numeric'
-                value={otp}
-                onChange={event => setOtp(event.target.value)}
-                placeholder='Enter code'
-                required
-                className='h-10 bg-background'
-              />
-              <Button type='submit' disabled={pending} className='celestia-primary-action w-full'>
-                {pending ? 'Verifying...' : 'Continue'}
-              </Button>
-            </form>
-          )}
-        </div>
-      ) : null}
-
+      <div className='space-y-2'>
+        <label htmlFor='email' className='text-sm font-medium text-card-foreground'>Email</label>
+        <Input id='email' type='email' value={email} onChange={(event) => setEmail(event.target.value)} placeholder='you@example.com' required className='h-11 bg-background' />
+      </div>
+      <div className='space-y-2'>
+        <label htmlFor='password' className='text-sm font-medium text-card-foreground'>Password</label>
+        <Input id='password' type='password' minLength={6} value={password} onChange={(event) => setPassword(event.target.value)} placeholder='At least 6 characters' required className='h-11 bg-background' />
+      </div>
+      <Button type='submit' disabled={pending} className='celestia-primary-action h-11 w-full rounded-xl'>
+        {isSignUp ? <Mail className='size-4' /> : <KeyRound className='size-4' />}
+        {pending ? 'Please wait...' : isSignUp ? 'Create account' : 'Sign in'}
+      </Button>
       {message ? <p className='text-center text-sm text-muted-foreground'>{message}</p> : null}
-      {error ? (
-        <p className='rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive' role='alert'>
-          {error}
-        </p>
-      ) : null}
-    </div>
+      {error ? <p className='rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive' role='alert'>{error}</p> : null}
+    </form>
   );
 };
 

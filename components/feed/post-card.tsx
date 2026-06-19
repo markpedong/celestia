@@ -15,18 +15,18 @@ type Props = {
   userVote: -1 | 0 | 1;
 };
 
-function snippet(body: string, max = 160) {
+const snippet = (body: string, max = 160) => {
   const t = body.replace(/\s+/g, ' ').trim();
   if (t.length <= max) return t;
   return `${t.slice(0, max)}…`;
-}
+};
 
 const PostCard = ({ post, author, tagsBySlug, score, userVote }: Props) => {
   const primarySlug = post.tagSlugs[0];
   const primaryTag = primarySlug ? tagsBySlug.get(primarySlug) : undefined;
 
   return (
-    <article className='celestia-card celestia-card-hover flex overflow-hidden last:mb-7'>
+    <article className='celestia-card celestia-card-hover flex w-full overflow-hidden last:mb-7'>
       <div className='celestia-vote-rail flex min-w-[52px] flex-col items-center justify-center border-r border-border/60 px-3 py-4'>
         <VoteButtons target='post' targetID={post.id} score={score} userVote={userVote} />
       </div>

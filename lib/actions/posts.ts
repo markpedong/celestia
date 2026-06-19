@@ -7,9 +7,9 @@ import { prisma } from "../prisma";
 import { Post } from "../types";
 import { PostModel } from "../generated/prisma/models";
 import { redirect } from "next/navigation";
-import { imageDataUrlFromFile } from "../media";
+import { uploadImage } from "../media";
 
-export async function votePostAction(postId: string, value: -1 | 1) {
+export const votePostAction = async (postId: string, value: -1 | 1) => {
   const userId = await getCurrentUserID();
   if (!userId) {
     return { error: "Sign in to vote." };
@@ -20,11 +20,11 @@ export async function votePostAction(postId: string, value: -1 | 1) {
   revalidatePath(`/post/${postId}`);
 }
 
-export async function votePost(
+export const votePost = async (
   userId: string,
   postId: string,
   value: -1 | 1,
-): Promise<void> {
+): Promise<void> => {
   const current = await getUserVote(userId, "post", postId); // if you already voted
   let next: -1 | 0 | 1 = value; // new vote
   if (current === value) next = 0; // if same, then you unvote, meaning you can be neutral.
@@ -52,10 +52,10 @@ export async function votePost(
 
 export type PostFormState = { error?: string } | null;
 
-export async function createPostAction(
+export const createPostAction = async (
   _prev: PostFormState,
   formData: FormData,
-): Promise<PostFormState> {
+): Promise<PostFormState> => {
   const userId = await getCurrentUserID();
   if (!userId) {
     return { error: "You must be signed in to post." };
@@ -77,7 +77,7 @@ export async function createPostAction(
 
   let imageUrl: string | undefined;
   try {
-    imageUrl = await imageDataUrlFromFile(image);
+    imageUrl = await uploadImage(image, "post-images", userId);
   } catch (error) {
     return { error: error instanceof Error ? error.message : "Unable to upload image." };
   }
@@ -95,13 +95,13 @@ export async function createPostAction(
   redirect(`/post/${post.id}`);
 }
 
-export async function addPost(input: {
+export const addPost = async (input: {
   authorId: string;
   title: string;
   body: string;
   tagSlugs: string[];
   imageUrl?: string;
-}): Promise<Post> {
+}): Promise<Post> => {
   const tagSlugs = input.tagSlugs.length ? input.tagSlugs : ["webdev"];
   await prisma.tag.createMany({
     data: tagSlugs.map((slug) => ({
@@ -131,11 +131,11 @@ export async function addPost(input: {
   return mapPostRow(row, tagSlugs, 0);
 }
 
-function mapPostRow(
+const mapPostRow = (
   row: PostModel,
   tagSlugs: string[],
   commentCount: number,
-): Post {
+): Post => {
   return {
     id: row.id,
     authorId: row.authorId,

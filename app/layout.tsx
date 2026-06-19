@@ -3,7 +3,6 @@ import { Geist_Mono, Inter } from 'next/font/google';
 import './globals.css';
 import './design.scss';
 
-import NeonAuthProviders from '@/providers/neon-auth-ui-provider';
 
 const displayModeScript = `
 (() => {
@@ -99,7 +98,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: displayModeScript }} />
       </head>
       <body className='celestia-app-shell min-h-full flex flex-col bg-background text-foreground'>
-        <NeonAuthProviders>{children}</NeonAuthProviders>
+        {children}
       </body>
     </html>
   );

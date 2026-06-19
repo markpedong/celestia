@@ -1,23 +1,37 @@
-const ACCEPTED_IMAGE_TYPES = new Set([
-  'image/jpeg',
-  'image/png',
-  'image/gif',
-  'image/webp',
-]);
+import { createSupabaseAdminClient } from './supabase/admin';
 
-const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
+const acceptedImageTypes = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
+const maxImageBytes = 2 * 1024 * 1024;
 
-export async function imageDataUrlFromFile(value: FormDataEntryValue | null): Promise<string | undefined> {
+type ImageBucket = 'profile-avatars' | 'profile-covers' | 'post-images';
+
+const extensionFor = (mimeType: string) => ({
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/gif': 'gif',
+  'image/webp': 'webp',
+}[mimeType] ?? 'img');
+
+export const uploadImage = async (
+  value: FormDataEntryValue | null,
+  bucket: ImageBucket,
+  userId: string,
+): Promise<string | undefined> => {
   if (!(value instanceof File) || value.size === 0) return undefined;
+  if (!acceptedImageTypes.has(value.type)) throw new Error('Use a PNG, JPEG, WebP, or GIF image.');
+  if (value.size > maxImageBytes) throw new Error('Images must be 2 MB or smaller.');
 
-  if (!ACCEPTED_IMAGE_TYPES.has(value.type)) {
-    throw new Error('Use a PNG, JPEG, WebP, or GIF image.');
-  }
+  // Each caller authenticates the user before invoking this helper. Use the
+  // server-only client so uploads do not depend on client storage policies.
+  const supabase = createSupabaseAdminClient();
+  const path = `${userId}/${crypto.randomUUID()}.${extensionFor(value.type)}`;
+  const { error } = await supabase.storage.from(bucket).upload(path, value, {
+    cacheControl: '31536000',
+    contentType: value.type,
+    upsert: false,
+  });
 
-  if (value.size > MAX_IMAGE_BYTES) {
-    throw new Error('Images must be 2 MB or smaller.');
-  }
+  if (error) throw new Error(error.message);
 
-  const bytes = Buffer.from(await value.arrayBuffer());
-  return `data:${value.type};base64,${bytes.toString('base64')}`;
-}
+  return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
+};

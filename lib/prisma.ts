@@ -8,7 +8,7 @@ function createPrisma(): PrismaClient {
   const connectionString = normalizeDatabaseUrl(process.env.DATABASE_URL);
   if (!connectionString) {
     throw new Error(
-      "DATABASE_URL is not set. Add a Neon connection string to your environment.",
+      "DATABASE_URL is not set. Add your Supabase Postgres connection string to .env.local.",
     );
   }
 

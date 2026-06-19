@@ -51,18 +51,18 @@ const Home: FC<Props> = async ({ searchParams }) => {
   });
 
   return (
-    <div className='flex gap-6'>
-      <div className='min-w-0 flex-1'>
+    <div className='flex w-full min-w-0 gap-6'>
+      <div className='w-full min-w-0 flex-1'>
         <FeedSortTabs current={sort} tag={tagFilter} query={cleanedSearchQuery} />
         {cleanedSearchQuery ? (
           <div className='mb-4 rounded-xl border border-border/80 bg-secondary/45 px-4 py-3 text-sm text-muted-foreground'>
             Showing results for <span className='font-semibold text-foreground'>&quot;{cleanedSearchQuery}&quot;</span>
           </div>
         ) : null}
-        <div className='space-y-3'>
+        <div className='w-full space-y-3'>
           {cards}
           {rows.length === 0 && (
-            <div className='celestia-card flex flex-col items-center justify-center px-6 py-20 text-center'>
+            <div className='celestia-card flex min-h-80 w-full flex-col items-center justify-center px-6 py-20 text-center'>
               <div className='mb-4 flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-[0_0_24px] shadow-primary/15'>
                 <span className='font-mono text-lg'>0</span>
               </div>

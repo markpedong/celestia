@@ -14,12 +14,14 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { createAuthClient } from '@neondatabase/auth/next';
+import { createSupabaseBrowserClient } from '@/lib/supabase/client';
+import type { User as ProfileUser } from '@/lib/types';
 import { LaptopMinimal, LogOut, MonitorCog, Moon, Sun, UserRound } from 'lucide-react';
 import Link from 'next/link';
+import type { User } from '@supabase/supabase-js';
 import { useEffect, useState } from 'react';
 
-const authClient = createAuthClient();
+const supabase = createSupabaseBrowserClient();
 const DISPLAY_MODE_STORAGE_KEY = 'celestia-display-mode';
 
 const displayModeOptions = [
@@ -58,8 +60,8 @@ const applyDisplayMode = (displayMode: DisplayMode) => {
   root.style.colorScheme = resolvedMode;
 };
 
-const AccountMenu = ({ avatarUrl }: { avatarUrl?: string }) => {
-  const { data: session } = authClient.useSession();
+const AccountMenu = ({ initialUser }: { initialUser: ProfileUser }) => {
+  const [authUser, setAuthUser] = useState<User | null>(null);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [displayMode, setDisplayMode] = useState<DisplayMode>(() => {
     if (typeof window === 'undefined') {
@@ -70,7 +72,7 @@ const AccountMenu = ({ avatarUrl }: { avatarUrl?: string }) => {
 
     return storedMode === 'system' || storedMode === 'dark' || storedMode === 'light' ? storedMode : 'system';
   });
-  const user = session?.user;
+  const user = authUser;
 
   useEffect(() => {
     applyDisplayMode(displayMode);
@@ -90,33 +92,39 @@ const AccountMenu = ({ avatarUrl }: { avatarUrl?: string }) => {
     };
   }, [displayMode]);
 
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setAuthUser(data.user));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => setAuthUser(nextSession?.user ?? null));
+    return () => subscription.unsubscribe();
+  }, []);
+
   const handleSignOut = async () => {
     if (isSigningOut) return;
 
     setIsSigningOut(true);
-    await authClient.signOut();
+    await supabase.auth.signOut();
     window.location.replace('/');
   };
 
-  if (!user) {
-    return null;
-  }
+  const name = (typeof user?.user_metadata.full_name === 'string' && user.user_metadata.full_name) || initialUser.displayName || initialUser.username;
+  const email = user?.email;
+  const avatarUrl = initialUser.avatarUrl ?? (typeof user?.user_metadata.avatar_url === 'string' ? user.user_metadata.avatar_url : undefined);
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button type='button' className='inline-flex size-8 shrink-0 items-center justify-center rounded-full outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'>
           <Avatar>
-            <AvatarImage src={avatarUrl ?? user.image ?? undefined} alt={user.name || user.email} />
-            <AvatarFallback>{getInitials(user.name, user.email)}</AvatarFallback>
+            <AvatarImage src={avatarUrl} alt={name} />
+            <AvatarFallback>{getInitials(name, email)}</AvatarFallback>
           </Avatar>
           <span className='sr-only'>Open account menu</span>
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align='end' className='w-64 space-y-2 p-3'>
         <DropdownMenuLabel className='space-y-1.5 px-3 py-2.5'>
-          <span className='block truncate text-sm font-medium text-foreground'>{user.name || 'Celestia user'}</span>
-          <span className='block truncate text-xs font-normal text-muted-foreground'>{user.email}</span>
+          <span className='block truncate text-sm font-medium text-foreground'>{name}</span>
+          {email ? <span className='block truncate text-xs font-normal text-muted-foreground'>{email}</span> : null}
         </DropdownMenuLabel>
         <DropdownMenuItem asChild className='rounded-none px-3 py-2.5'>
           <Link href='/profile'>

@@ -2,22 +2,21 @@ import { Plus, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '../ui/button';
-import { SignedIn, SignedOut } from '@neondatabase/auth/react';
 import AccountMenu from '@/components/auth/account-menu';
 import SearchBox from './search-box';
 import type { TrendingItem } from '@/lib/trending';
-import type { SearchTagSuggestion } from '@/lib/types';
+import type { SearchTagSuggestion, User } from '@/lib/types';
 
 type Props = {
   trending: TrendingItem[];
   communities: SearchTagSuggestion[];
-  avatarUrl?: string;
+  user: User | null;
 };
 
-const Navbar = ({ trending, communities, avatarUrl }: Props) => {
+const Navbar = ({ trending, communities, user }: Props) => {
   return (
     <header className='celestia-nav-shadow sticky top-0 z-50 border-b border-border/80 bg-background/88 backdrop-blur-xl'>
-      <div className='mx-auto flex h-14 max-w-7xl  items-center gap-3 px-4'>
+      <div className='mx-auto flex h-14 w-full max-w-[1600px] items-center gap-3 px-4'>
         <Link href='/' className='group flex shrink-0 items-center gap-2 font-semibold tracking-tight text-foreground'>
           <span className='celestia-brand-mark size-8'>
             <Zap className='size-4 fill-current' aria-hidden />
@@ -27,7 +26,7 @@ const Navbar = ({ trending, communities, avatarUrl }: Props) => {
 
         <SearchBox trending={trending} communities={communities} />
 
-        <SignedIn>
+        {user ? (
           <div className='ml-auto flex shrink-0 items-center gap-2'>
             <Link
               href='/submit'
@@ -39,11 +38,11 @@ const Navbar = ({ trending, communities, avatarUrl }: Props) => {
               <Plus className='size-3.5' />
               New Post
             </Link>
-            <AccountMenu avatarUrl={avatarUrl} />
+            <AccountMenu initialUser={user} />
           </div>
-        </SignedIn>
+        ) : null}
 
-        <SignedOut>
+        {!user ? (
           <div className='ml-auto flex items-center gap-2'>
             <Link href={'/auth/sign-in'} className={cn(buttonVariants({ variant: 'ghost', size: 'default' }))}>
               Sign in
@@ -55,7 +54,7 @@ const Navbar = ({ trending, communities, avatarUrl }: Props) => {
               Join
             </Link>
           </div>
-        </SignedOut>
+        ) : null}
       </div>
     </header>
   );

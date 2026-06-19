@@ -20,8 +20,8 @@ const MainLayout: FC<Props> = async ({ children }) => {
 
   return (
     <>
-      <Navbar trending={trending} communities={communities} avatarUrl={user?.avatarUrl} />
-      <div className='mx-auto flex max-w-7xl gap-0 px-4'>
+      <Navbar trending={trending} communities={communities} user={user} />
+      <div className='mx-auto flex w-full max-w-[1600px] gap-0 px-4'>
         <LeftSidebar showCta={!user} tags={tags} />
         <main className='min-w-0 flex-1 pt-6 lg:px-6'>{children}</main>
       </div>

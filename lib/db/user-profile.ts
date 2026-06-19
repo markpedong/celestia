@@ -13,33 +13,33 @@ export const generateUsername = (name: string): string => {
   return `${base}_${suffix}`;
 }
 
-export const ensureUserProfile = async (neon: {
+export const ensureUserProfile = async (identity: {
   id: string;
   name: string;
   image?: string | null;
 }): Promise<User> => {
   const existing = await prisma.userProfile.findUnique({
-    where: { id: neon.id },
+    where: { id: identity.id },
   });
 
   if (existing) {
     return {
       id: existing.id,
       username: existing.username,
-      displayName: neon.name,
-      avatarUrl: existing.avatarUrl ?? neon.image ?? undefined,
+      displayName: identity.name,
+      avatarUrl: existing.avatarUrl ?? identity.image ?? undefined,
       coverUrl: existing.coverUrl ?? undefined,
     };
   }
 
   const row = await prisma.userProfile.create({
-    data: { id: neon.id, username: generateUsername(neon.name) },
+    data: { id: identity.id, username: generateUsername(identity.name) },
   });
 
   return {
     id: row.id,
     username: row.username,
-    displayName: neon.name,
-    avatarUrl: neon.image ?? undefined,
+    displayName: identity.name,
+    avatarUrl: identity.image ?? undefined,
   };
 }
