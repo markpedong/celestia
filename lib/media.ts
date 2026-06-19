@@ -1,4 +1,4 @@
-import { createSupabaseAdminClient } from './supabase/admin';
+import { createSupabaseServerClient } from './supabase/server';
 
 const acceptedImageTypes = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
 const maxImageBytes = 2 * 1024 * 1024;
@@ -21,9 +21,7 @@ export const uploadImage = async (
   if (!acceptedImageTypes.has(value.type)) throw new Error('Use a PNG, JPEG, WebP, or GIF image.');
   if (value.size > maxImageBytes) throw new Error('Images must be 2 MB or smaller.');
 
-  // Each caller authenticates the user before invoking this helper. Use the
-  // server-only client so uploads do not depend on client storage policies.
-  const supabase = createSupabaseAdminClient();
+  const supabase = await createSupabaseServerClient();
   const path = `${userId}/${crypto.randomUUID()}.${extensionFor(value.type)}`;
   const { error } = await supabase.storage.from(bucket).upload(path, value, {
     cacheControl: '31536000',
