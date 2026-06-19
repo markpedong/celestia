@@ -15,7 +15,7 @@ export function RightTrending({ items }: { items: TrendingItem[] }) {
     <section className='celestia-card p-4'>
       <h3 className='mb-3 flex items-center gap-2 text-xs font-semibold text-foreground'>
         <TrendingUp className='size-3 text-primary' />
-        Trending Signals
+        Trending Posts
       </h3>
       <div className='space-y-2'>
         {items.map((t, index) => (
@@ -25,13 +25,13 @@ export function RightTrending({ items }: { items: TrendingItem[] }) {
               <p className='truncate text-sm font-medium leading-snug text-card-foreground transition-colors group-hover:text-white'>
                 {t.title}
               </p>
-              <p className='font-mono text-[11px] text-muted-foreground'>{t.postCount} signals</p>
+              <p className='font-mono text-[11px] text-muted-foreground'>{t.postCount} posts</p>
             </div>
             <MomentumIcon index={index} />
           </div>
         ))}
         <Link href='/?sort=hot' className='inline-block px-2 pt-2 text-xs font-medium text-primary hover:text-primary-hover'>
-          View orbit
+          View all
         </Link>
       </div>
     </section>
@@ -59,7 +59,7 @@ export function RightTrending({ items }: { items: TrendingItem[] }) {
         Top Communities
       </h3>
       <div className='space-y-2.5'>
-        {['Technology', 'Space', 'Science'].map((label, index) => (
+        {['Technology', 'Ask', 'Gaming'].map((label, index) => (
           <div key={label} className='flex items-center gap-2.5'>
             <span className='grid size-8 place-items-center rounded-lg border border-primary/25 bg-primary/10 text-xs font-bold text-primary'>
               {label[0]}

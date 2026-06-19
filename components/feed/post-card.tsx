@@ -25,7 +25,7 @@ const PostCard = ({ post, author, tagsBySlug, score, userVote }: Props) => {
   const primaryTag = primarySlug ? tagsBySlug.get(primarySlug) : undefined;
 
   return (
-    <article className='celestia-card celestia-card-hover group flex overflow-hidden'>
+    <article className='celestia-card celestia-card-hover group flex overflow-hidden last:mb-7'>
       <div className='flex min-w-[52px] flex-col items-center justify-center border-r border-border/60 bg-black/15 px-3 py-4'>
         <VoteButtons target='post' targetID={post.id} score={score} userVote={userVote} />
       </div>
@@ -73,7 +73,7 @@ const PostCard = ({ post, author, tagsBySlug, score, userVote }: Props) => {
               <Share2 className='size-3.5' />
               Share
             </button>
-            <button type='button' className='ml-auto inline-flex items-center gap-1 transition-colors hover:text-primary' aria-label='Bookmark signal'>
+            <button type='button' className='ml-auto inline-flex items-center gap-1 transition-colors hover:text-primary' aria-label='Bookmark post'>
               <Bookmark className='size-3.5' />
             </button>
           </div>

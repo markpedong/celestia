@@ -11,9 +11,9 @@ const JoinCtaCard = () => {
         <div className='celestia-brand-mark mb-2 size-11 rounded-xl'>
           <Telescope className='size-5' aria-hidden />
         </div>
-        <CardTitle className='text-base'>Join the orbit</CardTitle>
+        <CardTitle className='text-base'>Join the community</CardTitle>
         <CardDescription className='text-muted-foreground'>
-          Create signals, vote, and follow topics you care about.
+          Create posts, vote, and follow topics you care about.
         </CardDescription>
       </CardHeader>
       <CardContent>

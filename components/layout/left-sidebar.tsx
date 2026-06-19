@@ -1,20 +1,20 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { Bookmark, Compass, Hash, Home, Radio, UserRound } from 'lucide-react';
+import { BarChart2, Compass, Hash, Home, Radio } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { FC } from 'react';
 import LeftTags from './left-tags';
 import JoinCtaCard from './join-cta';
 import { Tag } from '@/lib/types';
+import packageJson from '@/package.json';
 
 const nav = [
   { href: '/', label: 'Home', icon: Home, match: 'home' as const },
   { href: '/?sort=hot', label: 'Explore', icon: Compass, match: 'hot' as const },
-  { href: '/?sort=new', label: 'Signals', icon: Radio, match: 'new' as const },
-  { href: '/?sort=top', label: 'Bookmarks', icon: Bookmark, match: 'top' as const },
-  { href: '/auth/sign-in', label: 'Profile', icon: UserRound, match: 'profile' as const },
+  { href: '/?sort=new', label: 'Posts', icon: Radio, match: 'new' as const },
+  { href: '/?sort=top', label: 'Top', icon: BarChart2, match: 'top' as const },
 ];
 
 const LeftSidebar: FC<{
@@ -33,7 +33,6 @@ const LeftSidebar: FC<{
       <nav className='space-y-1 p-4'>
         {nav.map(item => {
           const active =
-            item.match !== 'profile' &&
             pathname === '/' &&
             (item.match === 'home' ? !['hot', 'new', 'top'].includes(sort || '') : sort === item.match);
 
@@ -66,7 +65,7 @@ const LeftSidebar: FC<{
         </div>
       )}
       <p className='mt-auto px-7 pb-4 pt-8 font-mono text-[10px] leading-relaxed text-muted-foreground/50'>
-        Celestia v0.9 · Community Discussion
+        Celestia v{packageJson.version} · Community Forum
       </p>
     </aside>
   );

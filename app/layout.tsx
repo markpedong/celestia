@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: 'Celestia',
-  description: 'A cosmic community discussion platform for signals, votes, and threaded conversations.',
+  description: 'A community forum for posts, votes, and threaded conversations.',
 };
 
 export default function RootLayout({

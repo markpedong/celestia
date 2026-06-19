@@ -13,6 +13,20 @@ type Provider = 'google' | 'apple';
 
 const authClient = createAuthClient();
 
+const getAuthErrorMessage = (error: unknown, provider?: Provider) => {
+  if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string') {
+    const message = error.message;
+
+    if (message.includes('400') && provider === 'apple') {
+      return 'Apple sign-in is not configured for this Neon Auth project yet. Check the Apple provider settings in Neon Auth.';
+    }
+
+    return message;
+  }
+
+  return provider ? `Could not continue with ${provider}.` : 'Authentication failed. Please try again.';
+};
+
 const AuthMethodButton = ({
   children,
   icon,
@@ -51,19 +65,23 @@ const AuthMethods = () => {
     resetStatus();
 
     startTransition(async () => {
-      const result = await authClient.signIn.social({
-        provider,
-        callbackURL: '/',
-        errorCallbackURL: '/auth/sign-in',
-      });
+      try {
+        const result = await authClient.signIn.social({
+          provider,
+          callbackURL: '/',
+          errorCallbackURL: '/auth/sign-in',
+        });
 
-      if (result.error) {
-        setError(result.error.message ?? `Could not continue with ${provider}.`);
-        return;
-      }
+        if (result.error) {
+          setError(result.error.message ?? `Could not continue with ${provider}.`);
+          return;
+        }
 
-      if (result.data?.url) {
-        window.location.href = result.data.url;
+        if (result.data?.url) {
+          window.location.href = result.data.url;
+        }
+      } catch (error) {
+        setError(getAuthErrorMessage(error, provider));
       }
     });
   };

@@ -55,9 +55,9 @@ const Home: FC<Props> = async ({ searchParams }) => {
               <div className='mb-4 flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-[0_0_24px_rgba(124,106,247,0.12)]'>
                 <span className='font-mono text-lg'>0</span>
               </div>
-              <h2 className='text-base font-semibold text-muted-foreground'>No signals in this orbit yet</h2>
+              <h2 className='text-base font-semibold text-muted-foreground'>No posts here yet</h2>
               <p className='mt-2 max-w-72 text-sm leading-relaxed text-muted-foreground/70'>
-                Be the first to start a discussion in this space.
+                Be the first to start a discussion.
               </p>
             </div>
           )}

@@ -58,7 +58,7 @@ const CommentComposer = ({ postID, user, compact, parentId, placeholder }: Props
           </p>
         ) : null}
         <Button type='submit' size='sm' disabled={pending} className='celestia-primary-action rounded-xl'>
-          {pending ? 'Posting...' : parentId ? 'Reply' : 'Transmit Comment'}
+          {pending ? 'Posting...' : parentId ? 'Reply' : 'Comment'}
         </Button>
       </div>
     </form>

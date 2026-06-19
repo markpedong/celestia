@@ -123,14 +123,14 @@ const Page = async ({ params }: Props) => {
           <section className='celestia-card p-4'>
             <h3 className='mb-3 flex items-center gap-2 text-xs font-semibold text-foreground'>
               <Radio className='size-3 text-primary' />
-              Related Signals
+              Related Posts
             </h3>
             <div className='space-y-3 text-xs text-muted-foreground'>
               <Link href='/?sort=hot' className='block rounded-xl bg-white/[0.025] p-3 leading-5 transition-colors hover:bg-white/[0.045] hover:text-foreground'>
-                Explore the highest velocity discussions in this orbit.
+                Explore the most active discussions right now.
               </Link>
               <Link href='/' className='block rounded-xl bg-white/[0.025] p-3 leading-5 transition-colors hover:bg-white/[0.045] hover:text-foreground'>
-                Return to live signals from all communities.
+                Return to the latest posts from all communities.
               </Link>
             </div>
           </section>

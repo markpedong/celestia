@@ -21,7 +21,7 @@ const Navbar = () => {
           <Search className='pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground' />
           <Input
             readOnly
-            placeholder='Search signals, topics, people...'
+            placeholder='Search posts, topics, people...'
             className='h-9 w-full rounded-xl border-border bg-secondary/80 pl-10 pr-4 text-sm shadow-inner focus-visible:border-primary/50 focus-visible:ring-primary/20'
             aria-label='Search posts'
           />
@@ -36,7 +36,7 @@ const Navbar = () => {
             )}
           >
             <Plus className='size-3.5' />
-            New Signal
+            New Post
           </Link>
 
           <Button variant='ghost' size='icon' className='hidden rounded-xl border border-border bg-secondary/60 text-muted-foreground hover:bg-white/5 hover:text-cyan-300 sm:inline-flex' aria-label='Activity'>

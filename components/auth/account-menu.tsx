@@ -9,7 +9,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { createAuthClient } from '@neondatabase/auth/next';
-import { LogOut } from 'lucide-react';
+import { LogOut, UserRound } from 'lucide-react';
+import Link from 'next/link';
 import { useState } from 'react';
 
 const authClient = createAuthClient();
@@ -53,12 +54,18 @@ const AccountMenu = () => {
           <span className='sr-only'>Open account menu</span>
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align='end' className='w-64'>
-        <DropdownMenuLabel className='space-y-0.5'>
+      <DropdownMenuContent align='end' className='w-64 space-y-2 p-3'>
+        <DropdownMenuLabel className='space-y-1.5 px-3 py-2.5'>
           <span className='block truncate text-sm font-medium text-foreground'>{user.name || 'Celestia user'}</span>
           <span className='block truncate text-xs font-normal text-muted-foreground'>{user.email}</span>
         </DropdownMenuLabel>
-        <DropdownMenuItem onSelect={handleSignOut} disabled={isSigningOut} className='gap-2'>
+        <DropdownMenuItem asChild className='rounded-none px-3 py-2.5'>
+          <Link href='/auth/sign-in'>
+            <UserRound className='size-4' />
+            Profile
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={handleSignOut} disabled={isSigningOut} className='gap-2 rounded-none px-3 py-2.5'>
           <LogOut className='size-4' />
           {isSigningOut ? 'Signing out...' : 'Sign out'}
         </DropdownMenuItem>
