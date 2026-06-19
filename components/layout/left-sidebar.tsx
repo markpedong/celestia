@@ -23,7 +23,8 @@ const LeftSidebar: FC<{
     tag: Tag;
     count: number;
   }[];
-}> = ({ showCta, tags }) => {
+  communityLabel: string;
+}> = ({ showCta, tags, communityLabel }) => {
   const pathname = usePathname();
   const params = useSearchParams();
   const sort = params.get('sort');
@@ -55,9 +56,9 @@ const LeftSidebar: FC<{
       <div className='mt-4 px-4'>
         <p className='mb-3 flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-muted-foreground'>
           <Hash className='size-3' />
-          Communities
+          {communityLabel}
         </p>
-        <LeftTags tags={tags} />
+        <LeftTags tags={tags} emptyMessage={communityLabel === 'Joined Communities' ? 'Join communities to add them here.' : undefined} />
       </div>
       {showCta && (
         <div className='mt-8 px-4'>

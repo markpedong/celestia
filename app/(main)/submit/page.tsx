@@ -1,14 +1,19 @@
 import { SubmitPostForm } from '@/components/post/submit-post-form';
 import { getSessionUser } from '@/lib/auth';
+import { listJoinedCommunities } from '@/lib/db/queries';
 import { ArrowLeft, MessageSquare, Send } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
-export default async function SubmitPage() {
+export default async function SubmitPage({ searchParams }: { searchParams: Promise<{ community?: string | string[] }> }) {
   const user = await getSessionUser();
   if (!user) {
     redirect('/auth/sign-in');
   }
+
+  const query = await searchParams;
+  const selectedCommunity = Array.isArray(query.community) ? query.community[0] : query.community;
+  const communities = await listJoinedCommunities(user.id);
 
   return (
     <div>
@@ -29,14 +34,14 @@ export default async function SubmitPage() {
               </p>
               <h1 className='text-xl font-bold tracking-tight'>Create Post</h1>
               <p className='mt-1 text-sm text-muted-foreground'>
-                Signed in as {user.displayName ?? user.username}. Add a title, body, and topics for your post.
+                Signed in as {user.displayName ?? user.username}. Choose one of your communities, then add a title and body.
               </p>
             </div>
             <Link href='/' className='text-sm font-medium text-muted-foreground hover:text-foreground'>
               Discard
             </Link>
           </div>
-          <SubmitPostForm />
+          <SubmitPostForm communities={communities} defaultCommunitySlug={selectedCommunity} />
         </div>
         <aside className='hidden xl:block'>
           <div className='sticky top-20 space-y-4'>
@@ -48,7 +53,7 @@ export default async function SubmitPage() {
                 </p>
                 <h2 className='text-sm font-semibold leading-snug'>Your post will appear in this compact feed format.</h2>
                 <p className='mt-2 text-xs leading-5 text-muted-foreground'>
-                  Keep the title specific, add enough context, and use comma-separated topics so people can find it.
+                  Keep the title specific, add enough context, and choose the community where the discussion belongs.
                 </p>
                 <div className='mt-3 flex items-center gap-3 text-xs text-muted-foreground'>
                   <span className='font-mono text-primary'>128</span>

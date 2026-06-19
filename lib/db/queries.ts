@@ -1,8 +1,9 @@
 import { EnrichedCommentNode, nestCommentRows } from "../comment-tree";
+import { cache } from "react";
 import { Prisma } from "../generated/prisma/client";
 import { PostModel } from "../generated/prisma/models";
 import { prisma } from "../prisma";
-import { Comment, CommunityStats, FeedSort, Post, SearchPostSuggestion, SearchTagSuggestion, Tag, User, UserCommentActivity, UserStats, VoteTarget } from "../types";
+import { Comment, Community, CommunityStats, FeedSort, Post, SearchPostSuggestion, SearchTagSuggestion, Tag, User, UserCommentActivity, UserStats, VoteTarget } from "../types";
 
 const fallbackUsernameForId = (id: string) => {
   return id
@@ -56,21 +57,27 @@ const listEnrichedPosts = async (
   where: Prisma.PostWhereInput | undefined,
   userId: string | undefined,
 ): Promise<FeedPostRow[]> => {
-  const postRows = await prisma.post.findMany({ where, orderBy: { createdAt: "desc" }, take: 50 })
+  const postRows = await prisma.post.findMany({
+    where,
+    orderBy: { createdAt: "desc" },
+    take: 50,
+    include: {
+      postTags: { select: { tagSlug: true } },
+      _count: { select: { comments: true } },
+    },
+  });
   const ids = postRows.map((row) => row.id);
 
   if (ids.length === 0) return [];
 
-  const [tagMap, ccMap, vsMap, uvMap] = await Promise.all([
-    tagsForPosts(ids),
-    commentCountsForPosts(ids),
+  const [vsMap, uvMap] = await Promise.all([
     voteSumsForPosts(ids),
-    userVotesForPosts(userId, ids)]
-  );
+    userVotesForPosts(userId, ids),
+  ]);
 
   const mapped = postRows.map(row => {
-    const slugs = tagMap.get(row.id) ?? [];
-    const cc = ccMap.get(row.id) ?? 0;
+    const slugs = row.postTags.map(({ tagSlug }) => tagSlug);
+    const cc = row._count.comments;
     const vs = vsMap.get(row.id) ?? 0;
 
     return {
@@ -133,20 +140,6 @@ export const listPostsByAuthor = async (authorId: string, sort: FeedSort, userId
   return listEnrichedPosts(sort, { authorId }, userId);
 }
 
-const commentCountsForPosts = async (postIds: string[]): Promise<Map<string, number>> => {
-  if (postIds.length === 0) return new Map();
-  const rows = await prisma.comment.groupBy({
-    by: ["postId"],
-    where: { postId: { in: postIds } },
-    _count: { _all: true },
-  });
-  const m = new Map<string, number>();
-  for (const r of rows) {
-    m.set(r.postId, r._count._all);
-  }
-  return m;
-}
-
 async function userVotesForPosts(
   userId: string | undefined,
   postIds: string[],
@@ -167,29 +160,25 @@ async function userVotesForPosts(
   return m;
 }
 
-export const listTags = async (): Promise<Tag[]> => {
+export const listTags = cache(async (): Promise<Tag[]> => {
   const rows = await prisma.tag.findMany({ orderBy: { slug: "asc" } });
   return rows.map((t) => ({
     slug: t.slug,
     label: t.label,
     hashColor: t.hashColor,
   }));
-}
+});
 
-export const getTagBySlug = async (slug: string): Promise<Tag | undefined> => {
+export const getTagBySlug = cache(async (slug: string): Promise<Tag | undefined> => {
   const row = await prisma.tag.findUnique({ where: { slug: slug.toLowerCase() } });
   return row ? { slug: row.slug, label: row.label, hashColor: row.hashColor } : undefined;
-}
+});
 
 export const getCommunityStats = async (slug: string): Promise<CommunityStats> => {
   const tagSlug = slug.toLowerCase();
-  const [postCount, authorRows, commentRows] = await Promise.all([
+  const [postCount, memberCount, commentRows] = await Promise.all([
     prisma.postTag.count({ where: { tagSlug } }),
-    prisma.post.findMany({
-      where: { postTags: { some: { tagSlug } } },
-      distinct: ['authorId'],
-      select: { authorId: true },
-    }),
+    prisma.communityMembership.count({ where: { communitySlug: tagSlug } }),
     prisma.comment.count({
       where: { post: { postTags: { some: { tagSlug } } } },
     }),
@@ -197,10 +186,35 @@ export const getCommunityStats = async (slug: string): Promise<CommunityStats> =
 
   return {
     postCount,
-    memberCount: authorRows.length,
+    memberCount,
     commentCount: commentRows,
   };
 }
+
+export const getCommunityMembership = async (userId: string | undefined, slug: string): Promise<boolean> => {
+  if (!userId) return false;
+
+  const membership = await prisma.communityMembership.findUnique({
+    where: { userId_communitySlug: { userId, communitySlug: slug.toLowerCase() } },
+    select: { userId: true },
+  });
+
+  return Boolean(membership);
+};
+
+export const listJoinedCommunities = async (userId: string): Promise<Community[]> => {
+  const memberships = await prisma.communityMembership.findMany({
+    where: { userId },
+    orderBy: { joinedAt: 'asc' },
+    include: { community: true },
+  });
+
+  return memberships.map(({ community }) => ({
+    slug: community.slug,
+    label: community.label,
+    hashColor: community.hashColor,
+  }));
+};
 
 export const searchSuggestions = async (searchQuery: string): Promise<{
   posts: SearchPostSuggestion[];
@@ -321,15 +335,16 @@ export const getUserVote = async (userId: string | undefined, type: VoteTarget, 
 }
 
 export const getPostByID = async (id: string): Promise<Post | undefined> => {
-  const row = await prisma.post.findUnique({ where: { id } });
+  const row = await prisma.post.findUnique({
+    where: { id },
+    include: {
+      postTags: { select: { tagSlug: true } },
+      _count: { select: { comments: true } },
+    },
+  });
   if (!row) return undefined;
 
-  const [tagMap, ccMap] = await Promise.all([
-    tagsForPosts([id]),
-    commentCountsForPosts([id]),
-  ]);
-
-  return mapPostRow(row, tagMap.get(id) ?? [], ccMap.get(id) ?? 0);
+  return mapPostRow(row, row.postTags.map(({ tagSlug }) => tagSlug), row._count.comments);
 
 }
 
@@ -492,7 +507,7 @@ export const listCommentsForPost = async (postID: string): Promise<Comment[]> =>
   }))
 }
 
-export const tagsPostCounts = async (): Promise<{ tag: Tag, count: number }[]> => {
+export const tagsPostCounts = cache(async (): Promise<{ tag: Tag, count: number }[]> => {
   const allTags = await listTags();
   const rows = await prisma.postTag.groupBy({
     by: ["tagSlug"],
@@ -504,4 +519,4 @@ export const tagsPostCounts = async (): Promise<{ tag: Tag, count: number }[]> =
     tag,
     count: countMap.get(tag.slug) ?? 0
   }))
-}
+});

@@ -5,7 +5,7 @@ import { votePostAction } from '@/lib/actions/posts';
 import { cn } from '@/lib/utils';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useTransition } from 'react';
+import { useOptimistic, useTransition } from 'react';
 
 type Props = {
   target: string;
@@ -23,15 +23,27 @@ const VoteButtons = ({ target, targetID, score, userVote }: Props) => {
   const [pending, startTransition] = useTransition();
   const router = useRouter();
   const isPost = target === 'post';
+  const [optimisticVote, setOptimisticVote] = useOptimistic(
+    { score, userVote },
+    (current, value: -1 | 1) => {
+      const nextVote = current.userVote === value ? 0 : value;
+      return {
+        userVote: nextVote as -1 | 0 | 1,
+        score: current.score + nextVote - current.userVote,
+      };
+    },
+  );
 
   const vote = (value: -1 | 1) => {
     startTransition(async () => {
-      if (isPost) {
-        await votePostAction(targetID, value);
-      } else {
-        await voteCommentAction(targetID, value);
+      setOptimisticVote(value);
+      const result = isPost
+        ? await votePostAction(targetID, value)
+        : await voteCommentAction(targetID, value);
+
+      if (result?.error) {
+        router.refresh();
       }
-      router.refresh();
     });
   };
 
@@ -47,14 +59,14 @@ const VoteButtons = ({ target, targetID, score, userVote }: Props) => {
         className={cn(
           'flex items-center rounded-lg transition-all hover:scale-110 hover:bg-muted disabled:opacity-50',
           buttonClass,
-          userVote === 1 ? 'text-upvote' : 'text-muted-foreground hover:text-upvote'
+          optimisticVote.userVote === 1 ? 'text-upvote' : 'text-muted-foreground hover:text-upvote'
         )}
         aria-label={isPost ? 'Upvote' : 'Upvote comment'}
       >
         <ChevronUp className={iconClass} />
       </button>
-      <span className={cn('text-center font-mono font-medium tabular-nums', scoreClass, userVote === 1 && 'text-upvote', userVote === -1 && 'text-downvote')}>
-        {formatScore(score)}
+      <span className={cn('text-center font-mono font-medium tabular-nums', scoreClass, optimisticVote.userVote === 1 && 'text-upvote', optimisticVote.userVote === -1 && 'text-downvote')}>
+        {formatScore(optimisticVote.score)}
       </span>
       <button
         onClick={() => vote(-1)}
@@ -62,7 +74,7 @@ const VoteButtons = ({ target, targetID, score, userVote }: Props) => {
         className={cn(
           'flex items-center rounded-lg transition-all hover:scale-110 hover:bg-muted disabled:opacity-50',
           buttonClass,
-          userVote === -1 ? 'text-downvote' : 'text-muted-foreground hover:text-downvote'
+          optimisticVote.userVote === -1 ? 'text-downvote' : 'text-muted-foreground hover:text-downvote'
         )}
         aria-label={isPost ? 'Downvote' : 'Downvote comment'}
       >

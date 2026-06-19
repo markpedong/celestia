@@ -4,9 +4,9 @@ import { revalidatePath } from "next/cache";
 import { getCurrentUserID } from "../auth";
 import { prisma } from "../prisma";
 import { Comment } from "../types";
-import { getUserVote } from "../db/queries";
+import { toggleVote } from '../db/votes';
 
-export type CommentFormState = { error?: string; ok?: boolean } | null;
+export type CommentFormState = { error?: string; ok?: boolean; comment?: Comment } | null;
 
 export const createCommentAction = async (_prev: CommentFormState, formData: FormData): Promise<CommentFormState> => {
   const userId = await getCurrentUserID();
@@ -24,11 +24,11 @@ export const createCommentAction = async (_prev: CommentFormState, formData: For
 
   const parentId = parentIdRaw && parentIdRaw !== "null" ? parentIdRaw : null;
 
-  await addComment({ postId, authorId: userId, parentId, body });
+  const comment = await addComment({ postId, authorId: userId, parentId, body });
 
   revalidatePath(`/post/${postId}`);
   revalidatePath("/");
-  return { ok: true };
+  return { ok: true, comment };
 }
 
 export async function addComment(input: {
@@ -73,26 +73,7 @@ export async function voteComment(
   commentId: string,
   value: -1 | 1,
 ): Promise<void> {
-  const current = await getUserVote(userId, "comment", commentId);
-  let next: -1 | 0 | 1 = value;
-  if (current === value) next = 0;
-  await prisma.vote.deleteMany({
-    where: {
-      userId,
-      targetType: "comment",
-      targetId: commentId,
-    },
-  });
-  if (next !== 0) {
-    await prisma.vote.create({
-      data: {
-        userId,
-        targetType: "comment",
-        targetId: commentId,
-        value: next,
-      },
-    });
-  }
+  await toggleVote(userId, 'comment', commentId, value);
 }
 
 export const findCommentById = async (id: string): Promise<Comment | undefined> => {

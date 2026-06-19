@@ -33,6 +33,8 @@ model Post {
   postTags PostTag[]
   comments Comment[]
 
+  @@index([createdAt])
+  @@index([authorId, createdAt])
   @@map("posts")
 }
 
@@ -41,9 +43,22 @@ model Tag {
   label     String
   hashColor String @map("hash_color")
 
-  postTags PostTag[]
+  postTags     PostTag[]
+  memberships CommunityMembership[]
 
   @@map("tags")
+}
+
+model CommunityMembership {
+  userId       String   @map("user_id")
+  communitySlug String  @map("community_slug")
+  joinedAt     DateTime @default(now()) @map("joined_at") @db.Timestamptz(6)
+
+  community Tag @relation(fields: [communitySlug], references: [slug], onDelete: Cascade)
+
+  @@id([userId, communitySlug])
+  @@index([communitySlug, joinedAt])
+  @@map("community_memberships")
 }
 
 model PostTag {
@@ -54,6 +69,7 @@ model PostTag {
   tag  Tag  @relation(fields: [tagSlug], references: [slug])
 
   @@id([postId, tagSlug])
+  @@index([tagSlug, postId])
   @@map("post_tags")
 }
 
@@ -67,6 +83,8 @@ model Comment {
 
   post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
 
+  @@index([postId, createdAt])
+  @@index([authorId, createdAt])
   @@map("comments")
 }
 
@@ -77,5 +95,6 @@ model Vote {
   value      Int    @db.SmallInt
 
   @@id([userId, targetType, targetId]) // basically just a unique ID for each vote
+  @@index([targetType, targetId])
   @@map("votes")
 }

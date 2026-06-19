@@ -2,13 +2,14 @@ import FeedSortTabs from '@/components/feed/feed-sort-tabs';
 import { PostList } from '@/components/feed/post-list';
 import { ContentWithSidebar } from '@/components/layout/content-with-sidebar';
 import { Button } from '@/components/ui/button';
+import { CommunityMembershipButton } from '@/components/community/community-membership-button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { StatGrid } from '@/components/ui/stat-grid';
 import { getSessionUser } from '@/lib/auth';
-import { batchAuthorsForIds, getCommunityStats, getTagBySlug, listPostSorted, listTags } from '@/lib/db/queries';
+import { batchAuthorsForIds, getCommunityMembership, getCommunityStats, getTagBySlug, listPostSorted, listTags } from '@/lib/db/queries';
 import { formatCount } from '@/lib/format';
 import { FeedSort } from '@/lib/types';
-import { Bell, CakeSlice, Hash, Plus, Users } from 'lucide-react';
+import { CakeSlice, Hash, Plus, Users } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
@@ -33,10 +34,11 @@ export default async function CommunityPage({ params, searchParams }: Props) {
   const searchQuery = Array.isArray(query.q) ? query.q[0] ?? '' : query.q ?? '';
   const cleanedSearchQuery = searchQuery.trim();
 
-  const [rows, tags, stats] = await Promise.all([
+  const [rows, tags, stats, isMember] = await Promise.all([
     listPostSorted(sort, community.slug, sessionUser?.id, cleanedSearchQuery),
     listTags(),
     getCommunityStats(community.slug),
+    getCommunityMembership(sessionUser?.id, community.slug),
   ]);
   const tagsMap = new Map(tags.map(tag => [tag.slug, tag]));
   const authorById = await batchAuthorsForIds([...new Set(rows.map(row => row.post.authorId))]);
@@ -47,11 +49,11 @@ export default async function CommunityPage({ params, searchParams }: Props) {
         <section className='celestia-card p-4'>
           <h2 className='mb-3 text-sm font-semibold'>About Community</h2>
           <p className='text-xs leading-6 text-muted-foreground'>
-            r/{community.slug} collects every post tagged {community.label}. Following and membership are visual for now while the community model is tag-based.
+            r/{community.slug} is a real community with membership. Join it to add it to your communities and create posts there.
           </p>
           <div className='mt-4 space-y-2 text-xs text-muted-foreground'>
-            <p className='flex items-center gap-2'><Users className='size-3 text-primary' /> {formatCount(stats.memberCount)} contributors</p>
-            <p className='flex items-center gap-2'><CakeSlice className='size-3 text-primary' /> Created with Celestia topics</p>
+            <p className='flex items-center gap-2'><Users className='size-3 text-primary' /> {formatCount(stats.memberCount)} members</p>
+            <p className='flex items-center gap-2'><CakeSlice className='size-3 text-primary' /> Community discussions</p>
           </div>
         </section>
       }
@@ -73,20 +75,17 @@ export default async function CommunityPage({ params, searchParams }: Props) {
                 </div>
               </div>
               <div className='flex items-center gap-2'>
-                <Button variant='outline' size='sm' className='rounded-full'>
-                  <Bell className='size-3.5' />
-                  Follow
-                </Button>
-                <Button asChild size='sm' className='celestia-primary-action rounded-full'>
-                  <Link href='/submit'>
+                <CommunityMembershipButton slug={community.slug} isMember={isMember} isSignedIn={Boolean(sessionUser)} />
+                {isMember ? <Button asChild size='sm' className='celestia-primary-action rounded-full'>
+                  <Link href={`/submit?community=${encodeURIComponent(community.slug)}`}>
                     <Plus className='size-3.5' />
                     Create Post
                   </Link>
-                </Button>
+                </Button> : null}
               </div>
             </div>
             <p className='mt-4 max-w-2xl text-sm leading-6 text-muted-foreground'>
-              A topic community for posts tagged with {community.label}. Browse discussions, sort what is hot, and jump into threads.
+              Browse community discussions, sort what is hot, and join to post or add this community to your list.
             </p>
             <StatGrid className='mt-4 max-w-lg' stats={[
               { label: 'Posts', value: formatCount(stats.postCount) },

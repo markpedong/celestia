@@ -1,5 +1,5 @@
 /**
- * Seed tags, demo posts, threaded comments, and votes (fake author ids `seed_*`).
+ * Seed communities, demo posts, threaded comments, and votes (fake author ids `seed_*`).
  *
  *   npm run db:seed
  *
@@ -200,15 +200,9 @@ async function seedTags() {
 }
 
 async function insertPost(data: SeedPost) {
-  const slugs = data.tagSlugs.length ? data.tagSlugs : ["webdev"];
-  await prisma.tag.createMany({
-    data: slugs.map((slug) => ({
-      slug,
-      label: slug,
-      hashColor: "#FFB000",
-    })),
-    skipDuplicates: true,
-  });
+  const communitySlug = data.tagSlugs[0] ?? 'webdev';
+  const community = await prisma.tag.findUnique({ where: { slug: communitySlug }, select: { slug: true } });
+  if (!community) throw new Error(`Seed community ${communitySlug} does not exist.`);
 
   const post = await prisma.post.create({
     data: {
@@ -217,8 +211,8 @@ async function insertPost(data: SeedPost) {
       body: data.body,
     },
   });
-  await prisma.postTag.createMany({
-    data: slugs.map((tagSlug) => ({ postId: post.id, tagSlug })),
+  await prisma.postTag.create({
+    data: { postId: post.id, tagSlug: community.slug },
   });
   return post.id;
 }
@@ -309,7 +303,7 @@ async function seedCommentsAndVotes(postIds: string[]) {
 }
 
 async function main() {
-  console.log("Seeding tags…");
+  console.log("Seeding communities…");
   await seedTags();
 
   const force = process.env.SEED_FORCE === "1";

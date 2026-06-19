@@ -5,14 +5,25 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { StatGrid } from '@/components/ui/stat-grid';
 import { ProfileActivityTabs } from '@/components/profile/profile-activity-tabs';
 import { getSessionUser } from '@/lib/auth';
-import { batchAuthorsForIds, getUserByUsername, getUserStats, listCommentsByAuthor, listPostsByAuthor, listTags } from '@/lib/db/queries';
+import {
+  batchAuthorsForIds,
+  getUserByUsername,
+  getUserStats,
+  listCommentsByAuthor,
+  listPostsByAuthor,
+  listTags,
+} from '@/lib/db/queries';
 import { formatCount, formatRelativeTime } from '@/lib/format';
 import { AtSign, CakeSlice, MessageSquare, Shield, Trophy } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { UserAvatar } from '@/components/ui/user-avatar';
-import { ProfileMediaEditButton, ProfileMediaEditor, ProfileMediaEditMode } from '@/components/profile/profile-media-editor';
+import {
+  ProfileMediaEditButton,
+  ProfileMediaEditor,
+  ProfileMediaEditMode,
+} from '@/components/profile/profile-media-editor';
 
 type Props = {
   params: Promise<{ username: string }>;
@@ -50,22 +61,36 @@ export default async function UserPage({ params }: Props) {
         <section className='celestia-card p-4'>
           <h2 className='mb-3 text-sm font-semibold'>Profile</h2>
           <div className='space-y-3 text-xs text-muted-foreground'>
-            <p className='flex items-center gap-2'><Trophy className='size-3 text-primary' /> {formatCount(stats.karma)} post karma</p>
+            <p className='flex items-center gap-2'>
+              <Trophy className='size-3 text-primary' /> {formatCount(stats.karma)} post karma
+            </p>
             {profile.createdAt ? (
-              <p className='flex items-center gap-2'><CakeSlice className='size-3 text-primary' /> Joined {formatRelativeTime(profile.createdAt)}</p>
+              <p className='flex items-center gap-2'>
+                <CakeSlice className='size-3 text-primary' /> Joined {formatRelativeTime(profile.createdAt)}
+              </p>
             ) : null}
             {isSelf ? (
-              <p className='flex items-center gap-2'><Shield className='size-3 text-primary' /> This is your public profile</p>
+              <p className='flex items-center gap-2'>
+                <Shield className='size-3 text-primary' /> This is your public profile
+              </p>
             ) : null}
           </div>
         </section>
       }
     >
-        <ProfileMediaEditMode>
+      <ProfileMediaEditMode>
         <section className='celestia-card mb-4 overflow-hidden'>
           <div className='relative h-28 overflow-hidden border-b border-border/70 bg-[linear-gradient(135deg,var(--primary),var(--accent))]'>
             {profile.coverUrl ? (
-              <Image src={profile.coverUrl} alt='' fill unoptimized sizes='(max-width: 1280px) 100vw, 900px' className='object-cover' />
+              <Image
+                src={profile.coverUrl}
+                alt=''
+                fill
+                unoptimized
+                sizes='(max-width: 1280px) 100vw, 900px'
+                className='object-cover'
+                loading='eager'
+              />
             ) : null}
             {isSelf ? <ProfileMediaEditor field='cover' className='right-3 bottom-3 group' /> : null}
           </div>
@@ -94,49 +119,70 @@ export default async function UserPage({ params }: Props) {
                 )}
               </div>
             </div>
-            <StatGrid className='mt-4 max-w-xl' stats={[
-              { label: 'Post karma', value: formatCount(stats.karma) },
-              { label: 'Posts', value: formatCount(stats.postCount) },
-              { label: 'Comments', value: formatCount(stats.commentCount) },
-            ]} />
+            <StatGrid
+              className='mt-4 max-w-xl'
+              stats={[
+                { label: 'Post karma', value: formatCount(stats.karma) },
+                { label: 'Posts', value: formatCount(stats.postCount) },
+                { label: 'Comments', value: formatCount(stats.commentCount) },
+              ]}
+            />
           </div>
         </section>
-        </ProfileMediaEditMode>
+      </ProfileMediaEditMode>
 
-        <ProfileActivityTabs
-          overview={
+      <ProfileActivityTabs
+        overview={
+          <div className='space-y-3'>
+            {posts.length > 0 ? (
+              <PostList rows={posts} authorsById={new Map([[profile.id, author]])} tagsBySlug={tagsMap} />
+            ) : null}
+            {comments.length > 0 ? <CommentsList comments={comments} title='Recent comments' /> : null}
+            {posts.length === 0 && comments.length === 0 ? (
+              <EmptyState
+                icon={AtSign}
+                title='No activity yet'
+                description={`Posts and comments from u/${profile.username} will show here.`}
+              />
+            ) : null}
+          </div>
+        }
+        posts={
+          posts.length > 0 ? (
             <div className='space-y-3'>
-              {posts.length > 0 ? <PostList rows={posts} authorsById={new Map([[profile.id, author]])} tagsBySlug={tagsMap} /> : null}
-              {comments.length > 0 ? (
-                <CommentsList comments={comments} title='Recent comments' />
-              ) : null}
-              {posts.length === 0 && comments.length === 0 ? (
-                <EmptyState icon={AtSign} title='No activity yet' description={`Posts and comments from u/${profile.username} will show here.`} />
-              ) : null}
+              <PostList rows={posts} authorsById={new Map([[profile.id, author]])} tagsBySlug={tagsMap} />
             </div>
-          }
-          posts={
-            posts.length > 0 ? (
-              <div className='space-y-3'>
-                <PostList rows={posts} authorsById={new Map([[profile.id, author]])} tagsBySlug={tagsMap} />
-              </div>
-            ) : (
-              <EmptyState icon={AtSign} title='No posts yet' description={`Posts from u/${profile.username} will show here.`} />
-            )
-          }
-          comments={
-            comments.length > 0 ? (
-              <CommentsList comments={comments} title='Comments' />
-            ) : (
-              <EmptyState icon={MessageSquare} title='No comments yet' description={`Comments from u/${profile.username} will show here.`} />
-            )
-          }
-        />
+          ) : (
+            <EmptyState
+              icon={AtSign}
+              title='No posts yet'
+              description={`Posts from u/${profile.username} will show here.`}
+            />
+          )
+        }
+        comments={
+          comments.length > 0 ? (
+            <CommentsList comments={comments} title='Comments' />
+          ) : (
+            <EmptyState
+              icon={MessageSquare}
+              title='No comments yet'
+              description={`Comments from u/${profile.username} will show here.`}
+            />
+          )
+        }
+      />
     </ContentWithSidebar>
   );
 }
 
-function CommentsList({ comments, title }: { comments: Awaited<ReturnType<typeof listCommentsByAuthor>>; title: string }) {
+function CommentsList({
+  comments,
+  title,
+}: {
+  comments: Awaited<ReturnType<typeof listCommentsByAuthor>>;
+  title: string;
+}) {
   return (
     <section className='celestia-card p-4'>
       <h2 className='mb-3 flex items-center gap-2 text-sm font-semibold'>
@@ -145,7 +191,11 @@ function CommentsList({ comments, title }: { comments: Awaited<ReturnType<typeof
       </h2>
       <div className='space-y-3'>
         {comments.map(comment => (
-          <Link key={comment.id} href={`/post/${comment.postId}`} className='block rounded-xl border border-border bg-muted/35 p-3 celestia-hover-surface'>
+          <Link
+            key={comment.id}
+            href={`/post/${comment.postId}`}
+            className='block rounded-xl border border-border bg-muted/35 p-3 celestia-hover-surface'
+          >
             <p className='mb-1 truncate text-xs font-semibold text-primary'>Commented on {comment.postTitle}</p>
             <p className='text-sm leading-6 text-card-foreground'>{excerpt(comment.body)}</p>
             <p className='mt-2 font-mono text-[11px] text-muted-foreground'>{formatRelativeTime(comment.createdAt)}</p>

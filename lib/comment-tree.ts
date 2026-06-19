@@ -10,6 +10,7 @@ export type EnrichedCommentNode = {
   author: User;
   score: number;
   userVote: -1 | 0 | 1;
+  isPending?: boolean;
   children: EnrichedCommentNode[];
 };
 

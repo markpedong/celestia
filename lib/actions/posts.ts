@@ -2,12 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { getCurrentUserID } from "../auth";
-import { getUserVote } from "../db/queries";
-import { prisma } from "../prisma";
 import { Post } from "../types";
 import { PostModel } from "../generated/prisma/models";
 import { redirect } from "next/navigation";
 import { uploadImage } from "../media";
+import { prisma } from '../prisma';
+import { toggleVote } from '../db/votes';
 
 export const votePostAction = async (postId: string, value: -1 | 1) => {
   const userId = await getCurrentUserID();
@@ -25,29 +25,7 @@ export const votePost = async (
   postId: string,
   value: -1 | 1,
 ): Promise<void> => {
-  const current = await getUserVote(userId, "post", postId); // if you already voted
-  let next: -1 | 0 | 1 = value; // new vote
-  if (current === value) next = 0; // if same, then you unvote, meaning you can be neutral.
-
-  // reason for this is becuase there can only be one vote per post.
-  await prisma.vote.deleteMany({
-    where: {
-      userId,
-      targetType: "post",
-      targetId: postId,
-    },
-  });
-
-  if (next !== 0) {
-    await prisma.vote.create({
-      data: {
-        userId,
-        targetType: "post",
-        targetId: postId,
-        value: next,
-      },
-    });
-  }
+  await toggleVote(userId, 'post', postId, value);
 }
 
 export type PostFormState = { error?: string } | null;
@@ -63,17 +41,24 @@ export const createPostAction = async (
 
   const title = String(formData.get("title") ?? "");
   const body = String(formData.get("body") ?? "");
-  const tagsRaw = String(formData.get("tags") ?? "");
+  const communitySlug = String(formData.get("communitySlug") ?? "").trim().toLowerCase();
   const image = formData.get("image");
 
   if (title.trim().length < 4) {
     return { error: "Title is too short." };
   }
 
-  const tagSlugs = tagsRaw
-    .split(/[,#\s]+/)
-    .map((s) => s.trim().toLowerCase())
-    .slice(0, 5);
+  if (!communitySlug) {
+    return { error: 'Choose a community before posting.' };
+  }
+
+  const membership = await prisma.communityMembership.findUnique({
+    where: { userId_communitySlug: { userId, communitySlug } },
+    select: { userId: true },
+  });
+  if (!membership) {
+    return { error: 'Join this community before posting.' };
+  }
 
   let imageUrl: string | undefined;
   try {
@@ -86,12 +71,13 @@ export const createPostAction = async (
     authorId: userId,
     title,
     body,
-    tagSlugs,
+    communitySlug,
     imageUrl,
   });
 
   revalidatePath("/");
   revalidatePath("/submit");
+  revalidatePath(`/r/${communitySlug}`);
   redirect(`/post/${post.id}`);
 }
 
@@ -99,36 +85,34 @@ export const addPost = async (input: {
   authorId: string;
   title: string;
   body: string;
-  tagSlugs: string[];
+  communitySlug: string;
   imageUrl?: string;
 }): Promise<Post> => {
-  const tagSlugs = input.tagSlugs.length ? input.tagSlugs : ["webdev"];
-  await prisma.tag.createMany({
-    data: tagSlugs.map((slug) => ({
-      slug,
-      label: slug,
-      hashColor: "#ff00fb",
-    })),
-    skipDuplicates: true,
+  const communitySlug = input.communitySlug.trim().toLowerCase();
+  const community = await prisma.tag.findUnique({ where: { slug: communitySlug }, select: { slug: true } });
+  if (!community) throw new Error('Community not found.');
+
+  const row = await prisma.$transaction(async (tx) => {
+    const post = await tx.post.create({
+      data: {
+        authorId: input.authorId,
+        title: input.title.trim(),
+        body: input.body.trim(),
+        imageUrl: input.imageUrl,
+      },
+    });
+
+    await tx.postTag.create({
+      data: {
+        postId: post.id,
+        tagSlug: community.slug,
+      },
+    });
+
+    return post;
   });
 
-  const row = await prisma.post.create({
-    data: {
-      authorId: input.authorId,
-      title: input.title.trim(),
-      body: input.body.trim(),
-      imageUrl: input.imageUrl,
-    },
-  });
-
-  await prisma.postTag.createMany({
-    data: tagSlugs.map((slug) => ({
-      postId: row.id,
-      tagSlug: slug,
-    })),
-  });
-
-  return mapPostRow(row, tagSlugs, 0);
+  return mapPostRow(row, [community.slug], 0);
 }
 
 const mapPostRow = (

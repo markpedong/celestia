@@ -4,7 +4,6 @@ import { EnrichedCommentNode } from '@/lib/comment-tree';
 import { User } from '@/lib/types';
 import { Badge } from '../ui/badge';
 import { formatRelativeTime } from '@/lib/format';
-import { useState } from 'react';
 import VoteButtons from '../feed/vote-buttons';
 import CommentComposer from './comment-composer';
 import { Clock, CornerDownRight, Share2 } from 'lucide-react';
@@ -14,13 +13,17 @@ export function CommentNode({
   node,
   postAuthorId,
   sessionUser,
+  activeReplyId,
+  onReplyChange,
 }: {
   node: EnrichedCommentNode;
   postAuthorId: string;
   sessionUser: User | null;
+  activeReplyId: string | null;
+  onReplyChange: (commentId: string | null) => void;
 }) {
   const isOp = node.authorId === postAuthorId;
-  const [showReply, setShowReply] = useState(false);
+  const isReplying = activeReplyId === node.id;
 
   return (
     <li className='relative'>
@@ -42,11 +45,11 @@ export function CommentNode({
           </div>
           <p className='whitespace-pre-wrap text-sm leading-7 text-card-foreground'>{node.body}</p>
           <div className='mt-3 flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground'>
-            <VoteButtons target='comment' targetID={node.id} score={node.score} userVote={node.userVote} />
-            {sessionUser ? (
+            {node.isPending ? <span className='px-2 py-1 text-muted-foreground'>Sending…</span> : <VoteButtons target='comment' targetID={node.id} score={node.score} userVote={node.userVote} />}
+            {sessionUser && !node.isPending ? (
               <button
                 type='button'
-                onClick={() => setShowReply(v => !v)}
+                onClick={() => onReplyChange(isReplying ? null : node.id)}
                 className='inline-flex items-center gap-1 rounded-lg px-2 py-1 celestia-hover-surface'
               >
                 <CornerDownRight className='size-3' />
@@ -59,7 +62,7 @@ export function CommentNode({
             </button>
           </div>
 
-          {sessionUser && showReply && (
+          {sessionUser && isReplying && (
             <div className='mt-3 border-t border-border/70 pt-3'>
               <CommentComposer
                 postID={node.postId}
@@ -74,7 +77,14 @@ export function CommentNode({
           {node.children.length > 0 && (
             <ul className='mt-4 space-y-4 border-l border-primary/25 pl-4'>
               {node.children.map(ch => (
-                <CommentNode key={ch.id} node={ch} postAuthorId={postAuthorId} sessionUser={sessionUser} />
+                <CommentNode
+                  key={ch.id}
+                  node={ch}
+                  postAuthorId={postAuthorId}
+                  sessionUser={sessionUser}
+                  activeReplyId={activeReplyId}
+                  onReplyChange={onReplyChange}
+                />
               ))}
             </ul>
           )}

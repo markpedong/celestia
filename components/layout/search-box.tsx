@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { Clock, Hash, Search, TrendingUp, X, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { FormEvent, MouseEvent, ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { FormEvent, MouseEvent, ReactNode, useDeferredValue, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 
 type SearchResponse = {
   posts: SearchPostSuggestion[];
@@ -48,8 +48,12 @@ const SearchBox = ({ trending, communities }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [suggestions, setSuggestions] = useState<SearchResponse>({ posts: [], tags: [] });
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+  const [isNavigating, startNavigation] = useTransition();
+  const requestSequence = useRef(0);
 
   const trimmedQuery = query.trim();
+  const deferredQuery = useDeferredValue(trimmedQuery);
   const typedSuggestions = useMemo(() => {
     if (!trimmedQuery) return [];
 
@@ -83,24 +87,29 @@ const SearchBox = ({ trending, communities }: Props) => {
   }, []);
 
   useEffect(() => {
-    if (!trimmedQuery) {
+    if (!deferredQuery) {
+      requestSequence.current += 1;
       return;
     }
 
     const controller = new AbortController();
+    const requestId = ++requestSequence.current;
 
     const timer = window.setTimeout(async () => {
+      setIsLoadingSuggestions(true);
       try {
-        const response = await fetch(`/api/search/suggestions?q=${encodeURIComponent(trimmedQuery)}`, {
+        const response = await fetch(`/api/search/suggestions?q=${encodeURIComponent(deferredQuery)}`, {
           signal: controller.signal,
         });
         if (!response.ok) return;
         const data = (await response.json()) as SearchResponse;
-        setSuggestions(data);
+        if (requestSequence.current === requestId) setSuggestions(data);
       } catch (error) {
         if (!(error instanceof DOMException && error.name === 'AbortError')) {
-          setSuggestions({ posts: [], tags: [] });
+          if (requestSequence.current === requestId) setSuggestions({ posts: [], tags: [] });
         }
+      } finally {
+        if (requestSequence.current === requestId) setIsLoadingSuggestions(false);
       }
     }, 180);
 
@@ -108,7 +117,7 @@ const SearchBox = ({ trending, communities }: Props) => {
       controller.abort();
       window.clearTimeout(timer);
     };
-  }, [trimmedQuery]);
+  }, [deferredQuery]);
 
   const saveRecentSearch = (term: string) => {
     const next = [term, ...recentSearches.filter(item => item.toLowerCase() !== term.toLowerCase())].slice(0, 6);
@@ -124,7 +133,9 @@ const SearchBox = ({ trending, communities }: Props) => {
     setQuery(nextQuery);
     setIsOpen(false);
     const searchPath = pathname.startsWith('/r/') ? pathname : '/';
-    router.push(`${searchPath}?q=${encodeURIComponent(nextQuery)}`);
+    startNavigation(() => {
+      router.push(`${searchPath}?q=${encodeURIComponent(nextQuery)}`);
+    });
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -150,6 +161,7 @@ const SearchBox = ({ trending, communities }: Props) => {
     <div ref={rootRef} className='relative mx-auto min-w-0 max-w-2xl flex-1'>
       <form
         onSubmit={handleSubmit}
+        aria-busy={isNavigating}
         className={cn(
           'group/search flex h-10 items-center overflow-hidden rounded-[22px] border bg-secondary/80 text-sm transition-colors',
           isOpen ? 'border-accent shadow-[0_0_0_1px_var(--accent)]' : 'border-border/80 hover:border-border'
@@ -279,6 +291,7 @@ const SearchBox = ({ trending, communities }: Props) => {
               </div>
 
               <SearchSection title='Communities'>
+                {isLoadingSuggestions ? <p className='px-5 py-2 text-xs text-muted-foreground'>Searching…</p> : null}
                 {suggestions.tags.map(tag => (
                   <Link
                     key={tag.slug}

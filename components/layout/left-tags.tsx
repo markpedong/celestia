@@ -1,13 +1,14 @@
 import { formatCount } from '@/lib/format';
 import { Tag } from '@/lib/types';
 import Link from 'next/link';
-type Props = { tags: { tag: Tag; count: number }[] };
+type Props = { tags: { tag: Tag; count: number }[]; emptyMessage?: string };
 
-const LeftTags = ({ tags }: Props) => {
+const LeftTags = ({ tags, emptyMessage }: Props) => {
   const sorted = [...tags].sort((a, b) => b.count - a.count).slice(0, 8);
 
   return (
     <ul className='space-y-1'>
+      {sorted.length === 0 && emptyMessage ? <li className='px-3 py-2 text-xs leading-5 text-muted-foreground'>{emptyMessage}</li> : null}
       {sorted.map(({ tag, count }) => (
         <li key={tag.slug}>
           <Link

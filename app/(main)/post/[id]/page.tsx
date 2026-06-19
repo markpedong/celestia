@@ -115,20 +115,20 @@ const Page = async ({ params }: Props) => {
           <div className='mb-4 flex flex-wrap items-center justify-between gap-3'>
             <h2 className='text-lg font-semibold'>{post.commentCount} Comments</h2>
           </div>
-          {sessionUser ? (
-            <div className='mb-8'>
-              <CommentComposer postID={post.id} user={sessionUser} />
-            </div>
-          ) : (
-            <p className='mb-8 rounded-xl border border-dashed border-primary/25 bg-primary/5 p-4 text-sm text-muted-foreground'>
-              <Link href='/auth/sign-in' className='font-medium text-primary hover:underline'>
-                Sign in
-              </Link>{' '}
-              to join the discussion.
-            </p>
-          )}
-
-          <CommentThread tree={commentTree} postAuthorId={post.authorId} sessionUser={sessionUser} />
+          <CommentThread tree={commentTree} postAuthorId={post.authorId} sessionUser={sessionUser}>
+            {sessionUser ? (
+              <div className='mb-8'>
+                <CommentComposer postID={post.id} user={sessionUser} />
+              </div>
+            ) : (
+              <p className='mb-8 rounded-xl border border-dashed border-primary/25 bg-primary/5 p-4 text-sm text-muted-foreground'>
+                <Link href='/auth/sign-in' className='font-medium text-primary hover:underline'>
+                  Sign in
+                </Link>{' '}
+                to join the discussion.
+              </p>
+            )}
+          </CommentThread>
         </section>
     </ContentWithSidebar>
   );

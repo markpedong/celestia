@@ -6,14 +6,15 @@ import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
 import { Image as ImageIcon, Link2, Send } from 'lucide-react';
+import type { Community } from '@/lib/types';
 
-export function SubmitPostForm() {
+export function SubmitPostForm({ communities, defaultCommunitySlug }: { communities: Community[]; defaultCommunitySlug?: string }) {
   const [state, action, pending] = useActionState(createPostAction, null);
   const imageInput = useRef<HTMLInputElement>(null);
   const [imageName, setImageName] = useState<string | null>(null);
 
   return (
-    <form action={action} encType='multipart/form-data' className='celestia-card space-y-4 p-4 md:p-5'>
+    <form action={action} className='celestia-card space-y-4 p-4 md:p-5'>
       <div className='space-y-2'>
         <Label htmlFor='title' className='text-sm text-card-foreground'>Post title</Label>
         <Input
@@ -37,14 +38,22 @@ export function SubmitPostForm() {
         />
       </div>
       <div className='space-y-2'>
-        <Label htmlFor='tags' className='text-sm text-card-foreground'>Topics</Label>
-        <Input
-          id='tags'
-          name='tags'
-          placeholder='news, questions, webdev'
-          className='h-10 rounded-xl border-border bg-secondary/80 px-4 focus-visible:border-primary/40 focus-visible:ring-primary/20'
-        />
-        <p className='text-xs text-muted-foreground'>Comma-separated. Defaults to #webdev if empty.</p>
+        <Label htmlFor='communitySlug' className='text-sm text-card-foreground'>Community</Label>
+        <select
+          id='communitySlug'
+          name='communitySlug'
+          required
+          defaultValue={defaultCommunitySlug && communities.some(community => community.slug === defaultCommunitySlug) ? defaultCommunitySlug : ''}
+          disabled={communities.length === 0 || pending}
+          className='h-10 w-full rounded-xl border border-border bg-secondary/80 px-4 text-sm text-foreground outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60'
+        >
+          <option value='' disabled>Select a community</option>
+          {communities.map(community => (
+            <option key={community.slug} value={community.slug}>r/{community.slug} — {community.label}</option>
+          ))}
+        </select>
+        <p className='text-xs text-muted-foreground'>You can post in communities you have joined. Communities are no longer created from post text.</p>
+        {communities.length === 0 ? <p className='text-xs text-primary'>Join a community first, then come back here to post.</p> : null}
       </div>
 
       <div className='grid gap-3 sm:grid-cols-2'>
@@ -77,7 +86,7 @@ export function SubmitPostForm() {
         </p>
       ) : null}
 
-      <Button type='submit' disabled={pending} className='celestia-primary-action h-10 w-full rounded-xl'>
+      <Button type='submit' disabled={pending || communities.length === 0} className='celestia-primary-action h-10 w-full rounded-xl'>
         <Send className='size-4' />
         {pending ? 'Posting...' : 'Create Post'}
       </Button>

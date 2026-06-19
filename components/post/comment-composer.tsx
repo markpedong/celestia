@@ -7,6 +7,7 @@ import { useRef, useState, useTransition } from 'react';
 import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
 import { UserAvatar } from '../ui/user-avatar';
+import { useCommentSubmission } from './comment-submission-context';
 
 type Props = {
   postID: string;
@@ -21,12 +22,26 @@ const CommentComposer = ({ postID, user, compact, parentId, placeholder }: Props
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const router = useRouter();
+  const commentSubmission = useCommentSubmission();
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
     const form = e.currentTarget;
     const fd = new FormData(form);
+    const body = String(fd.get('body') ?? '').trim();
+
+    if (commentSubmission) {
+      const res = await commentSubmission.submitComment(fd, {
+        postId: postID,
+        parentId: parentId ?? null,
+        body,
+        author: user,
+      });
+      if (res?.error) setError(res.error);
+      else form.reset();
+      return;
+    }
 
     startTransition(async () => {
       const res = await createCommentAction(null, fd);
@@ -57,8 +72,8 @@ const CommentComposer = ({ postID, user, compact, parentId, placeholder }: Props
             {error}
           </p>
         ) : null}
-        <Button type='submit' size='sm' disabled={pending} className='celestia-primary-action rounded-xl'>
-          {pending ? 'Posting...' : parentId ? 'Reply' : 'Comment'}
+        <Button type='submit' size='sm' disabled={pending || commentSubmission?.pending} className='celestia-primary-action rounded-xl'>
+          {pending || commentSubmission?.pending ? 'Posting...' : parentId ? 'Reply' : 'Comment'}
         </Button>
       </div>
     </form>
