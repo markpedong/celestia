@@ -1,4 +1,5 @@
 import LeftSidebar from '@/components/layout/left-sidebar';
+import MobileBottomNav from '@/components/layout/mobile-bottom-nav';
 import Navbar from '@/components/layout/navbar';
 import { getSessionUser } from '@/lib/auth';
 import { tagsPostCounts } from '@/lib/db/queries';
@@ -23,8 +24,9 @@ const MainLayout: FC<Props> = async ({ children }) => {
       <Navbar trending={trending} communities={communities} user={user} />
       <div className='mx-auto flex w-full max-w-[1600px] gap-0 px-4'>
         <LeftSidebar showCta={!user} tags={tags} />
-        <main className='min-w-0 flex-1 pt-6 lg:px-6'>{children}</main>
+        <main className='min-w-0 flex-1 pb-[calc(4.5rem+env(safe-area-inset-bottom))] pt-6 lg:px-6 lg:pb-0'>{children}</main>
       </div>
+      <MobileBottomNav isSignedIn={Boolean(user)} />
     </>
   );
 };

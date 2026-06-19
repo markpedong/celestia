@@ -1,10 +1,12 @@
 import FeedSortTabs from '@/components/feed/feed-sort-tabs';
-import PostCard from '@/components/feed/post-card';
+import { PostList } from '@/components/feed/post-list';
 import { RightTrending } from '@/components/layout/right-trending';
+import { EmptyState } from '@/components/ui/empty-state';
 import { getSessionUser } from '@/lib/auth';
 import { batchAuthorsForIds, listPostSorted, listTags, tagsPostCounts } from '@/lib/db/queries';
 import { getTrendingToday } from '@/lib/trending';
 import { FeedSort } from '@/lib/types';
+import { FileQuestion } from 'lucide-react';
 import { FC } from 'react';
 
 type Props = {
@@ -34,22 +36,6 @@ const Home: FC<Props> = async ({ searchParams }) => {
     .slice(0, 6)
     .map(({ tag, count }) => ({ ...tag, postCount: count }));
 
-  const cards = rows.map(row => {
-    const author = authorById.get(row.post.authorId);
-    if (!author) return null;
-
-    return (
-      <PostCard
-        key={row.post.id}
-        post={row.post}
-        author={author}
-        tagsBySlug={tagsMap}
-        score={row.score}
-        userVote={row.userVote}
-      />
-    );
-  });
-
   return (
     <div className='flex w-full min-w-0 gap-6'>
       <div className='w-full min-w-0 flex-1'>
@@ -60,19 +46,14 @@ const Home: FC<Props> = async ({ searchParams }) => {
           </div>
         ) : null}
         <div className='w-full space-y-3'>
-          {cards}
+          <PostList rows={rows} authorsById={authorById} tagsBySlug={tagsMap} />
           {rows.length === 0 && (
-            <div className='celestia-card flex min-h-80 w-full flex-col items-center justify-center px-6 py-20 text-center'>
-              <div className='mb-4 flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-[0_0_24px] shadow-primary/15'>
-                <span className='font-mono text-lg'>0</span>
-              </div>
-              <h2 className='text-base font-semibold text-muted-foreground'>
-                {cleanedSearchQuery ? 'No matching posts found' : 'No posts here yet'}
-              </h2>
-              <p className='mt-2 max-w-72 text-sm leading-relaxed text-muted-foreground/70'>
-                {cleanedSearchQuery ? 'Try a different keyword or clear the search.' : 'Be the first to start a discussion.'}
-              </p>
-            </div>
+            <EmptyState
+              icon={FileQuestion}
+              title={cleanedSearchQuery ? 'No matching posts found' : 'No posts here yet'}
+              description={cleanedSearchQuery ? 'Try a different keyword or clear the search.' : 'Be the first to start a discussion.'}
+              className='flex min-h-80 w-full flex-col items-center justify-center py-20'
+            />
           )}
         </div>
       </div>

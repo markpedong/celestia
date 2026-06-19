@@ -1,11 +1,10 @@
 import { Post, Tag, User } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { Clock, MessageSquare, Share2 } from 'lucide-react';
+import { MessageSquare, Share2 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { formatRelativeTime } from '@/lib/format';
 import VoteButtons from './vote-buttons';
-import { UserAvatar } from '@/components/ui/user-avatar';
+import { PostMeta } from './post-meta';
 
 type Props = {
   post: Post;
@@ -22,9 +21,6 @@ const snippet = (body: string, max = 160) => {
 };
 
 const PostCard = ({ post, author, tagsBySlug, score, userVote }: Props) => {
-  const primarySlug = post.tagSlugs[0];
-  const primaryTag = primarySlug ? tagsBySlug.get(primarySlug) : undefined;
-
   return (
     <article className='celestia-card celestia-card-hover flex w-full overflow-hidden last:mb-7'>
       <div className='celestia-vote-rail flex min-w-[52px] flex-col items-center justify-center border-r border-border/60 px-3 py-4'>
@@ -32,33 +28,7 @@ const PostCard = ({ post, author, tagsBySlug, score, userVote }: Props) => {
       </div>
       <div className='flex min-w-0 flex-1 gap-4 p-4'>
         <div className='min-w-0 flex-1'>
-          <div className='mb-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground'>
-            <UserAvatar user={author} size='sm' />
-            <Link href={`/u/${author.username}`} className='truncate text-xs font-medium text-card-foreground hover:text-foreground'>
-              {author.displayName ?? author.username}
-            </Link>
-            <span className='text-muted-foreground/40'>·</span>
-            <span className='flex items-center gap-1 font-mono text-[11px] text-muted-foreground/80'>
-              <Clock className='size-3' />
-              {formatRelativeTime(post.createdAt)}
-            </span>
-            {primaryTag ? (
-              <>
-                <span className='text-muted-foreground/40'>·</span>
-                <Link
-                  href={`/r/${encodeURIComponent(primaryTag.slug)}`}
-                  className={cn('inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[11px] font-semibold')}
-                  style={{
-                    backgroundColor: `${primaryTag.hashColor}18`,
-                    borderColor: `${primaryTag.hashColor}38`,
-                    color: primaryTag.hashColor,
-                  }}
-                >
-                  {primaryTag.label}
-                </Link>
-              </>
-            ) : null}
-          </div>
+          <PostMeta author={author} post={post} tagsBySlug={tagsBySlug} compact className='mb-2' />
           <Link href={`/post/${post.id}`} className='group/post-link block'>
             <h2 className='text-[15px] font-semibold leading-snug text-foreground transition-colors group-hover/post-link:text-primary'>
               {post.title}

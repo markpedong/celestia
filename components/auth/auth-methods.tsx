@@ -3,9 +3,10 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
-import { KeyRound, Mail } from 'lucide-react';
+import { Apple, Globe, KeyRound, Mail } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
+import type { Provider } from '@supabase/supabase-js';
 
 type Props = {
   mode: 'sign-in' | 'sign-up';
@@ -55,29 +56,62 @@ const AuthMethods = ({ mode }: Props) => {
     });
   };
 
+  const continueWithProvider = (provider: Extract<Provider, 'google' | 'apple'>) => {
+    setError(null);
+    setMessage(null);
+
+    startTransition(async () => {
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (oauthError) setError(oauthError.message);
+    });
+  };
+
   return (
-    <form onSubmit={submit} className='space-y-4'>
-      {isSignUp ? (
+    <div className='space-y-4'>
+      <div className='grid gap-2 sm:grid-cols-2'>
+        <button type='button' onClick={() => continueWithProvider('google')} disabled={pending} className='flex h-11 items-center justify-center gap-2 rounded-xl border border-border bg-background text-sm font-medium text-card-foreground transition-colors hover:bg-muted disabled:opacity-60'>
+          <Globe className='size-4' />
+          Google
+        </button>
+        <button type='button' onClick={() => continueWithProvider('apple')} disabled={pending} className='flex h-11 items-center justify-center gap-2 rounded-xl border border-border bg-background text-sm font-medium text-card-foreground transition-colors hover:bg-muted disabled:opacity-60'>
+          <Apple className='size-4' />
+          Apple
+        </button>
+      </div>
+      <div className='flex items-center gap-3'>
+        <span className='h-px flex-1 bg-border' />
+        <span className='text-xs font-medium text-muted-foreground'>or continue with email</span>
+        <span className='h-px flex-1 bg-border' />
+      </div>
+      <form onSubmit={submit} className='space-y-4'>
+        {isSignUp ? (
         <div className='space-y-2'>
           <label htmlFor='name' className='text-sm font-medium text-card-foreground'>Display name</label>
           <Input id='name' value={name} onChange={(event) => setName(event.target.value)} placeholder='Your name' className='h-11 bg-background' />
         </div>
-      ) : null}
-      <div className='space-y-2'>
+        ) : null}
+        <div className='space-y-2'>
         <label htmlFor='email' className='text-sm font-medium text-card-foreground'>Email</label>
         <Input id='email' type='email' value={email} onChange={(event) => setEmail(event.target.value)} placeholder='you@example.com' required className='h-11 bg-background' />
-      </div>
-      <div className='space-y-2'>
+        </div>
+        <div className='space-y-2'>
         <label htmlFor='password' className='text-sm font-medium text-card-foreground'>Password</label>
         <Input id='password' type='password' minLength={6} value={password} onChange={(event) => setPassword(event.target.value)} placeholder='At least 6 characters' required className='h-11 bg-background' />
-      </div>
-      <Button type='submit' disabled={pending} className='celestia-primary-action h-11 w-full rounded-xl'>
-        {isSignUp ? <Mail className='size-4' /> : <KeyRound className='size-4' />}
-        {pending ? 'Please wait...' : isSignUp ? 'Create account' : 'Sign in'}
-      </Button>
+        </div>
+        <Button type='submit' disabled={pending} className='celestia-primary-action h-11 w-full rounded-xl'>
+          {isSignUp ? <Mail className='size-4' /> : <KeyRound className='size-4' />}
+          {pending ? 'Please wait...' : isSignUp ? 'Create account' : 'Sign in'}
+        </Button>
+      </form>
       {message ? <p className='text-center text-sm text-muted-foreground'>{message}</p> : null}
       {error ? <p className='rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive' role='alert'>{error}</p> : null}
-    </form>
+    </div>
   );
 };
 

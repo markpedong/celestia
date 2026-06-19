@@ -1,6 +1,9 @@
 import FeedSortTabs from '@/components/feed/feed-sort-tabs';
-import PostCard from '@/components/feed/post-card';
+import { PostList } from '@/components/feed/post-list';
+import { ContentWithSidebar } from '@/components/layout/content-with-sidebar';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
+import { StatGrid } from '@/components/ui/stat-grid';
 import { getSessionUser } from '@/lib/auth';
 import { batchAuthorsForIds, getCommunityStats, getTagBySlug, listPostSorted, listTags } from '@/lib/db/queries';
 import { formatCount } from '@/lib/format';
@@ -39,8 +42,20 @@ export default async function CommunityPage({ params, searchParams }: Props) {
   const authorById = await batchAuthorsForIds([...new Set(rows.map(row => row.post.authorId))]);
 
   return (
-    <div className='grid gap-6 xl:grid-cols-[minmax(0,1fr)_18rem]'>
-      <div className='min-w-0'>
+    <ContentWithSidebar
+      sidebar={
+        <section className='celestia-card p-4'>
+          <h2 className='mb-3 text-sm font-semibold'>About Community</h2>
+          <p className='text-xs leading-6 text-muted-foreground'>
+            r/{community.slug} collects every post tagged {community.label}. Following and membership are visual for now while the community model is tag-based.
+          </p>
+          <div className='mt-4 space-y-2 text-xs text-muted-foreground'>
+            <p className='flex items-center gap-2'><Users className='size-3 text-primary' /> {formatCount(stats.memberCount)} contributors</p>
+            <p className='flex items-center gap-2'><CakeSlice className='size-3 text-primary' /> Created with Celestia topics</p>
+          </div>
+        </section>
+      }
+    >
         <section className='celestia-card mb-4 overflow-hidden'>
           <div className='h-24 border-b border-border/70' style={{ background: `linear-gradient(135deg, ${community.hashColor}55, transparent)` }} />
           <div className='px-5 pb-5'>
@@ -73,11 +88,11 @@ export default async function CommunityPage({ params, searchParams }: Props) {
             <p className='mt-4 max-w-2xl text-sm leading-6 text-muted-foreground'>
               A topic community for posts tagged with {community.label}. Browse discussions, sort what is hot, and jump into threads.
             </p>
-            <div className='mt-4 grid max-w-lg grid-cols-3 gap-2 text-sm'>
-              <Stat label='Posts' value={formatCount(stats.postCount)} />
-              <Stat label='Members' value={formatCount(stats.memberCount)} />
-              <Stat label='Comments' value={formatCount(stats.commentCount)} />
-            </div>
+            <StatGrid className='mt-4 max-w-lg' stats={[
+              { label: 'Posts', value: formatCount(stats.postCount) },
+              { label: 'Members', value: formatCount(stats.memberCount) },
+              { label: 'Comments', value: formatCount(stats.commentCount) },
+            ]} />
           </div>
         </section>
 
@@ -88,52 +103,11 @@ export default async function CommunityPage({ params, searchParams }: Props) {
           </div>
         ) : null}
         <div className='space-y-3'>
-          {rows.map(row => {
-            const author = authorById.get(row.post.authorId);
-            if (!author) return null;
-
-            return (
-              <PostCard
-                key={row.post.id}
-                post={row.post}
-                author={author}
-                tagsBySlug={tagsMap}
-                score={row.score}
-                userVote={row.userVote}
-              />
-            );
-          })}
+          <PostList rows={rows} authorsById={authorById} tagsBySlug={tagsMap} />
           {rows.length === 0 ? (
-            <div className='celestia-card px-6 py-16 text-center'>
-              <Hash className='mx-auto mb-3 size-8 text-primary' />
-              <h2 className='text-base font-semibold'>No posts in r/{community.slug} yet</h2>
-              <p className='mt-2 text-sm text-muted-foreground'>Start the first thread for this community.</p>
-            </div>
+            <EmptyState icon={Hash} title={`No posts in r/${community.slug} yet`} description='Start the first thread for this community.' />
           ) : null}
         </div>
-      </div>
-
-      <aside className='hidden xl:block'>
-        <div className='sticky top-20 space-y-4'>
-          <section className='celestia-card p-4'>
-            <h2 className='mb-3 text-sm font-semibold'>About Community</h2>
-            <p className='text-xs leading-6 text-muted-foreground'>
-              r/{community.slug} collects every post tagged {community.label}. Following and membership are visual for now while the community model is tag-based.
-            </p>
-            <div className='mt-4 space-y-2 text-xs text-muted-foreground'>
-              <p className='flex items-center gap-2'><Users className='size-3 text-primary' /> {formatCount(stats.memberCount)} contributors</p>
-              <p className='flex items-center gap-2'><CakeSlice className='size-3 text-primary' /> Created with Celestia topics</p>
-            </div>
-          </section>
-        </div>
-      </aside>
-    </div>
+    </ContentWithSidebar>
   );
 }
-
-const Stat = ({ label, value }: { label: string; value: string }) => (
-  <div className='rounded-xl border border-border bg-muted/40 px-3 py-2'>
-    <p className='font-mono text-sm font-semibold text-foreground'>{value}</p>
-    <p className='text-[11px] text-muted-foreground'>{label}</p>
-  </div>
-);
