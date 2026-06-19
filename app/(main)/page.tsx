@@ -2,7 +2,7 @@ import FeedSortTabs from '@/components/feed/feed-sort-tabs';
 import PostCard from '@/components/feed/post-card';
 import { RightTrending } from '@/components/layout/right-trending';
 import { getSessionUser } from '@/lib/auth';
-import { batchAuthorsForIds, listPostSorted, listTags } from '@/lib/db/queries';
+import { batchAuthorsForIds, listPostSorted, listTags, tagsPostCounts } from '@/lib/db/queries';
 import { getTrendingToday } from '@/lib/trending';
 import { FeedSort } from '@/lib/types';
 import { FC } from 'react';
@@ -29,6 +29,10 @@ const Home: FC<Props> = async ({ searchParams }) => {
   const authorById = await batchAuthorsForIds(authorIds);
 
   const trending = getTrendingToday();
+  const communities = (await tagsPostCounts())
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 6)
+    .map(({ tag, count }) => ({ ...tag, postCount: count }));
 
   const cards = rows.map(row => {
     const author = authorById.get(row.post.authorId);
@@ -73,7 +77,7 @@ const Home: FC<Props> = async ({ searchParams }) => {
         </div>
       </div>
       <aside className='sticky top-14 hidden h-[calc(100vh-3.5rem)] w-72 shrink-0 space-y-6 overflow-y-auto py-0 xl:block'>
-        <RightTrending items={trending} />
+        <RightTrending items={trending} communities={communities} />
         {/* <RightTopTags /> */}
       </aside>
     </div>

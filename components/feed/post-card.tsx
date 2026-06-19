@@ -25,7 +25,7 @@ const PostCard = ({ post, author, tagsBySlug, score, userVote }: Props) => {
   const primaryTag = primarySlug ? tagsBySlug.get(primarySlug) : undefined;
 
   return (
-    <article className='celestia-card celestia-card-hover group flex overflow-hidden last:mb-7'>
+    <article className='celestia-card celestia-card-hover flex overflow-hidden last:mb-7'>
       <div className='celestia-vote-rail flex min-w-[52px] flex-col items-center justify-center border-r border-border/60 px-3 py-4'>
         <VoteButtons target='post' targetID={post.id} score={score} userVote={userVote} />
       </div>
@@ -33,7 +33,7 @@ const PostCard = ({ post, author, tagsBySlug, score, userVote }: Props) => {
         <div className='min-w-0 flex-1'>
           <div className='mb-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground'>
             <UserAvatar user={author} size='sm' />
-            <Link href={`/post/${post.id}`} className='truncate text-xs font-medium text-card-foreground hover:text-foreground'>
+            <Link href={`/u/${author.username}`} className='truncate text-xs font-medium text-card-foreground hover:text-foreground'>
               {author.displayName ?? author.username}
             </Link>
             <span className='text-muted-foreground/40'>·</span>
@@ -45,7 +45,7 @@ const PostCard = ({ post, author, tagsBySlug, score, userVote }: Props) => {
               <>
                 <span className='text-muted-foreground/40'>·</span>
                 <Link
-                  href={`/?tag=${encodeURIComponent(primaryTag.slug)}`}
+                  href={`/r/${encodeURIComponent(primaryTag.slug)}`}
                   className={cn('inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[11px] font-semibold')}
                   style={{
                     backgroundColor: `${primaryTag.hashColor}18`,
@@ -58,8 +58,8 @@ const PostCard = ({ post, author, tagsBySlug, score, userVote }: Props) => {
               </>
             ) : null}
           </div>
-          <Link href={`/post/${post.id}`} className='block'>
-            <h2 className='text-[15px] font-semibold leading-snug text-foreground transition-colors group-hover:text-primary'>
+          <Link href={`/post/${post.id}`} className='group/post-link block'>
+            <h2 className='text-[15px] font-semibold leading-snug text-foreground transition-colors group-hover/post-link:text-primary'>
               {post.title}
             </h2>
             <p className='mt-2 line-clamp-2 text-sm leading-relaxed text-muted-foreground'>{snippet(post.body)}</p>

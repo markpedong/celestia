@@ -11,7 +11,7 @@ const LeftTags = ({ tags }: Props) => {
       {sorted.map(({ tag, count }) => (
         <li key={tag.slug}>
           <Link
-            href={`/?tag=${encodeURIComponent(tag.slug)}`}
+            href={`/r/${encodeURIComponent(tag.slug)}`}
             className='group flex items-center justify-between gap-2 rounded-xl px-3 py-2 text-sm celestia-hover-surface'
           >
             <span className='flex min-w-0 items-center gap-2.5'>

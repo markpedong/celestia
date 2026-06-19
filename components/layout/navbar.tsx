@@ -27,25 +27,31 @@ const Navbar = ({ trending, communities }: Props) => {
         <SearchBox trending={trending} communities={communities} />
 
         <SignedIn>
-          <Link
-            href='/submit'
-            className={cn(
-              buttonVariants({ variant: 'default', size: 'sm' }),
-              'celestia-primary-action hidden sm:inline-flex'
-            )}
-          >
-            <Plus className='size-3.5' />
-            New Post
-          </Link>
+          <div className='ml-auto flex shrink-0 items-center gap-2'>
+            <Link
+              href='/submit'
+              className={cn(
+                buttonVariants({ variant: 'default', size: 'sm' }),
+                'celestia-primary-action hidden sm:inline-flex'
+              )}
+            >
+              <Plus className='size-3.5' />
+              New Post
+            </Link>
 
-          <Button variant='ghost' size='icon' className='hidden rounded-xl border border-border bg-secondary/60 text-muted-foreground hover:bg-muted hover:text-accent sm:inline-flex' aria-label='Activity'>
-            <Activity className='size-4' />
-          </Button>
-          <Button variant='ghost' size='icon' className='relative rounded-xl border border-border bg-secondary/60 text-muted-foreground hover:bg-muted hover:text-primary' aria-label='Notifications'>
-            <Bell className='size-5' />
-            <span className='absolute right-2 top-2 size-1.5 rounded-full bg-primary shadow-[0_0_6px] shadow-primary/40' />
-          </Button>
-          <AccountMenu />
+            <Button asChild variant='ghost' size='icon' className='hidden rounded-xl border border-border bg-secondary/60 text-muted-foreground hover:bg-muted hover:text-accent sm:inline-flex' aria-label='Activity'>
+              <Link href='/profile'>
+                <Activity className='size-4' />
+              </Link>
+            </Button>
+            <Button asChild variant='ghost' size='icon' className='relative rounded-xl border border-border bg-secondary/60 text-muted-foreground hover:bg-muted hover:text-primary' aria-label='Notifications'>
+              <Link href='/profile'>
+                <Bell className='size-5' />
+                <span className='absolute right-2 top-2 size-1.5 rounded-full bg-primary shadow-[0_0_6px] shadow-primary/40' />
+              </Link>
+            </Button>
+            <AccountMenu />
+          </div>
         </SignedIn>
 
         <SignedOut>

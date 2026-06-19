@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { TrendingItem } from '@/lib/trending';
+import type { SearchTagSuggestion } from '@/lib/types';
 import { Flame, Minus, Sparkles, TrendingUp, Users } from 'lucide-react';
 
 const MomentumIcon = ({ index }: { index: number }) => {
@@ -9,7 +10,7 @@ const MomentumIcon = ({ index }: { index: number }) => {
   return <Minus className='size-3 text-muted-foreground' />;
 };
 
-export function RightTrending({ items }: { items: TrendingItem[] }) {
+export function RightTrending({ items, communities }: { items: TrendingItem[]; communities: SearchTagSuggestion[] }) {
   return (
     <div className='space-y-4'>
     <section className='celestia-card p-4'>
@@ -19,7 +20,7 @@ export function RightTrending({ items }: { items: TrendingItem[] }) {
       </h3>
       <div className='space-y-2'>
         {items.map((t, index) => (
-          <div key={t.rank} className='group flex items-center gap-2.5 rounded-xl px-2 py-2 text-sm celestia-hover-surface'>
+          <Link key={t.rank} href={`/?q=${encodeURIComponent(t.title)}`} className='group flex items-center gap-2.5 rounded-xl px-2 py-2 text-sm celestia-hover-surface'>
             <span className='w-4 shrink-0 text-right font-mono text-[10px] text-muted-foreground/60'>{t.rank}</span>
             <div className='min-w-0 flex-1'>
               <p className='truncate text-sm font-medium leading-snug text-card-foreground transition-colors group-hover:text-foreground'>
@@ -28,7 +29,7 @@ export function RightTrending({ items }: { items: TrendingItem[] }) {
               <p className='font-mono text-[11px] text-muted-foreground'>{t.postCount} posts</p>
             </div>
             <MomentumIcon index={index} />
-          </div>
+          </Link>
         ))}
         <Link href='/?sort=hot' className='inline-block px-2 pt-2 text-xs font-medium text-primary hover:text-primary-hover'>
           View all
@@ -59,17 +60,20 @@ export function RightTrending({ items }: { items: TrendingItem[] }) {
         Top Communities
       </h3>
       <div className='space-y-2.5'>
-        {['Technology', 'Ask', 'Gaming'].map((label, index) => (
-          <div key={label} className='flex items-center gap-2.5'>
-            <span className='grid size-8 place-items-center rounded-lg border border-primary/25 bg-primary/10 text-xs font-bold text-primary'>
-              {label[0]}
+        {communities.slice(0, 3).map((community) => (
+          <Link key={community.slug} href={`/r/${encodeURIComponent(community.slug)}`} className='flex items-center gap-2.5 rounded-xl px-1 py-1 celestia-hover-surface'>
+            <span
+              className='grid size-8 place-items-center rounded-lg border border-primary/25 bg-primary/10 text-xs font-bold text-primary'
+              style={{ color: community.hashColor }}
+            >
+              {community.label[0]}
             </span>
             <div className='min-w-0 flex-1'>
-              <p className='text-xs font-medium text-foreground'>{label}</p>
-              <p className='text-[10px] text-muted-foreground'>{['12.6k', '9.8k', '7.4k'][index]} members</p>
+              <p className='text-xs font-medium text-foreground'>r/{community.slug}</p>
+              <p className='text-[10px] text-muted-foreground'>{community.postCount} posts</p>
             </div>
             <span className='h-1 w-10 rounded-full bg-primary/40' />
-          </div>
+          </Link>
         ))}
       </div>
     </section>

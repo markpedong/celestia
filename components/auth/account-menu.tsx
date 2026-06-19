@@ -105,7 +105,7 @@ const AccountMenu = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button type='button' className='rounded-full outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'>
+        <button type='button' className='inline-flex size-8 shrink-0 items-center justify-center rounded-full outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'>
           <Avatar>
             <AvatarImage src={user.image ?? undefined} alt={user.name || user.email} />
             <AvatarFallback>{getInitials(user.name, user.email)}</AvatarFallback>
@@ -119,7 +119,7 @@ const AccountMenu = () => {
           <span className='block truncate text-xs font-normal text-muted-foreground'>{user.email}</span>
         </DropdownMenuLabel>
         <DropdownMenuItem asChild className='rounded-none px-3 py-2.5'>
-          <Link href='/auth/sign-in'>
+          <Link href='/profile'>
             <UserRound className='size-4' />
             Profile
           </Link>

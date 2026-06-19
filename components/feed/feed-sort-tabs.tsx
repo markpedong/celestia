@@ -7,18 +7,19 @@ type Props = {
   current: FeedSort;
   tag: string;
   query: string;
+  basePath?: string;
 };
 
-const hrefFor = (sort: FeedSort, tag?: string, query?: string) => {
+const hrefFor = (sort: FeedSort, tag?: string, query?: string, basePath = '/') => {
   const params = new URLSearchParams();
   if (sort !== 'hot') params.set('sort', sort);
-  if (tag) params.set('tag', tag);
+  if (tag && basePath === '/') params.set('tag', tag);
   if (query) params.set('q', query);
   const q = params.toString();
-  return q ? `/?${q}` : '/';
+  return q ? `${basePath}?${q}` : basePath;
 }
 
-const FeedSortTabs = ({ current, tag, query }: Props) => {
+const FeedSortTabs = ({ current, tag, query, basePath = '/' }: Props) => {
   const activeSort = current ?? 'hot';
   const tabs: { id: FeedSort; label: string; icon: LucideIcon }[] = [
     { id: 'hot', label: 'Hot', icon: Flame },
@@ -38,7 +39,7 @@ const FeedSortTabs = ({ current, tag, query }: Props) => {
           return (
             <Link
               key={id}
-              href={hrefFor(id, tag, query)}
+              href={hrefFor(id, tag, query, basePath)}
               className={cn(
                 'relative inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold transition-colors',
                 active ? 'text-primary' : 'text-muted-foreground hover:text-foreground'

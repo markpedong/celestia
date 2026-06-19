@@ -8,6 +8,7 @@ import { useState } from 'react';
 import VoteButtons from '../feed/vote-buttons';
 import CommentComposer from './comment-composer';
 import { Clock, CornerDownRight, Share2 } from 'lucide-react';
+import Link from 'next/link';
 
 export function CommentNode({
   node,
@@ -25,7 +26,9 @@ export function CommentNode({
     <li className='relative'>
       <div className='rounded-2xl border border-border bg-secondary/35 p-4 shadow-lg shadow-foreground/5'>
         <div className='mb-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground'>
-            <span className='font-medium text-muted-foreground'>{node.author.displayName ?? node.author.username}</span>
+            <Link href={`/u/${node.author.username}`} className='font-medium text-muted-foreground hover:text-primary'>
+              {node.author.displayName ?? node.author.username}
+            </Link>
             {isOp ? (
               <Badge variant='secondary' className='h-5 border-primary/20 bg-primary/10 px-1.5 text-[10px] font-semibold uppercase text-primary'>
                 OP

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="celestia-bg" x1="42" y1="36" x2="218" y2="224" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8b5cf6"/>
+      <stop offset="1" stop-color="#22d3ee"/>
+    </linearGradient>
+    <linearGradient id="celestia-bolt" x1="86" y1="55" x2="170" y2="202" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#dffaff"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.545 0 0 0 0 0.361 0 0 0 0 0.965 0 0 0 0.62 0"/>
+      <feBlend in="SourceGraphic"/>
+    </filter>
+  </defs>
+  <rect width="256" height="256" rx="58" fill="#050814"/>
+  <rect x="24" y="24" width="208" height="208" rx="46" fill="url(#celestia-bg)" filter="url(#glow)"/>
+  <path d="M151.6 43.7 74 139.9h49.2l-16.8 72.4 77.6-96.2h-49.2l16.8-72.4Z" fill="url(#celestia-bolt)"/>
+  <path d="M151.6 43.7 74 139.9h49.2l-16.8 72.4 77.6-96.2h-49.2l16.8-72.4Z" fill="none" stroke="#eff6ff" stroke-opacity=".56" stroke-width="8" stroke-linejoin="round"/>
+</svg>

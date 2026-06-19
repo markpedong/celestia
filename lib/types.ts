@@ -3,6 +3,7 @@ export type User = {
   username: string;
   displayName?: string;
   avatarUrl?: string;
+  createdAt?: string;
 };
 
 export type Tag = {
@@ -43,4 +44,24 @@ export type SearchPostSuggestion = {
 
 export type SearchTagSuggestion = Tag & {
   postCount: number;
+};
+
+export type CommunityStats = {
+  postCount: number;
+  memberCount: number;
+  commentCount: number;
+};
+
+export type UserStats = {
+  postCount: number;
+  commentCount: number;
+  karma: number;
+};
+
+export type UserCommentActivity = {
+  id: string;
+  postId: string;
+  postTitle: string;
+  body: string;
+  createdAt: string;
 };

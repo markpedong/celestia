@@ -51,7 +51,9 @@ const Page = async ({ params }: Props) => {
             <div className='min-w-0 flex-1 p-5 md:p-6'>
               <div className='mb-4 flex flex-wrap items-center gap-2 text-sm text-muted-foreground'>
                 <UserAvatar user={author} size='sm' />
-                <span className='font-medium text-card-foreground'>{author.displayName ?? author.username}</span>
+                <Link href={`/u/${author.username}`} className='font-medium text-card-foreground hover:text-primary'>
+                  {author.displayName ?? author.username}
+                </Link>
                 <span className='text-muted-foreground/40'>·</span>
                 <span className='flex items-center gap-1 font-mono text-[11px]'>
                   <Clock className='size-3' />
@@ -61,7 +63,7 @@ const Page = async ({ params }: Props) => {
                   <>
                     <span className='text-muted-foreground/40'>·</span>
                     <Link
-                      href={`/?tag=${encodeURIComponent(primaryTag.slug)}`}
+                      href={`/r/${encodeURIComponent(primaryTag.slug)}`}
                       className='inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-xs font-semibold'
                       style={{
                         backgroundColor: `${primaryTag.hashColor}18`,

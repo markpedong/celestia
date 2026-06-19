@@ -5,7 +5,7 @@ import type { SearchPostSuggestion, SearchTagSuggestion } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Clock, Hash, Search, Sparkles, TrendingUp, X, Zap } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { FormEvent, MouseEvent, ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 
 type SearchResponse = {
@@ -41,6 +41,7 @@ const getSnippet = (body: string) => {
 
 const SearchBox = ({ trending, communities }: Props) => {
   const router = useRouter();
+  const pathname = usePathname();
   const rootRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState('');
@@ -122,7 +123,8 @@ const SearchBox = ({ trending, communities }: Props) => {
     saveRecentSearch(nextQuery);
     setQuery(nextQuery);
     setIsOpen(false);
-    router.push(`/?q=${encodeURIComponent(nextQuery)}`);
+    const searchPath = pathname.startsWith('/r/') ? pathname : '/';
+    router.push(`${searchPath}?q=${encodeURIComponent(nextQuery)}`);
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -145,7 +147,7 @@ const SearchBox = ({ trending, communities }: Props) => {
   };
 
   return (
-    <div ref={rootRef} className='relative mx-auto max-w-2xl flex-1'>
+    <div ref={rootRef} className='relative mx-auto min-w-0 max-w-2xl flex-1'>
       <form
         onSubmit={handleSubmit}
         className={cn(
@@ -243,7 +245,7 @@ const SearchBox = ({ trending, communities }: Props) => {
                 {communities.map(community => (
                   <Link
                     key={community.slug}
-                    href={`/?tag=${encodeURIComponent(community.slug)}`}
+                    href={`/r/${encodeURIComponent(community.slug)}`}
                     onClick={() => setIsOpen(false)}
                     className='flex items-center gap-4 px-5 py-2.5 celestia-hover-surface'
                   >
@@ -281,7 +283,7 @@ const SearchBox = ({ trending, communities }: Props) => {
                 {suggestions.tags.map(tag => (
                   <Link
                     key={tag.slug}
-                    href={`/?tag=${encodeURIComponent(tag.slug)}&q=${encodeURIComponent(trimmedQuery)}`}
+                    href={`/r/${encodeURIComponent(tag.slug)}?q=${encodeURIComponent(trimmedQuery)}`}
                     onClick={() => {
                       saveRecentSearch(trimmedQuery);
                       setIsOpen(false);
