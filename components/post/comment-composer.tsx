@@ -19,7 +19,7 @@ const CommentComposer: FC<CommentComposerProps> = ({ postID, user, compact, pare
   const [pending, startTransition] = useTransition();
   const router = useRouter();
   const commentSubmission = useCommentSubmission();
-  const { register, handleSubmit, reset, formState: { errors, isSubmitted, isValid, touchedFields } } = useZodForm(commentSchema, { body: '' });
+  const { register, handleSubmit, onFormKeyDown, reset, formState: { errors, isSubmitted, isValid, touchedFields } } = useZodForm(commentSchema, { body: '' });
 
   const submitValid = async (fd: FormData) => {
     setError(null);
@@ -54,7 +54,7 @@ const CommentComposer: FC<CommentComposerProps> = ({ postID, user, compact, pare
   };
 
   return (
-    <form onSubmit={onSubmit} className='flex gap-3' noValidate>
+    <form onSubmit={onSubmit} onKeyDown={onFormKeyDown} className='flex gap-3' noValidate>
       <input type='hidden' name='postId' value={postID} />
       <input type='hidden' name='parentId' value={parentId ?? ''} />
       <UserAvatar user={user} size={compact ? 'sm' : 'default'} className='mt-1 shrink-0' />

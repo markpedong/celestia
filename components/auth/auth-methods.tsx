@@ -18,6 +18,7 @@ const AuthMethods: FC<AuthMethodsProps> = ({ mode }: AuthMethodsProps) => {
     error,
     isSignUp,
     message,
+    onFormKeyDown,
     pending,
     submit,
   } = useAuthForm(mode);
@@ -39,7 +40,7 @@ const AuthMethods: FC<AuthMethodsProps> = ({ mode }: AuthMethodsProps) => {
         <span className='text-xs font-medium text-muted-foreground'>or continue with email</span>
         <span className='h-px flex-1 bg-border' />
       </div>
-      <form onSubmit={handleSubmit(submit)} className='space-y-4' noValidate>
+      <form onSubmit={handleSubmit(submit)} onKeyDown={onFormKeyDown} className='space-y-4' noValidate>
         {isSignUp ? (
         <div className='space-y-2'>
           <label htmlFor='name' className='text-sm font-medium text-card-foreground'>Display name</label>
@@ -61,16 +62,16 @@ const AuthMethods: FC<AuthMethodsProps> = ({ mode }: AuthMethodsProps) => {
           {isSignUp ? <Mail className='size-4' /> : <KeyRound className='size-4' />}
           {pending ? 'Please wait...' : isSignUp ? 'Create account' : 'Sign in'}
         </Button>
-        {!isSignUp ? (
-          <div className='flex items-center justify-between gap-3 text-sm'>
-            <Button asChild variant='link' size='sm' className='px-0'>
-              <Link href='/auth/sign-up'>Create an account</Link>
-            </Button>
-            <Button type='button' variant='link' size='sm' disabled className='px-0 text-muted-foreground' title='Coming soon'>
-              Forgot password?
-            </Button>
-          </div>
-        ) : null}
+        <div className='flex items-center justify-between gap-3 text-sm'>
+          <Button asChild variant='link' size='sm' className='px-0'>
+            <Link href={isSignUp ? '/auth/sign-in' : '/auth/sign-up'}>
+              {isSignUp ? 'Already have an account?' : 'Create an account'}
+            </Link>
+          </Button>
+          <Button type='button' variant='link' size='sm' disabled className='px-0 text-muted-foreground' title='Coming soon'>
+            Forgot password?
+          </Button>
+        </div>
       </form>
       {message ? <p className='text-center text-sm text-muted-foreground'>{message}</p> : null}
       {error ? <p className='rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive' role='alert'>{error}</p> : null}

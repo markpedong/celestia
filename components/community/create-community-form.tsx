@@ -12,7 +12,7 @@ import { MAX_COMMUNITY_DESCRIPTION_LENGTH, MAX_COMMUNITY_NAME_LENGTH, MAX_COMMUN
 import { Plus } from 'lucide-react';
 
 export const CreateCommunityForm: FC<Record<never, never>> = () => {
-  const { form: { register, formState: { errors, isSubmitted, isValid, touchedFields } }, onSubmit, pending, state } = useServerActionForm(
+  const { form: { register, formState: { errors, isSubmitted, isValid, touchedFields } }, onFormKeyDown, onSubmit, pending, state } = useServerActionForm(
     createCommunityAction,
     null,
     createCommunitySchema,
@@ -20,7 +20,7 @@ export const CreateCommunityForm: FC<Record<never, never>> = () => {
   );
 
   return (
-    <form onSubmit={onSubmit} className='celestia-card space-y-5 p-5 md:p-6' noValidate>
+    <form onSubmit={onSubmit} onKeyDown={onFormKeyDown} className='celestia-card space-y-5 p-5 md:p-6' noValidate>
       <div className='space-y-2'>
         <Label htmlFor='label'>Community name</Label>
         <Input id='label' maxLength={MAX_COMMUNITY_NAME_LENGTH} placeholder='e.g. Indie Makers' className='h-11 bg-secondary/80' aria-invalid={Boolean(errors.label && (touchedFields.label || isSubmitted))} {...register('label')} />

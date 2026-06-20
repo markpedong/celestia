@@ -14,7 +14,7 @@ import { Save } from 'lucide-react';
 import { MAX_POST_BODY_LENGTH, MAX_POST_TITLE_LENGTH } from '@/lib/constants';
 
 export const EditPostForm: FC<EditPostFormProps> = ({ post }: EditPostFormProps) => {
-  const { form: { register, formState: { errors, isSubmitted, isValid, touchedFields } }, onSubmit, pending, state } = useServerActionForm(
+  const { form: { register, formState: { errors, isSubmitted, isValid, touchedFields } }, onFormKeyDown, onSubmit, pending, state } = useServerActionForm(
     updatePostAction,
     null,
     editPostSchema,
@@ -22,7 +22,7 @@ export const EditPostForm: FC<EditPostFormProps> = ({ post }: EditPostFormProps)
   );
 
   return (
-    <form onSubmit={onSubmit} className='celestia-card space-y-5 p-5 md:p-6' noValidate>
+    <form onSubmit={onSubmit} onKeyDown={onFormKeyDown} className='celestia-card space-y-5 p-5 md:p-6' noValidate>
       <input type='hidden' name='postId' value={post.id} />
       <div className='space-y-2'>
         <Label htmlFor='title'>Post title</Label>

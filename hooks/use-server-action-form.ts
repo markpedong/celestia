@@ -25,5 +25,5 @@ export const useServerActionForm = <TValues extends FieldValues, TState>(
     })(event);
   };
 
-  return { form, onSubmit, pending, state };
+  return { form, onFormKeyDown: form.onFormKeyDown, onSubmit, pending, state };
 };

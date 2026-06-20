@@ -16,14 +16,14 @@ export const SubmitPostForm: FC<SubmitPostFormProps> = ({ communities, defaultCo
   const selectedCommunity = defaultCommunitySlug && communities.some(community => community.slug === defaultCommunitySlug)
     ? defaultCommunitySlug
     : '';
-  const { form: { register, formState: { errors, isSubmitted, isValid, touchedFields } }, onSubmit, pending, state } = useServerActionForm(
+  const { form: { register, formState: { errors, isSubmitted, isValid, touchedFields } }, onFormKeyDown, onSubmit, pending, state } = useServerActionForm(
     createPostAction,
     null,
     postSchema,
     { title: '', body: '', communitySlug: selectedCommunity },
   );
   return (
-    <form onSubmit={onSubmit} className='celestia-card space-y-4 p-4 md:p-5' noValidate>
+    <form onSubmit={onSubmit} onKeyDown={onFormKeyDown} className='celestia-card space-y-4 p-4 md:p-5' noValidate>
       <div className='space-y-2'>
         <Label htmlFor='title' className='text-sm text-card-foreground'>
           Post title

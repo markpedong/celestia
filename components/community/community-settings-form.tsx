@@ -13,7 +13,7 @@ import { Textarea } from '../ui/textarea';
 import { Save } from 'lucide-react';
 
 export const CommunitySettingsForm: FC<CommunitySettingsFormProps> = ({ community }: CommunitySettingsFormProps) => {
-  const { form: { register, formState: { errors, isSubmitted, isValid, touchedFields } }, onSubmit, pending, state } = useServerActionForm(
+  const { form: { register, formState: { errors, isSubmitted, isValid, touchedFields } }, onFormKeyDown, onSubmit, pending, state } = useServerActionForm(
     updateCommunityAction,
     null,
     communitySettingsSchema,
@@ -21,7 +21,7 @@ export const CommunitySettingsForm: FC<CommunitySettingsFormProps> = ({ communit
   );
 
   return (
-    <form onSubmit={onSubmit} className='celestia-card space-y-5 p-5 md:p-6' noValidate>
+    <form onSubmit={onSubmit} onKeyDown={onFormKeyDown} className='celestia-card space-y-5 p-5 md:p-6' noValidate>
       <input type='hidden' name='slug' value={community.slug} />
       <div className='rounded border border-border bg-secondary/50 px-4 py-3 text-sm text-muted-foreground'>
         Community URL: <span className='font-semibold text-foreground'>r/{community.slug}</span>. URLs stay fixed after creation.
