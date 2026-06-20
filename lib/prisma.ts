@@ -15,6 +15,7 @@ const createPrisma = (): PrismaClient => {
   const adapter = new PrismaPg({
     connectionString,
     ssl: { rejectUnauthorized: false },
+    max: 5,
   });
 
   return new PrismaClient({

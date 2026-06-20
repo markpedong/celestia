@@ -37,9 +37,14 @@ export const PostImageGallery: FC<PostImageGalleryProps> = ({ imageUrls, title, 
   const [failedImageUrls, setFailedImageUrls] = useState<string[]>([]);
 
   const imageUnavailable = (imageUrl: string) => !isImageUrl(imageUrl) || failedImageUrls.includes(imageUrl);
-  const displayImageUrls = variant === 'gallery' ? imageUrls.filter(imageUrl => !imageUnavailable(imageUrl)) : imageUrls;
+  const displayImageUrls =
+    variant === 'gallery' ? imageUrls.filter(imageUrl => !imageUnavailable(imageUrl)) : imageUrls;
   if (displayImageUrls.length === 0) {
-    return variant === 'thumbnail' ? <div className='h-20 w-28 shrink-0 self-center overflow-hidden rounded border border-border/80 shadow-inner'><ImagePlaceholder ratio={7 / 5} /></div> : null;
+    return variant === 'thumbnail' ? (
+      <div className='h-20 w-28 shrink-0 self-center overflow-hidden rounded border border-border/80 shadow-inner'>
+        <ImagePlaceholder ratio={7 / 5} />
+      </div>
+    ) : null;
   }
 
   const open = (index: number) => {
@@ -50,11 +55,19 @@ export const PostImageGallery: FC<PostImageGalleryProps> = ({ imageUrls, title, 
   const showPrevious = () => setActiveIndex(index => (index - 1 + displayImageUrls.length) % displayImageUrls.length);
   const showNext = () => setActiveIndex(index => (index + 1) % displayImageUrls.length);
   const markImageUnavailable = (imageUrl: string) => {
-    setFailedImageUrls(urls => urls.includes(imageUrl) ? urls : [...urls, imageUrl]);
+    setFailedImageUrls(urls => (urls.includes(imageUrl) ? urls : [...urls, imageUrl]));
     setActiveIndex(0);
   };
 
-  const lightbox = <ImageLightbox imageUrls={displayImageUrls} open={isOpen} onClose={() => setIsOpen(false)} index={activeIndex} altPrefix={`Image attached to ${title}`} />;
+  const lightbox = (
+    <ImageLightbox
+      imageUrls={displayImageUrls}
+      open={isOpen}
+      onClose={() => setIsOpen(false)}
+      index={activeIndex}
+      altPrefix={`Image attached to ${title}`}
+    />
+  );
 
   if (variant === 'thumbnail') {
     return (
@@ -66,12 +79,25 @@ export const PostImageGallery: FC<PostImageGalleryProps> = ({ imageUrls, title, 
           className='group relative h-20 w-28 shrink-0 self-center overflow-hidden rounded border border-border/80 shadow-inner'
           aria-label={`View ${displayImageUrls.length} image${displayImageUrls.length === 1 ? '' : 's'} attached to ${title}`}
         >
-          {imageUnavailable(displayImageUrls[0]) ? <ImagePlaceholder ratio={7 / 5} /> : <>
-            <Image src={displayImageUrls[0]} alt='' fill unoptimized sizes='112px' className='object-cover transition-transform duration-200 hover:scale-105' loading='eager' onError={() => markImageUnavailable(displayImageUrls[0])} />
-            <span className='absolute inset-0 flex items-center justify-center bg-foreground/0 text-transparent transition-colors hover:bg-foreground/35 hover:text-background'>
-              <ZoomIn className='size-4' />
-            </span>
-          </>}
+          {imageUnavailable(displayImageUrls[0]) ? (
+            <ImagePlaceholder ratio={7 / 5} />
+          ) : (
+            <>
+              <Image
+                src={displayImageUrls[0]}
+                alt=''
+                fill
+                unoptimized
+                sizes='112px'
+                className='object-cover transition-transform duration-200 hover:scale-105'
+                loading='eager'
+                onError={() => markImageUnavailable(displayImageUrls[0])}
+              />
+              <span className='absolute inset-0 flex items-center justify-center bg-foreground/0 text-transparent transition-colors hover:bg-foreground/35 hover:text-background'>
+                <ZoomIn className='size-4' />
+              </span>
+            </>
+          )}
           {displayImageUrls.length > 1 ? (
             <span className='absolute right-1.5 bottom-1.5 inline-flex items-center gap-1 rounded-md bg-background/90 px-1.5 py-0.5 text-[10px] font-semibold text-foreground shadow-sm'>
               <Images className='size-3' /> {displayImageUrls.length}
@@ -96,18 +122,25 @@ export const PostImageGallery: FC<PostImageGalleryProps> = ({ imageUrls, title, 
             className='group relative aspect-[16/9] w-full overflow-hidden rounded-2xl border border-border/80 bg-muted text-left'
             aria-label={`View image attached to ${title}`}
           >
-            {imageUnavailable(imageUrl) ? <ImagePlaceholder ratio={16 / 9} /> : <Image
-              src={imageUrl}
-              alt={`Image attached to ${title}`}
-              fill
-              unoptimized
-              sizes='(max-width: 768px) calc(100vw - 8rem), 672px'
-              className='object-cover transition-transform duration-200 hover:scale-[1.02]'
-              onError={() => markImageUnavailable(imageUrl)}
-            />}
-            {!imageUnavailable(imageUrl) ? <span className='absolute inset-0 flex items-center justify-center bg-foreground/0 text-transparent transition-colors hover:bg-foreground/35 hover:text-background'>
-              <ZoomIn className='size-6' />
-            </span> : null}
+            {imageUnavailable(imageUrl) ? (
+              <ImagePlaceholder ratio={16 / 9} />
+            ) : (
+              <Image
+                src={imageUrl}
+                alt={`Image attached to ${title}`}
+                fill
+                unoptimized
+                sizes='(max-width: 768px) calc(100vw - 8rem), 672px'
+                className='object-cover transition-transform duration-200 hover:scale-[1.02]'
+                loading='eager'
+                onError={() => markImageUnavailable(imageUrl)}
+              />
+            )}
+            {!imageUnavailable(imageUrl) ? (
+              <span className='absolute inset-0 flex items-center justify-center bg-foreground/0 text-transparent transition-colors hover:bg-foreground/35 hover:text-background'>
+                <ZoomIn className='size-6' />
+              </span>
+            ) : null}
           </button>
         </div>
         {lightbox}
@@ -118,7 +151,10 @@ export const PostImageGallery: FC<PostImageGalleryProps> = ({ imageUrls, title, 
   return (
     <>
       <div className='relative mt-5 overflow-hidden rounded border border-border/80 bg-muted'>
-        <div className='flex transition-transform duration-300 ease-out' style={{ transform: `translateX(-${activeIndex * 100}%)` }}>
+        <div
+          className='flex transition-transform duration-300 ease-out'
+          style={{ transform: `translateX(-${activeIndex * 100}%)` }}
+        >
           {displayImageUrls.map((imageUrl, index) => (
             <button
               key={imageUrl}
@@ -128,28 +164,48 @@ export const PostImageGallery: FC<PostImageGalleryProps> = ({ imageUrls, title, 
               className='group relative aspect-[16/9] w-full shrink-0 text-left'
               aria-label={`View image ${index + 1} of ${displayImageUrls.length} attached to ${title}`}
             >
-              {imageUnavailable(imageUrl) ? <ImagePlaceholder ratio={16 / 9} /> : <Image
-                src={imageUrl}
-                alt={`Image ${index + 1} attached to ${title}`}
-                fill
-                unoptimized
-                sizes='(max-width: 768px) calc(100vw - 8rem), 672px'
-                className='object-cover transition-transform duration-200 hover:scale-[1.02]'
-                onError={() => markImageUnavailable(imageUrl)}
-              />}
-              {!imageUnavailable(imageUrl) ? <span className='absolute inset-0 flex items-center justify-center bg-foreground/0 text-transparent transition-colors hover:bg-foreground/35 hover:text-background'>
-                <ZoomIn className='size-6' />
-              </span> : null}
+              {imageUnavailable(imageUrl) ? (
+                <ImagePlaceholder ratio={16 / 9} />
+              ) : (
+                <Image
+                  src={imageUrl}
+                  alt={`Image ${index + 1} attached to ${title}`}
+                  fill
+                  unoptimized
+                  sizes='(max-width: 768px) calc(100vw - 8rem), 672px'
+                  className='object-cover transition-transform duration-200 hover:scale-[1.02]'
+                  loading={index === 0 ? 'eager' : 'lazy'}
+                  onError={() => markImageUnavailable(imageUrl)}
+                />
+              )}
+              {!imageUnavailable(imageUrl) ? (
+                <span className='absolute inset-0 flex items-center justify-center bg-foreground/0 text-transparent transition-colors hover:bg-foreground/35 hover:text-background'>
+                  <ZoomIn className='size-6' />
+                </span>
+              ) : null}
             </button>
           ))}
         </div>
-        <button type='button' onClick={showPrevious} className='absolute top-1/2 left-3 -translate-y-1/2 rounded-full bg-background/90 p-2 text-foreground shadow-sm transition-colors hover:bg-background' aria-label='Previous image'>
+        <button
+          type='button'
+          onClick={showPrevious}
+          className='absolute top-1/2 left-3 -translate-y-1/2 rounded-full bg-background/90 p-2 text-foreground shadow-sm transition-colors hover:bg-background'
+          aria-label='Previous image'
+        >
           <ChevronLeft className='size-5' />
         </button>
-        <button type='button' onClick={showNext} className='absolute top-1/2 right-3 -translate-y-1/2 rounded-full bg-background/90 p-2 text-foreground shadow-sm transition-colors hover:bg-background' aria-label='Next image'>
+        <button
+          type='button'
+          onClick={showNext}
+          className='absolute top-1/2 right-3 -translate-y-1/2 rounded-full bg-background/90 p-2 text-foreground shadow-sm transition-colors hover:bg-background'
+          aria-label='Next image'
+        >
           <ChevronRight className='size-5' />
         </button>
-        <div className='absolute right-3 bottom-3 rounded-md bg-background/90 px-2 py-1 text-xs font-medium text-foreground shadow-sm' aria-live='polite'>
+        <div
+          className='absolute right-3 bottom-3 rounded-md bg-background/90 px-2 py-1 text-xs font-medium text-foreground shadow-sm'
+          aria-live='polite'
+        >
           {activeIndex + 1} / {displayImageUrls.length}
         </div>
       </div>

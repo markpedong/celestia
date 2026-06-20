@@ -4,7 +4,6 @@ import { config as loadEnv } from "dotenv";
 import { defineConfig } from "prisma/config";
 import { normalizeDatabaseUrl } from "./lib/database-url";
 
-loadEnv({ path: ".env.local" });
 loadEnv();
 
 export default defineConfig({
@@ -13,6 +12,6 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    url: normalizeDatabaseUrl(process.env["DATABASE_URL"]),
+    url: normalizeDatabaseUrl(process.env["DIRECT_URL"]),
   },
 });
