@@ -4,7 +4,7 @@ import type { TrendingItem } from '@/lib/trending';
 import type { SearchPostSuggestion, SearchTagSuggestion } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
-import { useClickAway, useDebounce, useLocalStorage } from '@uidotdev/usehooks';
+import { useClickAway, useDebounce } from '@uidotdev/usehooks';
 import { uniq } from 'lodash';
 import { Clock, Hash, Search, TrendingUp, X, Zap } from 'lucide-react';
 import Link from 'next/link';
@@ -23,6 +23,20 @@ type Props = {
 
 const RECENT_SEARCHES_KEY = 'celestia:recent-searches';
 
+const getStoredRecentSearches = (): string[] => {
+  if (typeof window === 'undefined') return [];
+
+  try {
+    const storedSearches = window.localStorage.getItem(RECENT_SEARCHES_KEY);
+    if (!storedSearches) return [];
+
+    const parsedSearches: unknown = JSON.parse(storedSearches);
+    return Array.isArray(parsedSearches) && parsedSearches.every(search => typeof search === 'string') ? parsedSearches : [];
+  } catch {
+    return [];
+  }
+};
+
 const getSnippet = (body: string) => {
   const clean = body.replace(/\s+/g, ' ').trim();
   return clean.length > 82 ? `${clean.slice(0, 82)}...` : clean;
@@ -35,7 +49,7 @@ const SearchBox = ({ trending, communities }: Props) => {
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const rootRef = useClickAway<HTMLDivElement>(() => setIsOpen(false));
-  const [recentSearches, setRecentSearches] = useLocalStorage<string[]>(RECENT_SEARCHES_KEY, []);
+  const [recentSearches, setRecentSearches] = useState<string[]>(getStoredRecentSearches);
   const [isNavigating, startNavigation] = useTransition();
 
   const trimmedQuery = query.trim();
@@ -70,8 +84,24 @@ const SearchBox = ({ trending, communities }: Props) => {
     });
   }, []);
 
+  const updateRecentSearches = (updater: (current: string[]) => string[]) => {
+    setRecentSearches(current => {
+      const next = updater(current);
+
+      try {
+        window.localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(next));
+      } catch {
+        // Storage may be disabled or full; keep the in-memory recent searches.
+      }
+
+      return next;
+    });
+  };
+
   const saveRecentSearch = (term: string) => {
-    setRecentSearches(current => uniq([term, ...current.filter(item => item.toLowerCase() !== term.toLowerCase())]).slice(0, 6));
+    updateRecentSearches(current =>
+      uniq([term, ...current.filter(item => item.toLowerCase() !== term.toLowerCase())]).slice(0, 6)
+    );
   };
 
   const runSearch = (term = trimmedQuery) => {
@@ -100,7 +130,7 @@ const SearchBox = ({ trending, communities }: Props) => {
   const removeRecentSearch = (event: MouseEvent<HTMLButtonElement>, term: string) => {
     event.preventDefault();
     event.stopPropagation();
-    setRecentSearches(current => current.filter(item => item !== term));
+    updateRecentSearches(current => current.filter(item => item !== term));
   };
 
   return (

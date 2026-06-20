@@ -36,7 +36,10 @@ const PostCard = ({ post, author, tagsBySlug, score, userVote }: Props) => {
             <p className='mt-2 line-clamp-2 text-sm leading-relaxed text-muted-foreground'>{snippet(post.body)}</p>
           </Link>
           <div className='mt-3 flex items-center gap-3 text-xs font-medium text-muted-foreground'>
-            <Link href={`/post/${post.id}`} className='inline-flex items-center gap-1 transition-colors hover:text-accent'>
+            <Link
+              href={`/post/${post.id}`}
+              className='inline-flex items-center gap-1 transition-colors hover:text-accent'
+            >
               <MessageSquare className='size-3.5' />
               {post.commentCount}
             </Link>
@@ -50,12 +53,12 @@ const PostCard = ({ post, author, tagsBySlug, score, userVote }: Props) => {
           href={`/post/${post.id}`}
           className={cn(
             'relative hidden h-20 w-28 shrink-0 self-center overflow-hidden rounded-xl border border-border/80 shadow-inner sm:block',
-            !post.imageUrl && 'celestia-orbit-thumb',
+            !post.imageUrl && 'celestia-orbit-thumb'
           )}
           aria-label={post.title}
         >
           {post.imageUrl ? (
-            <Image src={post.imageUrl} alt='' fill unoptimized sizes='112px' className='object-cover' />
+            <Image src={post.imageUrl} alt='' fill unoptimized sizes='112px' className='object-cover' loading='eager' />
           ) : null}
         </Link>
       </div>
