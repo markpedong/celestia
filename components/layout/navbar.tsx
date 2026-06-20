@@ -27,7 +27,7 @@ const Navbar = ({ trending, communities, user }: NavbarProps) => {
               href='/submit'
               className={cn(
                 buttonVariants({ variant: 'default', size: 'sm' }),
-                'celestia-primary-action hidden sm:inline-flex'
+                'celestia-primary-action hidden sm:inline-flex rounded-sm'
               )}
             >
               <Plus className='size-3.5' />
