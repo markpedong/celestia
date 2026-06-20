@@ -1,5 +1,6 @@
 'use client';
 
+import type { FormEventHandler } from 'react';
 import { useState, useTransition } from 'react';
 import type { DefaultValues, FieldValues } from 'react-hook-form';
 import type { z } from 'zod';
@@ -17,12 +18,12 @@ export const useServerActionForm = <TValues extends FieldValues, TState>(
   const [state, setState] = useState(initialState);
   const [pending, startTransition] = useTransition();
 
-  const onSubmit = form.handleSubmit((_values, event) => {
-    const formElement = event?.currentTarget;
-    if (!formElement) return;
-    const formData = new FormData(formElement);
-    startTransition(async () => setState(await action(state, formData)));
-  });
+  const onSubmit: FormEventHandler<HTMLFormElement> = event => {
+    const formData = new FormData(event.currentTarget);
+    void form.handleSubmit(() => {
+      startTransition(async () => setState(await action(state, formData)));
+    })(event);
+  };
 
   return { form, onSubmit, pending, state };
 };

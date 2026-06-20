@@ -13,7 +13,7 @@ const AuthMethods: FC<AuthMethodsProps> = ({ mode }: AuthMethodsProps) => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitted, isValid, touchedFields },
     continueWithProvider,
     error,
     isSignUp,
@@ -43,21 +43,21 @@ const AuthMethods: FC<AuthMethodsProps> = ({ mode }: AuthMethodsProps) => {
         {isSignUp ? (
         <div className='space-y-2'>
           <label htmlFor='name' className='text-sm font-medium text-card-foreground'>Display name</label>
-          <Input id='name' placeholder='Your name' maxLength={MAX_DISPLAY_NAME_LENGTH} aria-invalid={Boolean(errors.name)} className='h-11 bg-background' {...register('name')} />
-          {errors.name ? <p className='text-xs text-destructive'>{errors.name.message}</p> : null}
+          <Input id='name' placeholder='Your name' maxLength={MAX_DISPLAY_NAME_LENGTH} aria-invalid={Boolean(errors.name && (touchedFields.name || isSubmitted))} className='h-11 bg-background' {...register('name')} />
+          {errors.name && (touchedFields.name || isSubmitted) ? <p className='text-xs text-destructive'>{errors.name.message}</p> : null}
         </div>
         ) : null}
         <div className='space-y-2'>
         <label htmlFor='email' className='text-sm font-medium text-card-foreground'>Email</label>
-        <Input id='email' type='email' autoComplete='email' placeholder='you@example.com' aria-invalid={Boolean(errors.email)} className='h-11 bg-background' {...register('email')} />
-        {errors.email ? <p className='text-xs text-destructive'>{errors.email.message}</p> : null}
+        <Input id='email' type='email' autoComplete='email' placeholder='you@example.com' aria-invalid={Boolean(errors.email && (touchedFields.email || isSubmitted))} className='h-11 bg-background' {...register('email')} />
+        {errors.email && (touchedFields.email || isSubmitted) ? <p className='text-xs text-destructive'>{errors.email.message}</p> : null}
         </div>
         <div className='space-y-2'>
         <label htmlFor='password' className='text-sm font-medium text-card-foreground'>Password</label>
-        <Input id='password' type='password' autoComplete={isSignUp ? 'new-password' : 'current-password'} placeholder='At least 6 characters' aria-invalid={Boolean(errors.password)} className='h-11 bg-background' {...register('password')} />
-        {errors.password ? <p className='text-xs text-destructive'>{errors.password.message}</p> : null}
+        <Input id='password' type='password' autoComplete={isSignUp ? 'new-password' : 'current-password'} placeholder='At least 6 characters' aria-invalid={Boolean(errors.password && (touchedFields.password || isSubmitted))} className='h-11 bg-background' {...register('password')} />
+        {errors.password && (touchedFields.password || isSubmitted) ? <p className='text-xs text-destructive'>{errors.password.message}</p> : null}
         </div>
-        <Button type='submit' disabled={pending} className='celestia-primary-action h-11 w-full rounded'>
+        <Button type='submit' disabled={pending || !isValid} className='celestia-primary-action h-11 w-full rounded'>
           {isSignUp ? <Mail className='size-4' /> : <KeyRound className='size-4' />}
           {pending ? 'Please wait...' : isSignUp ? 'Create account' : 'Sign in'}
         </Button>

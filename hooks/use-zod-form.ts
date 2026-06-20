@@ -8,6 +8,7 @@ import type { z } from 'zod';
 export const useZodForm = <TValues extends FieldValues>(schema: z.ZodType<TValues>, defaultValues: DefaultValues<TValues>) =>
   useForm<TValues>({
     resolver: zodResolver(schema as never) as Resolver<TValues>,
-    mode: 'onBlur',
+    mode: 'onChange',
+    reValidateMode: 'onChange',
     defaultValues,
   });

@@ -14,7 +14,7 @@ import { Save } from 'lucide-react';
 import { MAX_POST_BODY_LENGTH, MAX_POST_TITLE_LENGTH } from '@/lib/constants';
 
 export const EditPostForm: FC<EditPostFormProps> = ({ post }: EditPostFormProps) => {
-  const { form: { register, formState: { errors } }, onSubmit, pending, state } = useServerActionForm(
+  const { form: { register, formState: { errors, isSubmitted, isValid, touchedFields } }, onSubmit, pending, state } = useServerActionForm(
     updatePostAction,
     null,
     editPostSchema,
@@ -30,10 +30,10 @@ export const EditPostForm: FC<EditPostFormProps> = ({ post }: EditPostFormProps)
           id='title'
           maxLength={MAX_POST_TITLE_LENGTH}
           className='h-11 bg-secondary/80'
-          aria-invalid={Boolean(errors.title)}
+          aria-invalid={Boolean(errors.title && (touchedFields.title || isSubmitted))}
           {...register('title')}
         />
-        {errors.title ? <p className='text-xs text-destructive'>{errors.title.message}</p> : null}
+        {errors.title && (touchedFields.title || isSubmitted) ? <p className='text-xs text-destructive'>{errors.title.message}</p> : null}
       </div>
       <div className='space-y-2'>
         <Label htmlFor='body'>Body</Label>
@@ -42,10 +42,10 @@ export const EditPostForm: FC<EditPostFormProps> = ({ post }: EditPostFormProps)
           rows={8}
           maxLength={MAX_POST_BODY_LENGTH}
           className='resize-y bg-secondary/80 leading-6'
-          aria-invalid={Boolean(errors.body)}
+          aria-invalid={Boolean(errors.body && (touchedFields.body || isSubmitted))}
           {...register('body')}
         />
-        {errors.body ? <p className='text-xs text-destructive'>{errors.body.message}</p> : null}
+        {errors.body && (touchedFields.body || isSubmitted) ? <p className='text-xs text-destructive'>{errors.body.message}</p> : null}
       </div>
       <div className='space-y-2'>
         <Label>
@@ -61,7 +61,7 @@ export const EditPostForm: FC<EditPostFormProps> = ({ post }: EditPostFormProps)
           {state.error}
         </p>
       ) : null}
-      <Button type='submit' disabled={pending} className='celestia-primary-action h-11 w-full rounded'>
+      <Button type='submit' disabled={pending || !isValid} className='celestia-primary-action h-11 w-full rounded'>
         <Save className='size-4' /> {pending ? 'Saving…' : 'Save changes'}
       </Button>
     </form>

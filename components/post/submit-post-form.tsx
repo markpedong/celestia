@@ -16,7 +16,7 @@ export const SubmitPostForm: FC<SubmitPostFormProps> = ({ communities, defaultCo
   const selectedCommunity = defaultCommunitySlug && communities.some(community => community.slug === defaultCommunitySlug)
     ? defaultCommunitySlug
     : '';
-  const { form: { register, formState: { errors } }, onSubmit, pending, state } = useServerActionForm(
+  const { form: { register, formState: { errors, isSubmitted, isValid, touchedFields } }, onSubmit, pending, state } = useServerActionForm(
     createPostAction,
     null,
     postSchema,
@@ -33,10 +33,10 @@ export const SubmitPostForm: FC<SubmitPostFormProps> = ({ communities, defaultCo
           maxLength={MAX_POST_TITLE_LENGTH}
           placeholder='What do you want to discuss?'
           className='h-10 rounded border-border bg-secondary/80 px-4 text-[15px] focus-visible:border-primary/40 focus-visible:ring-primary/20'
-          aria-invalid={Boolean(errors.title)}
+          aria-invalid={Boolean(errors.title && (touchedFields.title || isSubmitted))}
           {...register('title')}
         />
-        {errors.title ? <p className='text-xs text-destructive'>{errors.title.message}</p> : null}
+        {errors.title && (touchedFields.title || isSubmitted) ? <p className='text-xs text-destructive'>{errors.title.message}</p> : null}
       </div>
       <div className='space-y-2'>
         <Label htmlFor='body' className='text-sm text-card-foreground'>
@@ -48,10 +48,10 @@ export const SubmitPostForm: FC<SubmitPostFormProps> = ({ communities, defaultCo
           maxLength={MAX_POST_BODY_LENGTH}
           placeholder='Add context, details, links...'
           className='resize-y rounded border-border bg-secondary/80 px-4 py-3 leading-6 focus-visible:border-primary/40 focus-visible:ring-primary/20'
-          aria-invalid={Boolean(errors.body)}
+          aria-invalid={Boolean(errors.body && (touchedFields.body || isSubmitted))}
           {...register('body')}
         />
-        {errors.body ? <p className='text-xs text-destructive'>{errors.body.message}</p> : null}
+        {errors.body && (touchedFields.body || isSubmitted) ? <p className='text-xs text-destructive'>{errors.body.message}</p> : null}
       </div>
       <div className='space-y-2'>
         <Label htmlFor='communitySlug' className='text-sm text-card-foreground'>
@@ -61,7 +61,7 @@ export const SubmitPostForm: FC<SubmitPostFormProps> = ({ communities, defaultCo
           id='communitySlug'
           disabled={communities.length === 0 || pending}
           className='h-10 w-full rounded border border-border bg-secondary/80 px-4 text-sm text-foreground outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60'
-          aria-invalid={Boolean(errors.communitySlug)}
+          aria-invalid={Boolean(errors.communitySlug && (touchedFields.communitySlug || isSubmitted))}
           {...register('communitySlug')}
         >
           <option value='' disabled>
@@ -73,7 +73,7 @@ export const SubmitPostForm: FC<SubmitPostFormProps> = ({ communities, defaultCo
             </option>
           ))}
         </select>
-        {errors.communitySlug ? <p className='text-xs text-destructive'>{errors.communitySlug.message}</p> : null}
+        {errors.communitySlug && (touchedFields.communitySlug || isSubmitted) ? <p className='text-xs text-destructive'>{errors.communitySlug.message}</p> : null}
         <p className='text-xs text-muted-foreground'>
           You can post in communities you have joined. Communities are no longer created from post text.
         </p>
@@ -94,7 +94,7 @@ export const SubmitPostForm: FC<SubmitPostFormProps> = ({ communities, defaultCo
 
       <Button
         type='submit'
-        disabled={pending || communities.length === 0}
+        disabled={pending || communities.length === 0 || !isValid}
         className='celestia-primary-action h-10 w-full rounded'
       >
         <Send className='size-4' />
