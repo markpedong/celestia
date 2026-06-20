@@ -9,8 +9,7 @@ export const generateUsername = (name: string): string => {
       .replace(/[^a-z0-9]+/g, "_")
       .replace(/^_|_$/g, "")
       .slice(0, 20) || "user";
-  const suffix = Math.random().toString(36).slice(2, 8);
-  return `${base}_${suffix}`;
+  return base;
 }
 
 export const ensureUserProfile = async (identity: {
