@@ -1,6 +1,7 @@
-import { NotFoundBackButton } from '@/components/navigation/not-found-actions';
+'use client';
+
 import { Button } from '@/components/ui/button';
-import { Home, Orbit, Search, Sparkles, Zap } from 'lucide-react';
+import { ArrowLeft, Home, Orbit, Search, Sparkles, Zap } from 'lucide-react';
 import Link from 'next/link';
 
 export default function NotFound() {
@@ -32,7 +33,16 @@ export default function NotFound() {
                   Navigate to home
                 </Link>
               </Button>
-              <NotFoundBackButton />
+              <Button
+                type='button'
+                variant='outline'
+                size='lg'
+                className='h-10 rounded-full px-4'
+                onClick={() => window.history.back()}
+              >
+                <ArrowLeft className='size-4' />
+                Go back
+              </Button>
             </div>
           </div>
 

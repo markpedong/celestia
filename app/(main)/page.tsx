@@ -7,9 +7,8 @@ import { batchAuthorsForIds, listPostSorted, listTags, tagsPostCounts } from '@/
 import { getTrendingToday } from '@/lib/trending';
 import type { FeedSort, HomePageProps } from '@/lib/types';
 import { FileQuestion } from 'lucide-react';
-import { FC } from 'react';
 
-const Home: FC<HomePageProps> = async ({ searchParams }) => {
+const Home = async ({ searchParams }: HomePageProps) => {
   const [sessionUser, query] = await Promise.all([getSessionUser(), searchParams]);
 
   const rawSort = Array.isArray(query.sort) ? query.sort[0] : query.sort;

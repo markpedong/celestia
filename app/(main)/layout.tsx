@@ -5,9 +5,8 @@ import { getSessionUser } from '@/lib/auth';
 import { listJoinedCommunities, tagsPostCounts } from '@/lib/db/queries';
 import { getTrendingToday } from '@/lib/trending';
 import type { MainLayoutProps } from '@/lib/types';
-import { FC } from 'react';
 
-const MainLayout: FC<MainLayoutProps> = async ({ children }) => {
+const MainLayout = async ({ children }: MainLayoutProps) => {
   const user = await getSessionUser();
   const [tags, joinedCommunities] = await Promise.all([
     tagsPostCounts(),

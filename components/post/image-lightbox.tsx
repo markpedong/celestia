@@ -1,7 +1,9 @@
 'use client';
 
-import Lightbox from 'yet-another-react-lightbox';
+import dynamic from 'next/dynamic';
 import 'yet-another-react-lightbox/styles.css';
+
+const Lightbox = dynamic(() => import('yet-another-react-lightbox'), { ssr: false });
 
 type ImageLightboxProps = {
   imageUrls: string[];

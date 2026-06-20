@@ -240,10 +240,6 @@ export type SearchSectionProps = {
   children: ReactNode;
 };
 
-export type MomentumIconProps = {
-  index: number;
-};
-
 export type RightTrendingProps = {
   items: TrendingItem[];
   communities: SearchTagSuggestion[];

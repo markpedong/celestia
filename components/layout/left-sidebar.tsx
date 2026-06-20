@@ -4,7 +4,6 @@ import { cn } from '@/lib/utils';
 import { BarChart2, Compass, Hash, Home, Radio } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { FC } from 'react';
 import LeftTags from './left-tags';
 import JoinCtaCard from './join-cta';
 import { Tag } from '@/lib/types';
@@ -18,14 +17,14 @@ const nav = [
   { href: '/communities/new', label: 'Start a community', icon: Hash, match: 'communities' as const },
 ];
 
-const LeftSidebar: FC<{
+const LeftSidebar = ({ showCta, tags, communityLabel }: {
   showCta: boolean;
   tags: {
     tag: Tag;
     count: number;
   }[];
   communityLabel: string;
-}> = ({ showCta, tags, communityLabel }) => {
+}) => {
   const pathname = usePathname();
   const params = useSearchParams();
   const sort = params.get('sort');

@@ -1,13 +1,6 @@
 import Link from 'next/link';
-import type { MomentumIconProps, RightTrendingProps } from '@/lib/types';
+import type { RightTrendingProps } from '@/lib/types';
 import { Flame, Minus, Sparkles, TrendingUp, Users } from 'lucide-react';
-
-const MomentumIcon = ({ index }: MomentumIconProps) => {
-  if (index === 0) return <Flame className='size-3 text-amber-400' />;
-  if (index === 1) return <TrendingUp className='size-3 text-success' />;
-  if (index === 2) return <Sparkles className='size-3 text-primary' />;
-  return <Minus className='size-3 text-muted-foreground' />;
-};
 
 export function RightTrending({ items, communities }: RightTrendingProps) {
   return (
@@ -27,7 +20,7 @@ export function RightTrending({ items, communities }: RightTrendingProps) {
               </p>
               <p className='font-mono text-[11px] text-muted-foreground'>{t.postCount} posts</p>
             </div>
-            <MomentumIcon index={index} />
+            {index === 0 ? <Flame className='size-3 text-amber-400' /> : index === 1 ? <TrendingUp className='size-3 text-success' /> : index === 2 ? <Sparkles className='size-3 text-primary' /> : <Minus className='size-3 text-muted-foreground' />}
           </Link>
         ))}
         <Link href='/?sort=hot' className='inline-block px-2 pt-2 text-xs font-medium text-primary hover:text-primary-hover'>

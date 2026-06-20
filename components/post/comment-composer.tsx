@@ -3,14 +3,13 @@
 import { createCommentAction } from '@/lib/actions/comments';
 import type { CommentComposerProps } from '@/lib/types';
 import { useRouter } from 'next/navigation';
-import { useRef, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
 import { UserAvatar } from '../ui/user-avatar';
 import { useCommentSubmission } from './comment-submission-context';
 
 const CommentComposer = ({ postID, user, compact, parentId, placeholder }: CommentComposerProps) => {
-  const formRef = useRef<HTMLFormElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const router = useRouter();
@@ -47,7 +46,7 @@ const CommentComposer = ({ postID, user, compact, parentId, placeholder }: Comme
   }
 
   return (
-    <form ref={formRef} onSubmit={onSubmit} className='flex gap-3'>
+    <form onSubmit={onSubmit} className='flex gap-3'>
       <input type='hidden' name='postId' value={postID} />
       <input type='hidden' name='parentId' value={parentId ?? ''} />
       <UserAvatar user={user} size={compact ? 'sm' : 'default'} className='mt-1 shrink-0' />
