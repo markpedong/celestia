@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { Geist_Mono, Inter } from 'next/font/google';
 import Script from 'next/script';
-import { QueryProvider } from '@/components/providers/query-provider';
 import type { RootLayoutProps } from '@/lib/types';
 import './globals.css';
 import './design.scss';
@@ -101,7 +100,7 @@ export default function RootLayout({
         </Script>
       </head>
       <body className='celestia-app-shell min-h-full flex flex-col bg-background text-foreground'>
-        <QueryProvider>{children}</QueryProvider>
+        {children}
       </body>
     </html>
   );

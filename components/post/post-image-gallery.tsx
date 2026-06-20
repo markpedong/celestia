@@ -3,7 +3,6 @@
 import { ChevronLeft, ChevronRight, ImageOff, Images, ZoomIn } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
-import { AspectRatio } from '../ui/aspect-ratio';
 import { ImageLightbox } from './image-lightbox';
 
 type PostImageGalleryProps = {
@@ -22,12 +21,12 @@ const isImageUrl = (url: string) => {
 
 function ImagePlaceholder({ ratio }: { ratio: number }) {
   return (
-    <AspectRatio ratio={ratio} className='size-full'>
+    <div className='size-full' style={{ aspectRatio: ratio }}>
       <div className='flex size-full flex-col items-center justify-center gap-1 bg-muted text-xs text-muted-foreground'>
         <ImageOff className='size-5' />
         Image unavailable
       </div>
-    </AspectRatio>
+    </div>
   );
 }
 

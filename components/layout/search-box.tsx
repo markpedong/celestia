@@ -2,15 +2,14 @@
 
 import type { SearchBoxProps, SearchSectionProps, SearchSuggestionsResponse } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { useQuery } from '@tanstack/react-query';
-import { useClickAway, useDebounce } from '@uidotdev/usehooks';
-import { uniq } from 'lodash';
 import { Clock, Hash, Search, TrendingUp, X, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { FormEvent, MouseEvent, useEffect, useMemo, useRef, useState, useTransition } from 'react';
+import { type FormEvent, type MouseEvent, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 
 const RECENT_SEARCHES_KEY = 'celestia:recent-searches';
+const emptySuggestions: SearchSuggestionsResponse = { posts: [], tags: [] };
+const unique = (items: string[]) => [...new Set(items)];
 
 const getStoredRecentSearches = (): string[] => {
   if (typeof window === 'undefined') return [];
@@ -35,24 +34,15 @@ const SearchBox = ({ trending, communities }: SearchBoxProps) => {
   const router = useRouter();
   const pathname = usePathname();
   const inputRef = useRef<HTMLInputElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
-  const rootRef = useClickAway<HTMLDivElement>(() => setIsOpen(false));
   const [recentSearches, setRecentSearches] = useState<string[]>(getStoredRecentSearches);
+  const [suggestionResults, setSuggestionResults] = useState<SearchSuggestionsResponse>(emptySuggestions);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const [isNavigating, startNavigation] = useTransition();
 
   const trimmedQuery = query.trim();
-  const debouncedQuery = useDebounce(trimmedQuery, 180);
-  const { data: suggestions = { posts: [], tags: [] }, isFetching: isLoadingSuggestions } = useQuery({
-    queryKey: ['search-suggestions', debouncedQuery],
-    queryFn: async () => {
-      const response = await fetch(`/api/search/suggestions?q=${encodeURIComponent(debouncedQuery)}`);
-      if (!response.ok) throw new Error('Unable to load search suggestions.');
-      return response.json() as Promise<SearchSuggestionsResponse>;
-    },
-    enabled: Boolean(debouncedQuery),
-    staleTime: 30_000,
-  });
   const typedSuggestions = useMemo(() => {
     if (!trimmedQuery) return [];
 
@@ -64,13 +54,48 @@ const SearchBox = ({ trending, communities }: SearchBoxProps) => {
       `${trimmedQuery} advice`,
     ];
 
-    return uniq(base).slice(0, 5);
+    return unique(base).slice(0, 5);
   }, [trimmedQuery]);
+  const suggestions = trimmedQuery ? suggestionResults : emptySuggestions;
 
   useEffect(() => {
     queueMicrotask(() => {
       setQuery(new URLSearchParams(window.location.search).get('q') ?? '');
     });
+  }, []);
+
+  useEffect(() => {
+    if (!trimmedQuery) {
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeout = window.setTimeout(async () => {
+      setIsLoadingSuggestions(true);
+      try {
+        const response = await fetch(`/api/search/suggestions?q=${encodeURIComponent(trimmedQuery)}`, {
+          signal: controller.signal,
+        });
+        if (response.ok) setSuggestionResults(await response.json() as SearchSuggestionsResponse);
+      } catch (error) {
+        if ((error as Error).name !== 'AbortError') setSuggestionResults(emptySuggestions);
+      } finally {
+        if (!controller.signal.aborted) setIsLoadingSuggestions(false);
+      }
+    }, 180);
+
+    return () => {
+      controller.abort();
+      window.clearTimeout(timeout);
+    };
+  }, [trimmedQuery]);
+
+  useEffect(() => {
+    const handlePointerDown = (event: PointerEvent) => {
+      if (rootRef.current && !rootRef.current.contains(event.target as Node)) setIsOpen(false);
+    };
+    document.addEventListener('pointerdown', handlePointerDown);
+    return () => document.removeEventListener('pointerdown', handlePointerDown);
   }, []);
 
   const updateRecentSearches = (updater: (current: string[]) => string[]) => {
@@ -89,7 +114,7 @@ const SearchBox = ({ trending, communities }: SearchBoxProps) => {
 
   const saveRecentSearch = (term: string) => {
     updateRecentSearches(current =>
-      uniq([term, ...current.filter(item => item.toLowerCase() !== term.toLowerCase())]).slice(0, 6)
+      unique([term, ...current.filter(item => item.toLowerCase() !== term.toLowerCase())]).slice(0, 6)
     );
   };
 

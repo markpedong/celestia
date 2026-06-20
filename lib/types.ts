@@ -343,8 +343,6 @@ export type UserAvatarProps = {
   className?: string;
 };
 
-export type QueryProviderProps = WithChildren;
-
 export type SearchParams = Record<string, string | string[] | undefined>;
 
 export type RouteProps<T extends Record<string, string>> = {
