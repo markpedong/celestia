@@ -1,4 +1,5 @@
 import { prisma } from "../prisma";
+import { Prisma } from "../generated/prisma/client";
 import { User } from "../types";
 
 export const generateUsername = (name: string): string => {
@@ -17,28 +18,31 @@ export const ensureUserProfile = async (identity: {
   name: string;
   image?: string | null;
 }): Promise<User> => {
-  const existing = await prisma.userProfile.findUnique({
-    where: { id: identity.id },
-  });
+  const baseUsername = generateUsername(identity.name);
+  const usernameWithId = `${baseUsername}_${identity.id.replace(/[^a-z0-9]/gi, '').slice(-8).toLowerCase()}`;
 
-  if (existing) {
-    return {
-      id: existing.id,
-      username: existing.username,
-      displayName: identity.name,
-      avatarUrl: existing.avatarUrl ?? identity.image ?? undefined,
-      coverUrl: existing.coverUrl ?? undefined,
-    };
+  let row;
+  try {
+    row = await prisma.userProfile.upsert({
+      where: { id: identity.id },
+      update: {},
+      create: { id: identity.id, username: baseUsername },
+    });
+  } catch (error) {
+    if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== 'P2002') throw error;
+
+    row = await prisma.userProfile.upsert({
+      where: { id: identity.id },
+      update: {},
+      create: { id: identity.id, username: usernameWithId },
+    });
   }
-
-  const row = await prisma.userProfile.create({
-    data: { id: identity.id, username: generateUsername(identity.name) },
-  });
 
   return {
     id: row.id,
     username: row.username,
     displayName: identity.name,
-    avatarUrl: identity.image ?? undefined,
+    avatarUrl: row.avatarUrl ?? identity.image ?? undefined,
+    coverUrl: row.coverUrl ?? undefined,
   };
 }

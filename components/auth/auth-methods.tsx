@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import type { AuthMethodsProps } from '@/lib/types';
 import { Apple, Globe, KeyRound, Mail } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import type { Provider } from '@supabase/supabase-js';
@@ -106,6 +107,16 @@ const AuthMethods: FC<AuthMethodsProps> = ({ mode }: AuthMethodsProps) => {
           {isSignUp ? <Mail className='size-4' /> : <KeyRound className='size-4' />}
           {pending ? 'Please wait...' : isSignUp ? 'Create account' : 'Sign in'}
         </Button>
+        {!isSignUp ? (
+          <div className='flex items-center justify-between gap-3 text-sm'>
+            <Button asChild variant='link' size='sm' className='px-0'>
+              <Link href='/auth/sign-up'>Create an account</Link>
+            </Button>
+            <Button type='button' variant='link' size='sm' disabled className='px-0 text-muted-foreground' title='Coming soon'>
+              Forgot password?
+            </Button>
+          </div>
+        ) : null}
       </form>
       {message ? <p className='text-center text-sm text-muted-foreground'>{message}</p> : null}
       {error ? <p className='rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive' role='alert'>{error}</p> : null}
