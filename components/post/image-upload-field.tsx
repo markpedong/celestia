@@ -1,63 +1,124 @@
 'use client';
 
-import Lightbox from 'yet-another-react-lightbox';
-import 'yet-another-react-lightbox/styles.css';
-import { ImagePlus, Trash2, ZoomIn } from 'lucide-react';
+import { ImagePlus, X, ZoomIn } from 'lucide-react';
 import Image from 'next/image';
+import { MAX_POST_IMAGES } from '@/lib/post-images';
 import type { ImageUploadFieldProps } from '@/lib/types';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { ImageLightbox } from './image-lightbox';
 
-export function ImageUploadField({ initialImageUrl }: ImageUploadFieldProps) {
+export function ImageUploadField({
+  initialImageUrls = [],
+  name = 'image',
+  multiple = false,
+}: ImageUploadFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [previewUrl, setPreviewUrl] = useState(initialImageUrl ?? '');
-  const [imageName, setImageName] = useState<string | null>(null);
+  const [previewUrls, setPreviewUrls] = useState(initialImageUrls);
+  const [imageNames, setImageNames] = useState<string[]>([]);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const [removeImage, setRemoveImage] = useState(false);
-  const slides = useMemo(() => previewUrl ? [{ src: previewUrl, alt: 'Post image preview' }] : [], [previewUrl]);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [removeImages, setRemoveImages] = useState(false);
 
   useEffect(() => () => {
-    if (previewUrl.startsWith('blob:')) URL.revokeObjectURL(previewUrl);
-  }, [previewUrl]);
+    previewUrls.forEach(url => {
+      if (url.startsWith('blob:')) URL.revokeObjectURL(url);
+    });
+  }, [previewUrls]);
 
-  const selectImage = (file: File | undefined) => {
-    if (!file) return;
-    if (previewUrl.startsWith('blob:')) URL.revokeObjectURL(previewUrl);
-    setPreviewUrl(URL.createObjectURL(file));
-    setImageName(file.name);
-    setRemoveImage(false);
+  const selectImages = (files: FileList | null) => {
+    const selected = Array.from(files ?? []).slice(0, multiple ? MAX_POST_IMAGES : 1);
+    if (selected.length === 0) return;
+
+    const transfer = new DataTransfer();
+    selected.forEach(file => transfer.items.add(file));
+    if (inputRef.current) inputRef.current.files = transfer.files;
+    setPreviewUrls(selected.map(file => URL.createObjectURL(file)));
+    setImageNames(selected.map(file => file.name));
+    setRemoveImages(false);
+    setActiveIndex(0);
   };
 
-  const clearImage = () => {
-    if (previewUrl.startsWith('blob:')) URL.revokeObjectURL(previewUrl);
-    setPreviewUrl('');
-    setImageName(null);
-    setRemoveImage(true);
-    if (inputRef.current) inputRef.current.value = '';
+  const removeImage = (index: number) => {
+    const url = previewUrls[index];
+    if (url.startsWith('blob:')) URL.revokeObjectURL(url);
+
+    const transfer = new DataTransfer();
+    Array.from(inputRef.current?.files ?? []).forEach((file, fileIndex) => {
+      if (fileIndex !== index) transfer.items.add(file);
+    });
+    if (inputRef.current) inputRef.current.files = transfer.files;
+
+    const remaining = previewUrls.length - 1;
+    setPreviewUrls(urls => urls.filter((_, imageIndex) => imageIndex !== index));
+    setImageNames(names => names.filter((_, imageIndex) => imageIndex !== index));
+    setRemoveImages(remaining === 0 && initialImageUrls.length > 0);
+    setActiveIndex(current => Math.min(current, Math.max(remaining - 1, 0)));
+  };
+
+  const openPreview = (index: number) => {
+    setActiveIndex(index);
+    setIsLightboxOpen(true);
   };
 
   return (
     <div className='space-y-3'>
-      <input ref={inputRef} id='image' name='image' type='file' accept='image/png,image/jpeg,image/webp,image/gif' className='sr-only' onChange={event => selectImage(event.target.files?.[0])} />
-      <input type='hidden' name='removeImage' value={removeImage ? 'true' : 'false'} />
-      {previewUrl ? (
-        <div className='relative aspect-[16/9] overflow-hidden rounded-2xl border border-border bg-muted'>
-          <Image src={previewUrl} alt='Selected post image preview' fill unoptimized sizes='(max-width: 768px) 100vw, 672px' className='object-contain' />
-          <div className='absolute inset-x-0 bottom-0 flex justify-end gap-2 bg-gradient-to-t from-background/90 to-transparent p-3'>
-            <button type='button' onClick={() => setIsLightboxOpen(true)} className='inline-flex items-center gap-1.5 rounded-lg bg-card/95 px-2.5 py-1.5 text-xs font-medium shadow-sm hover:bg-card'>
-              <ZoomIn className='size-3.5' /> Preview
-            </button>
-            <button type='button' onClick={clearImage} className='inline-flex items-center gap-1.5 rounded-lg bg-destructive px-2.5 py-1.5 text-xs font-medium text-destructive-foreground shadow-sm hover:bg-destructive/90'>
-              <Trash2 className='size-3.5' /> Remove
-            </button>
-          </div>
+      <input
+        ref={inputRef}
+        id={name}
+        name={name}
+        type='file'
+        accept='image/png,image/jpeg,image/webp,image/gif'
+        multiple={multiple}
+        className='sr-only'
+        onChange={event => selectImages(event.target.files)}
+      />
+      <input type='hidden' name='removeImages' value={removeImages ? 'true' : 'false'} />
+
+      {previewUrls.length > 0 ? (
+        <div className={`grid gap-2 ${previewUrls.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+          {previewUrls.map((previewUrl, index) => (
+            <div key={previewUrl} className='group relative aspect-[16/9] overflow-hidden rounded-2xl border border-border bg-muted'>
+              <button type='button' onClick={() => openPreview(index)} className='absolute inset-0 text-left' aria-label={`Preview image ${index + 1}`}>
+                <Image
+                  src={previewUrl}
+                  alt={`Selected post image preview ${index + 1}`}
+                  fill
+                  unoptimized
+                  sizes='(max-width: 768px) 100vw, 336px'
+                  className='object-cover transition-transform duration-200 group-hover:scale-[1.02]'
+                />
+                <span className='absolute inset-0 flex items-center justify-center bg-foreground/0 text-transparent transition-colors group-hover:bg-foreground/35 group-hover:text-background'>
+                  <ZoomIn className='size-5' />
+                </span>
+              </button>
+              <button type='button' onClick={() => removeImage(index)} className='absolute top-2 right-2 z-10 rounded-full bg-background/90 p-1 text-foreground shadow-sm transition-colors hover:bg-destructive hover:text-destructive-foreground' aria-label={`Remove image ${index + 1}`}>
+                <X className='size-4' />
+              </button>
+            </div>
+          ))}
         </div>
       ) : null}
+
       <button type='button' onClick={() => inputRef.current?.click()} className='flex w-full min-w-0 items-center justify-center gap-2 rounded-xl border border-dashed border-border bg-secondary/60 px-3 py-3 text-sm text-muted-foreground celestia-hover-surface'>
         <ImagePlus className='size-4 text-primary' />
-        <span className='truncate'>{imageName ?? 'Add image'}</span>
+        <span className='truncate'>
+          {imageNames.length > 0
+            ? `${imageNames.length} image${imageNames.length === 1 ? '' : 's'} selected`
+            : multiple
+              ? 'Add images'
+              : 'Add image'}
+        </span>
       </button>
-      <p className='text-xs text-muted-foreground'>PNG, JPEG, WebP, or GIF · maximum 2 MB</p>
-      <Lightbox open={isLightboxOpen} close={() => setIsLightboxOpen(false)} slides={slides} carousel={{ finite: true }} />
+      <p className='text-xs text-muted-foreground'>
+        PNG, JPEG, WebP, or GIF · maximum 2 MB each{multiple ? ` · up to ${MAX_POST_IMAGES} images` : ''}
+      </p>
+      <ImageLightbox
+        imageUrls={previewUrls}
+        open={isLightboxOpen}
+        onClose={() => setIsLightboxOpen(false)}
+        index={activeIndex}
+        altPrefix='Post image preview'
+      />
     </div>
   );
 }

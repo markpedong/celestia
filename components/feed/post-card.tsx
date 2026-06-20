@@ -1,10 +1,9 @@
 import type { PostCardProps } from '@/lib/types';
-import { cn } from '@/lib/utils';
 import { MessageSquare, Share2 } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
 import VoteButtons from './vote-buttons';
 import { PostMeta } from './post-meta';
+import { PostImageGallery } from '../post/post-image-gallery';
 
 const snippet = (body: string, max = 160) => {
   const t = body.replace(/\s+/g, ' ').trim();
@@ -41,18 +40,7 @@ const PostCard = ({ post, author, tagsBySlug, score, userVote }: PostCardProps) 
             </button>
           </div>
         </div>
-        <Link
-          href={`/post/${post.id}`}
-          className={cn(
-            'relative hidden h-20 w-28 shrink-0 self-center overflow-hidden rounded-xl border border-border/80 shadow-inner sm:block',
-            !post.imageUrl && 'celestia-orbit-thumb'
-          )}
-          aria-label={post.title}
-        >
-          {post.imageUrl ? (
-            <Image src={post.imageUrl} alt='' fill unoptimized sizes='112px' className='object-cover' loading='eager' />
-          ) : null}
-        </Link>
+        <PostImageGallery imageUrls={post.imageUrls} title={post.title} variant='thumbnail' />
       </div>
     </article>
   );

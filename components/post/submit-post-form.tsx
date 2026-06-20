@@ -7,7 +7,6 @@ import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
 import { Send } from 'lucide-react';
 import type { SubmitPostFormProps } from '@/lib/types';
-import Link from 'next/link';
 import { ImageUploadField } from './image-upload-field';
 
 export function SubmitPostForm({ communities, defaultCommunitySlug }: SubmitPostFormProps) {
@@ -15,7 +14,9 @@ export function SubmitPostForm({ communities, defaultCommunitySlug }: SubmitPost
   return (
     <form action={action} className='celestia-card space-y-4 p-4 md:p-5'>
       <div className='space-y-2'>
-        <Label htmlFor='title' className='text-sm text-card-foreground'>Post title</Label>
+        <Label htmlFor='title' className='text-sm text-card-foreground'>
+          Post title
+        </Label>
         <Input
           id='title'
           name='title'
@@ -27,7 +28,9 @@ export function SubmitPostForm({ communities, defaultCommunitySlug }: SubmitPost
         />
       </div>
       <div className='space-y-2'>
-        <Label htmlFor='body' className='text-sm text-card-foreground'>Body</Label>
+        <Label htmlFor='body' className='text-sm text-card-foreground'>
+          Body
+        </Label>
         <Textarea
           id='body'
           name='body'
@@ -37,27 +40,40 @@ export function SubmitPostForm({ communities, defaultCommunitySlug }: SubmitPost
         />
       </div>
       <div className='space-y-2'>
-        <Label htmlFor='communitySlug' className='text-sm text-card-foreground'>Community</Label>
+        <Label htmlFor='communitySlug' className='text-sm text-card-foreground'>
+          Community
+        </Label>
         <select
           id='communitySlug'
           name='communitySlug'
           required
-          defaultValue={defaultCommunitySlug && communities.some(community => community.slug === defaultCommunitySlug) ? defaultCommunitySlug : ''}
+          defaultValue={
+            defaultCommunitySlug && communities.some(community => community.slug === defaultCommunitySlug)
+              ? defaultCommunitySlug
+              : ''
+          }
           disabled={communities.length === 0 || pending}
           className='h-10 w-full rounded-xl border border-border bg-secondary/80 px-4 text-sm text-foreground outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60'
         >
-          <option value='' disabled>Select a community</option>
+          <option value='' disabled>
+            Select a community
+          </option>
           {communities.map(community => (
-            <option key={community.slug} value={community.slug}>r/{community.slug} — {community.label}</option>
+            <option key={community.slug} value={community.slug}>
+              r/{community.slug} — {community.label}
+            </option>
           ))}
         </select>
-        <p className='text-xs text-muted-foreground'>You can post in communities you have joined. Communities are no longer created from post text.</p>
-        {communities.length === 0 ? <p className='text-xs text-primary'>Join a community first, or <Link href='/communities/new' className='font-semibold underline underline-offset-2'>create one</Link>.</p> : null}
+        <p className='text-xs text-muted-foreground'>
+          You can post in communities you have joined. Communities are no longer created from post text.
+        </p>
       </div>
 
       <div className='space-y-2'>
-        <Label>Image <span className='text-muted-foreground'>(optional)</span></Label>
-        <ImageUploadField />
+        <Label>
+          Images <span className='text-muted-foreground'>(optional, up to 4)</span>
+        </Label>
+        <ImageUploadField name='images' multiple />
       </div>
 
       {state?.error ? (
@@ -66,7 +82,11 @@ export function SubmitPostForm({ communities, defaultCommunitySlug }: SubmitPost
         </p>
       ) : null}
 
-      <Button type='submit' disabled={pending || communities.length === 0} className='celestia-primary-action h-10 w-full rounded-xl'>
+      <Button
+        type='submit'
+        disabled={pending || communities.length === 0}
+        className='celestia-primary-action h-10 w-full rounded-xl'
+      >
         <Send className='size-4' />
         {pending ? 'Posting...' : 'Create Post'}
       </Button>

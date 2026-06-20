@@ -313,7 +313,7 @@ const mapPostRow = (row: PostModel, tagSlugs: string[], commentCount: number): P
     authorId: row.authorId,
     title: row.title,
     body: row.body,
-    imageUrl: row.imageUrl ?? undefined,
+    imageUrls: row.imageUrls,
     tagSlugs,
     createdAt: row.createdAt.toISOString(),
     commentCount,

@@ -43,7 +43,7 @@ export type Post = {
   authorId: string;
   title: string;
   body: string;
-  imageUrl?: string;
+  imageUrls: string[];
   tagSlugs: string[];
   createdAt: string;
   commentCount: number;
@@ -287,7 +287,9 @@ export type CommentThreadProps = {
 };
 
 export type ImageUploadFieldProps = {
-  initialImageUrl?: string;
+  initialImageUrls?: string[];
+  name?: string;
+  multiple?: boolean;
 };
 
 export type SubmitPostFormProps = {

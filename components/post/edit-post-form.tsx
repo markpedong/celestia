@@ -30,17 +30,40 @@ export function EditPostForm({ post }: EditPostFormProps) {
       <input type='hidden' name='postId' value={data.id} />
       <div className='space-y-2'>
         <Label htmlFor='title'>Post title</Label>
-        <Input id='title' name='title' required minLength={4} maxLength={300} defaultValue={data.title} className='h-11 bg-secondary/80' />
+        <Input
+          id='title'
+          name='title'
+          required
+          minLength={4}
+          maxLength={300}
+          defaultValue={data.title}
+          className='h-11 bg-secondary/80'
+        />
       </div>
       <div className='space-y-2'>
         <Label htmlFor='body'>Body</Label>
-        <Textarea id='body' name='body' rows={8} defaultValue={data.body} className='resize-y bg-secondary/80 leading-6' />
+        <Textarea
+          id='body'
+          name='body'
+          rows={8}
+          defaultValue={data.body}
+          className='resize-y bg-secondary/80 leading-6'
+        />
       </div>
       <div className='space-y-2'>
-        <Label>Image <span className='text-muted-foreground'>(optional)</span></Label>
-        <ImageUploadField initialImageUrl={data.imageUrl} />
+        <Label>
+          Images <span className='text-muted-foreground'>(optional, up to 4)</span>
+        </Label>
+        <ImageUploadField initialImageUrls={data.imageUrls} name='images' multiple />
       </div>
-      {state?.error ? <p className='rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive' role='alert'>{state.error}</p> : null}
+      {state?.error ? (
+        <p
+          className='rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive'
+          role='alert'
+        >
+          {state.error}
+        </p>
+      ) : null}
       <Button type='submit' disabled={pending} className='celestia-primary-action h-11 w-full rounded-xl'>
         <Save className='size-4' /> {pending ? 'Saving…' : 'Save changes'}
       </Button>

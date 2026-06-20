@@ -15,6 +15,7 @@ const nav = [
   { href: '/?sort=hot', label: 'Explore', icon: Compass, match: 'hot' as const },
   { href: '/?sort=new', label: 'Posts', icon: Radio, match: 'new' as const },
   { href: '/?sort=top', label: 'Top', icon: BarChart2, match: 'top' as const },
+  { href: '/communities/new', label: 'Start a community', icon: Hash, match: 'communities' as const },
 ];
 
 const LeftSidebar: FC<{
@@ -46,9 +47,16 @@ const LeftSidebar: FC<{
                 active && 'bg-primary/12 text-primary ring-1 ring-primary/20'
               )}
             >
-              <item.icon className={cn('size-4 shrink-0', active ? 'text-primary drop-shadow-[0_0_5px_var(--primary)]' : 'text-muted-foreground')} />
+              <item.icon
+                className={cn(
+                  'size-4 shrink-0',
+                  active ? 'text-primary drop-shadow-[0_0_5px_var(--primary)]' : 'text-muted-foreground'
+                )}
+              />
               {item.label}
-              {active ? <span className='ml-auto h-3.5 w-1 rounded-full bg-primary shadow-[0_0_8px] shadow-primary/40' /> : null}
+              {active ? (
+                <span className='ml-auto h-3.5 w-1 rounded-full bg-primary shadow-[0_0_8px] shadow-primary/40' />
+              ) : null}
             </Link>
           );
         })}
@@ -58,7 +66,10 @@ const LeftSidebar: FC<{
           <Hash className='size-3' />
           {communityLabel}
         </p>
-        <LeftTags tags={tags} emptyMessage={communityLabel === 'Joined Communities' ? 'Join communities to add them here.' : undefined} />
+        <LeftTags
+          tags={tags}
+          emptyMessage={communityLabel === 'Joined Communities' ? 'Join communities to add them here.' : undefined}
+        />
       </div>
       {showCta && (
         <div className='mt-8 px-4'>

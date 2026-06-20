@@ -5,7 +5,7 @@ import { getCurrentUserID } from "../auth";
 import type { Post, PostFormState, VoteActionValue } from "../types";
 import { PostModel } from "../generated/prisma/models";
 import { redirect } from "next/navigation";
-import { uploadImage } from "../media";
+import { removePostImages, uploadPostImages } from "../media";
 import { prisma } from '../prisma';
 import { toggleVote } from '../db/votes';
 
@@ -40,7 +40,7 @@ export const createPostAction = async (
   const title = String(formData.get("title") ?? "");
   const body = String(formData.get("body") ?? "");
   const communitySlug = String(formData.get("communitySlug") ?? "").trim().toLowerCase();
-  const image = formData.get("image");
+  const images = formData.getAll("images");
 
   if (title.trim().length < 4) {
     return { error: "Title is too short." };
@@ -58,11 +58,11 @@ export const createPostAction = async (
     return { error: 'Join this community before posting.' };
   }
 
-  let imageUrl: string | undefined;
+  let imageUrls: string[];
   try {
-    imageUrl = await uploadImage(image, "post-images", userId);
+    imageUrls = await uploadPostImages(images, userId);
   } catch (error) {
-    return { error: error instanceof Error ? error.message : "Unable to upload image." };
+    return { error: error instanceof Error ? error.message : "Unable to upload images." };
   }
 
   const post = await addPost({
@@ -70,7 +70,7 @@ export const createPostAction = async (
     title,
     body,
     communitySlug,
-    imageUrl,
+    imageUrls,
   });
 
   revalidatePath("/");
@@ -89,28 +89,44 @@ export const updatePostAction = async (
   const postId = String(formData.get('postId') ?? '');
   const title = String(formData.get('title') ?? '').trim();
   const body = String(formData.get('body') ?? '').trim();
-  const removeImage = String(formData.get('removeImage') ?? '') === 'true';
-  const image = formData.get('image');
+  const removeImages = String(formData.get('removeImages') ?? '') === 'true';
+  const images = formData.getAll('images');
 
   if (!postId) return { error: 'Post not found.' };
   if (title.length < 4) return { error: 'Title is too short.' };
 
   const existing = await prisma.post.findUnique({
     where: { id: postId },
-    select: { authorId: true, imageUrl: true, postTags: { select: { tagSlug: true } } },
+    select: { authorId: true, imageUrls: true, postTags: { select: { tagSlug: true } } },
   });
   if (!existing) return { error: 'Post not found.' };
   if (existing.authorId !== userId) return { error: 'Only the post author can edit this post.' };
 
-  let imageUrl: string | null = removeImage ? null : existing.imageUrl;
+  const existingImageUrls = existing.imageUrls;
+  let imageUrls = removeImages ? [] : existingImageUrls;
+  let replacesExistingImages = removeImages;
   try {
-    const uploadedImage = await uploadImage(image, 'post-images', userId);
-    if (uploadedImage) imageUrl = uploadedImage;
+    const uploadedImages = await uploadPostImages(images, userId);
+    if (uploadedImages.length > 0) {
+      imageUrls = uploadedImages;
+      replacesExistingImages = true;
+    }
   } catch (error) {
-    return { error: error instanceof Error ? error.message : 'Unable to upload image.' };
+    return { error: error instanceof Error ? error.message : 'Unable to upload images.' };
   }
 
-  await prisma.post.update({ where: { id: postId }, data: { title, body, imageUrl } });
+  await prisma.post.update({
+    where: { id: postId },
+    data: { title, body, imageUrls },
+  });
+
+  if (replacesExistingImages && existingImageUrls.length > 0) {
+    try {
+      await removePostImages(existingImageUrls);
+    } catch {
+      // The post update is already complete; a failed cleanup must not block it.
+    }
+  }
 
   revalidatePath('/');
   revalidatePath('/submit');
@@ -124,7 +140,7 @@ export const addPost = async (input: {
   title: string;
   body: string;
   communitySlug: string;
-  imageUrl?: string;
+  imageUrls: string[];
 }): Promise<Post> => {
   const communitySlug = input.communitySlug.trim().toLowerCase();
   const community = await prisma.tag.findUnique({ where: { slug: communitySlug }, select: { slug: true } });
@@ -136,7 +152,7 @@ export const addPost = async (input: {
         authorId: input.authorId,
         title: input.title.trim(),
         body: input.body.trim(),
-        imageUrl: input.imageUrl,
+        imageUrls: input.imageUrls,
       },
     });
 
@@ -163,7 +179,7 @@ const mapPostRow = (
     authorId: row.authorId,
     title: row.title,
     body: row.body,
-    imageUrl: row.imageUrl ?? undefined,
+    imageUrls: row.imageUrls,
     tagSlugs,
     createdAt: row.createdAt.toISOString(),
     commentCount,
