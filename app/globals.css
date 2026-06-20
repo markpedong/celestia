@@ -161,6 +161,14 @@
     @apply font-sans;
   }
 
+  a[href],
+  button:not(:disabled),
+  select:not(:disabled),
+  input:is([type='button'], [type='checkbox'], [type='color'], [type='file'], [type='radio'], [type='range'], [type='reset'], [type='submit']):not(:disabled),
+  [role='button']:not([aria-disabled='true']) {
+    cursor: pointer;
+  }
+
   ::selection {
     @apply bg-primary/30 text-foreground;
   }

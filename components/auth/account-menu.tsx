@@ -132,7 +132,7 @@ const AccountMenu: FC<AccountMenuProps> = ({ initialUser }: AccountMenuProps) =>
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align='end' className='w-64 space-y-2 p-3'>
-        <DropdownMenuLabel className='flex items-center gap-3 cursor-pointer'>
+        <DropdownMenuLabel className='flex items-center gap-3'>
           <Link href='/profile' onClick={() => setIsAccountMenuOpen(false)} className='flex gap-1 justify-start'>
             <Avatar className='size-10'>
               <AvatarImage src={avatarUrl} alt={name} />
