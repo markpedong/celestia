@@ -77,7 +77,7 @@ export function ImageUploadField({
       {previewUrls.length > 0 ? (
         <div className={`grid gap-2 ${previewUrls.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
           {previewUrls.map((previewUrl, index) => (
-            <div key={previewUrl} className='group relative aspect-[16/9] overflow-hidden rounded-2xl border border-border bg-muted'>
+            <div key={previewUrl} className='group relative aspect-[16/9] overflow-hidden rounded border border-border bg-muted'>
               <button type='button' onClick={() => openPreview(index)} className='absolute inset-0 text-left' aria-label={`Preview image ${index + 1}`}>
                 <Image
                   src={previewUrl}
