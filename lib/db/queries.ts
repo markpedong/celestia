@@ -34,6 +34,7 @@ export const batchAuthorsForIds = async (authorIds: string[]): Promise<Map<strin
       username: row.username,
       avatarUrl: row.avatarUrl ?? undefined,
       coverUrl: row.coverUrl ?? undefined,
+      createdAt: row.createdAt.toISOString(),
     });
   }
 
@@ -45,6 +46,47 @@ export const batchAuthorsForIds = async (authorIds: string[]): Promise<Map<strin
 
   return result;
 }
+
+export const batchUserStatsForIds = async (userIds: string[]): Promise<Map<string, UserStats>> => {
+  const unique = [...new Set(userIds)];
+  const result = new Map(unique.map(id => [id, { postCount: 0, commentCount: 0, karma: 0, commentKarma: 0 }]));
+  if (unique.length === 0) return result;
+
+  const [posts, comments] = await Promise.all([
+    prisma.post.findMany({ where: { authorId: { in: unique } }, select: { id: true, authorId: true } }),
+    prisma.comment.findMany({ where: { authorId: { in: unique } }, select: { id: true, authorId: true } }),
+  ]);
+  const postIds = posts.map(post => post.id);
+  const commentIds = comments.map(comment => comment.id);
+  const voteSums = postIds.length || commentIds.length
+    ? await prisma.vote.groupBy({
+        by: ['targetType', 'targetId'],
+        where: {
+          OR: [
+            ...(postIds.length ? [{ targetType: 'post', targetId: { in: postIds } }] : []),
+            ...(commentIds.length ? [{ targetType: 'comment', targetId: { in: commentIds } }] : []),
+          ],
+        },
+        _sum: { value: true },
+      })
+    : [];
+  const postAuthorById = new Map(posts.map(post => [post.id, post.authorId]));
+  const commentAuthorById = new Map(comments.map(comment => [comment.id, comment.authorId]));
+
+  for (const post of posts) {
+    const stats = result.get(post.authorId)!;
+    stats.postCount += 1;
+  }
+  for (const comment of comments) {
+    result.get(comment.authorId)!.commentCount += 1;
+  }
+  for (const row of voteSums) {
+    const authorId = row.targetType === 'post' ? postAuthorById.get(row.targetId) : commentAuthorById.get(row.targetId);
+    if (authorId) result.get(authorId)![row.targetType === 'post' ? 'karma' : 'commentKarma'] += Number(row._sum.value ?? 0);
+  }
+
+  return result;
+};
 
 const listEnrichedPosts = async (
   sort: FeedSort,
@@ -403,21 +445,26 @@ export const getUserStats = async (userId: string): Promise<UserStats> => {
     select: { id: true },
   });
   const postIds = posts.map(post => post.id);
-  const [commentCount, voteRows] = await Promise.all([
-    prisma.comment.count({ where: { authorId: userId } }),
-    postIds.length
-      ? prisma.vote.groupBy({
-        by: ['targetId'],
-        where: { targetType: 'post', targetId: { in: postIds } },
-        _sum: { value: true },
-      })
-      : Promise.resolve([]),
-  ]);
+  const comments = await prisma.comment.findMany({ where: { authorId: userId }, select: { id: true } });
+  const targetIds = [...postIds, ...comments.map(comment => comment.id)];
+  const voteRows = targetIds.length
+    ? await prisma.vote.groupBy({
+      by: ['targetType', 'targetId'],
+      where: {
+        OR: [
+          ...(postIds.length ? [{ targetType: 'post', targetId: { in: postIds } }] : []),
+          ...(comments.length ? [{ targetType: 'comment', targetId: { in: comments.map(comment => comment.id) } }] : []),
+        ],
+      },
+      _sum: { value: true },
+    })
+    : [];
 
   return {
     postCount: posts.length,
-    commentCount,
-    karma: voteRows.reduce((total, row) => total + Number(row._sum.value ?? 0), 0),
+    commentCount: comments.length,
+    karma: voteRows.filter(row => row.targetType === 'post').reduce((total, row) => total + Number(row._sum.value ?? 0), 0),
+    commentKarma: voteRows.filter(row => row.targetType === 'comment').reduce((total, row) => total + Number(row._sum.value ?? 0), 0),
   };
 }
 

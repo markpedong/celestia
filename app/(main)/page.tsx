@@ -3,7 +3,7 @@ import { PostList } from '@/components/feed/post-list';
 import { RightTrending } from '@/components/layout/right-trending';
 import { EmptyState } from '@/components/ui/empty-state';
 import { getSessionUser } from '@/lib/auth';
-import { batchAuthorsForIds, listPostSorted, listTags, tagsPostCounts } from '@/lib/db/queries';
+import { batchAuthorsForIds, batchUserStatsForIds, listPostSorted, listTags, tagsPostCounts } from '@/lib/db/queries';
 import { getTrendingToday } from '@/lib/trending';
 import type { FeedSort, HomePageProps } from '@/lib/types';
 import { FileQuestion } from 'lucide-react';
@@ -23,8 +23,10 @@ const Home = async ({ searchParams }: HomePageProps) => {
     tagsPostCounts(),
   ]);
 
-  const [authorById, trending] = await Promise.all([
-    batchAuthorsForIds([...new Set(rows.map(({ post }) => post.authorId))]),
+  const authorIds = [...new Set(rows.map(({ post }) => post.authorId))];
+  const [authorById, authorStatsById, trending] = await Promise.all([
+    batchAuthorsForIds(authorIds),
+    batchUserStatsForIds(authorIds),
     getTrendingToday(),
   ]);
 
@@ -50,7 +52,7 @@ const Home = async ({ searchParams }: HomePageProps) => {
         )}
 
         <div className='w-full space-y-3'>
-          <PostList rows={rows} authorsById={authorById} tagsBySlug={tagsMap} />
+          <PostList rows={rows} authorsById={authorById} authorStatsById={authorStatsById} tagsBySlug={tagsMap} />
 
           {isEmpty && (
             <EmptyState

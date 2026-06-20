@@ -12,7 +12,7 @@ const snippet = (body: string, max = 160) => {
   return `${t.slice(0, max)}…`;
 };
 
-const PostCard: FC<PostCardProps> = ({ post, author, tagsBySlug, score, userVote }: PostCardProps) => {
+const PostCard: FC<PostCardProps> = ({ post, author, authorStats, tagsBySlug, score, userVote }: PostCardProps) => {
   return (
     <article className='celestia-card celestia-card-hover flex w-full overflow-hidden last:mb-7'>
       <div className='celestia-vote-rail flex min-w-[52px] flex-col items-center justify-center border-r border-border/60 px-3 py-4'>
@@ -20,7 +20,7 @@ const PostCard: FC<PostCardProps> = ({ post, author, tagsBySlug, score, userVote
       </div>
       <div className='flex min-w-0 flex-1 gap-4 p-4'>
         <div className='min-w-0 flex-1'>
-          <PostMeta author={author} post={post} tagsBySlug={tagsBySlug} compact className='mb-2' />
+          <PostMeta author={author} authorStats={authorStats} post={post} tagsBySlug={tagsBySlug} compact className='mb-2' />
           <Link href={`/post/${post.id}`} className='group/post-link block'>
             <h2 className='text-[15px] font-semibold leading-snug text-foreground transition-colors hover:text-primary'>
               {post.title}

@@ -83,6 +83,7 @@ export type UserStats = {
   postCount: number;
   commentCount: number;
   karma: number;
+  commentKarma: number;
 };
 
 export type UserCommentActivity = {
@@ -179,6 +180,7 @@ export type FeedSortTabsProps = {
 export type PostCardProps = {
   post: Post;
   author: User;
+  authorStats: UserStats;
   tagsBySlug: Map<string, Tag>;
   score: number;
   userVote: VoteValue;
@@ -187,11 +189,13 @@ export type PostCardProps = {
 export type PostListProps = {
   rows: FeedPostRow[];
   authorsById: Map<string, User>;
+  authorStatsById: Map<string, UserStats>;
   tagsBySlug: Map<string, Tag>;
 };
 
 export type PostMetaProps = WithClassName<{
   author: User;
+  authorStats?: UserStats;
   post: Pick<Post, 'createdAt' | 'tagSlugs'>;
   tagsBySlug: Map<string, Tag>;
   compact?: boolean;

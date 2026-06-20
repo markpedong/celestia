@@ -6,7 +6,7 @@ import { CommunityMembershipButton } from '@/components/community/community-memb
 import { EmptyState } from '@/components/ui/empty-state';
 import { StatGrid } from '@/components/ui/stat-grid';
 import { getSessionUser } from '@/lib/auth';
-import { batchAuthorsForIds, getCommunityMembership, getCommunityStats, getTagBySlug, listPostSorted, listTags } from '@/lib/db/queries';
+import { batchAuthorsForIds, batchUserStatsForIds, getCommunityMembership, getCommunityStats, getTagBySlug, listPostSorted, listTags } from '@/lib/db/queries';
 import { formatCount } from '@/lib/format';
 import type { CommunityPageProps, FeedSort } from '@/lib/types';
 import { CakeSlice, Hash, Plus, Settings, ShieldCheck, Users } from 'lucide-react';
@@ -35,7 +35,8 @@ const CommunityPage = async ({ params, searchParams }: CommunityPageProps) => {
     getCommunityMembership(sessionUser?.id, community.slug),
   ]);
   const tagsMap = new Map(tags.map(tag => [tag.slug, tag]));
-  const authorById = await batchAuthorsForIds([...new Set(rows.map(row => row.post.authorId))]);
+  const authorIds = [...new Set(rows.map(row => row.post.authorId))];
+  const [authorById, authorStatsById] = await Promise.all([batchAuthorsForIds(authorIds), batchUserStatsForIds(authorIds)]);
 
   return (
     <ContentWithSidebar
@@ -102,7 +103,7 @@ const CommunityPage = async ({ params, searchParams }: CommunityPageProps) => {
           </div>
         ) : null}
         <div className='space-y-3'>
-          <PostList rows={rows} authorsById={authorById} tagsBySlug={tagsMap} />
+          <PostList rows={rows} authorsById={authorById} authorStatsById={authorStatsById} tagsBySlug={tagsMap} />
           {rows.length === 0 ? (
             <EmptyState icon={Hash} title={`No posts in r/${community.slug} yet`} description='Start the first thread for this community.' />
           ) : null}

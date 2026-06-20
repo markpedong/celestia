@@ -6,7 +6,15 @@ import CommentThread from '@/components/post/comment-thread';
 import { PostImageGallery } from '@/components/post/post-image-gallery';
 import { Separator } from '@/components/ui/separator';
 import { getSessionUser } from '@/lib/auth';
-import { getAuthorByID, getCommentTree, getPostByID, getPostScore, getUserVote, listPostIds, listTags } from '@/lib/db/queries';
+import {
+  getAuthorByID,
+  getCommentTree,
+  getPostByID,
+  getPostScore,
+  getUserVote,
+  listPostIds,
+  listTags,
+} from '@/lib/db/queries';
 import type { PostPageProps } from '@/lib/types';
 import { MessageSquare, Pencil, Radio, Share2, Users } from 'lucide-react';
 import Link from 'next/link';
@@ -108,7 +116,7 @@ const Page = async ({ params }: PostPageProps) => {
         </div>
       </article>
 
-      <section className='celestia-card mt-5 p-4 md:p-6'>
+      <section className='celestia-card mt-5 mb-5 p-4 md:p-6'>
         <div className='mb-4 flex flex-wrap items-center justify-between gap-3'>
           <h2 className='text-lg font-semibold'>{post.commentCount} Comments</h2>
         </div>
