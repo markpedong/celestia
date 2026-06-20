@@ -9,7 +9,7 @@ import { getSessionUser } from '@/lib/auth';
 import { batchAuthorsForIds, getCommunityMembership, getCommunityStats, getTagBySlug, listPostSorted, listTags } from '@/lib/db/queries';
 import { formatCount } from '@/lib/format';
 import { FeedSort } from '@/lib/types';
-import { CakeSlice, Hash, Plus, Users } from 'lucide-react';
+import { CakeSlice, Hash, Plus, Settings, ShieldCheck, Users } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
@@ -29,6 +29,7 @@ export default async function CommunityPage({ params, searchParams }: Props) {
   }
 
   const sessionUser = await getSessionUser();
+  const isOwner = sessionUser?.id === community.createdById;
   const rawSort = (Array.isArray(query.sort) ? query.sort[0] : query.sort) as FeedSort | undefined;
   const sort: FeedSort = rawSort === 'new' || rawSort === 'top' ? rawSort : 'hot';
   const searchQuery = Array.isArray(query.q) ? query.q[0] ?? '' : query.q ?? '';
@@ -75,11 +76,16 @@ export default async function CommunityPage({ params, searchParams }: Props) {
                 </div>
               </div>
               <div className='flex items-center gap-2'>
-                <CommunityMembershipButton slug={community.slug} isMember={isMember} isSignedIn={Boolean(sessionUser)} />
+                <CommunityMembershipButton slug={community.slug} isMember={isMember} isSignedIn={Boolean(sessionUser)} isOwner={isOwner} />
                 {isMember ? <Button asChild size='sm' className='celestia-primary-action rounded-full'>
                   <Link href={`/submit?community=${encodeURIComponent(community.slug)}`}>
                     <Plus className='size-3.5' />
                     Create Post
+                  </Link>
+                </Button> : null}
+                {isOwner ? <Button asChild size='sm' variant='outline' className='rounded-full'>
+                  <Link href={`/r/${encodeURIComponent(community.slug)}/settings`}>
+                    <Settings className='size-3.5' /> Manage
                   </Link>
                 </Button> : null}
               </div>
@@ -87,6 +93,7 @@ export default async function CommunityPage({ params, searchParams }: Props) {
             <p className='mt-4 max-w-2xl text-sm leading-6 text-muted-foreground'>
               {community.description || 'Browse community discussions, sort what is hot, and join to post or add this community to your list.'}
             </p>
+            {isOwner ? <p className='mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-primary'><ShieldCheck className='size-3.5' /> You created and own this community.</p> : null}
             <StatGrid className='mt-4 max-w-lg' stats={[
               { label: 'Posts', value: formatCount(stats.postCount) },
               { label: 'Members', value: formatCount(stats.memberCount) },

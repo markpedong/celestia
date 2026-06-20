@@ -3,10 +3,13 @@
 import type { TrendingItem } from '@/lib/trending';
 import type { SearchPostSuggestion, SearchTagSuggestion } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import { useQuery } from '@tanstack/react-query';
+import { useClickAway, useDebounce, useLocalStorage } from '@uidotdev/usehooks';
+import { uniq } from 'lodash';
 import { Clock, Hash, Search, TrendingUp, X, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { FormEvent, MouseEvent, ReactNode, useDeferredValue, useEffect, useMemo, useRef, useState, useTransition } from 'react';
+import { FormEvent, MouseEvent, ReactNode, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 
 type SearchResponse = {
   posts: SearchPostSuggestion[];
@@ -20,20 +23,6 @@ type Props = {
 
 const RECENT_SEARCHES_KEY = 'celestia:recent-searches';
 
-const readRecentSearches = (): string[] => {
-  try {
-    const raw = window.localStorage.getItem(RECENT_SEARCHES_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === 'string') : [];
-  } catch {
-    return [];
-  }
-};
-
-const writeRecentSearches = (items: string[]) => {
-  window.localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(items.slice(0, 6)));
-};
-
 const getSnippet = (body: string) => {
   const clean = body.replace(/\s+/g, ' ').trim();
   return clean.length > 82 ? `${clean.slice(0, 82)}...` : clean;
@@ -42,18 +31,25 @@ const getSnippet = (body: string) => {
 const SearchBox = ({ trending, communities }: Props) => {
   const router = useRouter();
   const pathname = usePathname();
-  const rootRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
-  const [recentSearches, setRecentSearches] = useState<string[]>([]);
-  const [suggestions, setSuggestions] = useState<SearchResponse>({ posts: [], tags: [] });
-  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+  const rootRef = useClickAway<HTMLDivElement>(() => setIsOpen(false));
+  const [recentSearches, setRecentSearches] = useLocalStorage<string[]>(RECENT_SEARCHES_KEY, []);
   const [isNavigating, startNavigation] = useTransition();
-  const requestSequence = useRef(0);
 
   const trimmedQuery = query.trim();
-  const deferredQuery = useDeferredValue(trimmedQuery);
+  const debouncedQuery = useDebounce(trimmedQuery, 180);
+  const { data: suggestions = { posts: [], tags: [] }, isFetching: isLoadingSuggestions } = useQuery({
+    queryKey: ['search-suggestions', debouncedQuery],
+    queryFn: async () => {
+      const response = await fetch(`/api/search/suggestions?q=${encodeURIComponent(debouncedQuery)}`);
+      if (!response.ok) throw new Error('Unable to load search suggestions.');
+      return response.json() as Promise<SearchResponse>;
+    },
+    enabled: Boolean(debouncedQuery),
+    staleTime: 30_000,
+  });
   const typedSuggestions = useMemo(() => {
     if (!trimmedQuery) return [];
 
@@ -65,64 +61,17 @@ const SearchBox = ({ trending, communities }: Props) => {
       `${trimmedQuery} advice`,
     ];
 
-    return [...new Set(base)].slice(0, 5);
+    return uniq(base).slice(0, 5);
   }, [trimmedQuery]);
 
   useEffect(() => {
     queueMicrotask(() => {
-      setRecentSearches(readRecentSearches());
       setQuery(new URLSearchParams(window.location.search).get('q') ?? '');
     });
   }, []);
 
-  useEffect(() => {
-    const handlePointerDown = (event: PointerEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener('pointerdown', handlePointerDown);
-    return () => document.removeEventListener('pointerdown', handlePointerDown);
-  }, []);
-
-  useEffect(() => {
-    if (!deferredQuery) {
-      requestSequence.current += 1;
-      return;
-    }
-
-    const controller = new AbortController();
-    const requestId = ++requestSequence.current;
-
-    const timer = window.setTimeout(async () => {
-      setIsLoadingSuggestions(true);
-      try {
-        const response = await fetch(`/api/search/suggestions?q=${encodeURIComponent(deferredQuery)}`, {
-          signal: controller.signal,
-        });
-        if (!response.ok) return;
-        const data = (await response.json()) as SearchResponse;
-        if (requestSequence.current === requestId) setSuggestions(data);
-      } catch (error) {
-        if (!(error instanceof DOMException && error.name === 'AbortError')) {
-          if (requestSequence.current === requestId) setSuggestions({ posts: [], tags: [] });
-        }
-      } finally {
-        if (requestSequence.current === requestId) setIsLoadingSuggestions(false);
-      }
-    }, 180);
-
-    return () => {
-      controller.abort();
-      window.clearTimeout(timer);
-    };
-  }, [deferredQuery]);
-
   const saveRecentSearch = (term: string) => {
-    const next = [term, ...recentSearches.filter(item => item.toLowerCase() !== term.toLowerCase())].slice(0, 6);
-    setRecentSearches(next);
-    writeRecentSearches(next);
+    setRecentSearches(current => uniq([term, ...current.filter(item => item.toLowerCase() !== term.toLowerCase())]).slice(0, 6));
   };
 
   const runSearch = (term = trimmedQuery) => {
@@ -145,16 +94,13 @@ const SearchBox = ({ trending, communities }: Props) => {
 
   const clearQuery = () => {
     setQuery('');
-    setSuggestions({ posts: [], tags: [] });
     inputRef.current?.focus();
   };
 
   const removeRecentSearch = (event: MouseEvent<HTMLButtonElement>, term: string) => {
     event.preventDefault();
     event.stopPropagation();
-    const next = recentSearches.filter(item => item !== term);
-    setRecentSearches(next);
-    writeRecentSearches(next);
+    setRecentSearches(current => current.filter(item => item !== term));
   };
 
   return (

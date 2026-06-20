@@ -11,9 +11,10 @@ type Props = {
   slug: string;
   isMember: boolean;
   isSignedIn: boolean;
+  isOwner?: boolean;
 };
 
-export function CommunityMembershipButton({ slug, isMember, isSignedIn }: Props) {
+export function CommunityMembershipButton({ slug, isMember, isSignedIn, isOwner = false }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [optimisticMember, setOptimisticMember] = useOptimistic(isMember, (_current, next: boolean) => next);
@@ -34,6 +35,14 @@ export function CommunityMembershipButton({ slug, isMember, isSignedIn }: Props)
       if (result.error) router.refresh();
     });
   };
+
+  if (isOwner) {
+    return (
+      <Button type='button' variant='outline' size='sm' disabled className='rounded-full opacity-100'>
+        <Check className='size-3.5' /> Owner
+      </Button>
+    );
+  }
 
   return (
     <Button

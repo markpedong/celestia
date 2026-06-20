@@ -6,7 +6,7 @@ import CommentThread from '@/components/post/comment-thread';
 import { Separator } from '@/components/ui/separator';
 import { getSessionUser } from '@/lib/auth';
 import { getAuthorByID, getCommentTree, getPostByID, getPostScore, getUserVote, listTags } from '@/lib/db/queries';
-import { ArrowLeft, MessageSquare, Radio, Share2, Users } from 'lucide-react';
+import { ArrowLeft, MessageSquare, Pencil, Radio, Share2, Users } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
@@ -102,10 +102,16 @@ const Page = async ({ params }: Props) => {
                     {post.commentCount}
                   </span>
                 </div>
-                <button type='button' className='inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground celestia-hover-surface'>
-                  <Share2 className='size-4' />
-                  Share
-                </button>
+                <div className='flex items-center gap-1'>
+                  {sessionUser?.id === post.authorId ? (
+                    <Link href={`/post/${post.id}/edit`} className='inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground celestia-hover-surface'>
+                      <Pencil className='size-4' /> Edit
+                    </Link>
+                  ) : null}
+                  <button type='button' className='inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground celestia-hover-surface'>
+                    <Share2 className='size-4' /> Share
+                  </button>
+                </div>
               </div>
             </div>
           </div>

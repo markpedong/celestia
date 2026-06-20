@@ -81,6 +81,46 @@ export const createPostAction = async (
   redirect(`/post/${post.id}`);
 }
 
+export const updatePostAction = async (
+  _prev: PostFormState,
+  formData: FormData,
+): Promise<PostFormState> => {
+  const userId = await getCurrentUserID();
+  if (!userId) return { error: 'You must be signed in to edit a post.' };
+
+  const postId = String(formData.get('postId') ?? '');
+  const title = String(formData.get('title') ?? '').trim();
+  const body = String(formData.get('body') ?? '').trim();
+  const removeImage = String(formData.get('removeImage') ?? '') === 'true';
+  const image = formData.get('image');
+
+  if (!postId) return { error: 'Post not found.' };
+  if (title.length < 4) return { error: 'Title is too short.' };
+
+  const existing = await prisma.post.findUnique({
+    where: { id: postId },
+    select: { authorId: true, imageUrl: true, postTags: { select: { tagSlug: true } } },
+  });
+  if (!existing) return { error: 'Post not found.' };
+  if (existing.authorId !== userId) return { error: 'Only the post author can edit this post.' };
+
+  let imageUrl: string | null = removeImage ? null : existing.imageUrl;
+  try {
+    const uploadedImage = await uploadImage(image, 'post-images', userId);
+    if (uploadedImage) imageUrl = uploadedImage;
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : 'Unable to upload image.' };
+  }
+
+  await prisma.post.update({ where: { id: postId }, data: { title, body, imageUrl } });
+
+  revalidatePath('/');
+  revalidatePath('/submit');
+  revalidatePath(`/post/${postId}`);
+  for (const { tagSlug } of existing.postTags) revalidatePath(`/r/${tagSlug}`);
+  redirect(`/post/${postId}`);
+}
+
 export const addPost = async (input: {
   authorId: string;
   title: string;
