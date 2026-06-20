@@ -1,5 +1,6 @@
 'use client';
 
+import type { FC } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -58,7 +59,7 @@ const applyDisplayMode = (displayMode: DisplayMode) => {
   root.style.colorScheme = resolvedMode;
 };
 
-const AccountMenu = ({ initialUser }: AccountMenuProps) => {
+const AccountMenu: FC<AccountMenuProps> = ({ initialUser }: AccountMenuProps) => {
   const [authUser, setAuthUser] = useState<User | null>(null);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);

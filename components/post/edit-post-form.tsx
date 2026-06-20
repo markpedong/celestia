@@ -1,5 +1,6 @@
 'use client';
 
+import type { FC } from 'react';
 import { updatePostAction } from '@/lib/actions/posts';
 import type { EditPostFormProps } from '@/lib/types';
 import { useActionState } from 'react';
@@ -10,7 +11,7 @@ import { Textarea } from '../ui/textarea';
 import { ImageUploadField } from './image-upload-field';
 import { Save } from 'lucide-react';
 
-export function EditPostForm({ post }: EditPostFormProps) {
+export const EditPostForm: FC<EditPostFormProps> = ({ post }: EditPostFormProps) => {
   const [state, action, pending] = useActionState(updatePostAction, null);
 
   return (
@@ -57,4 +58,4 @@ export function EditPostForm({ post }: EditPostFormProps) {
       </Button>
     </form>
   );
-}
+};

@@ -1,4 +1,4 @@
-export function formatRelativeTime(iso: string): string {
+export const formatRelativeTime = (iso: string): string => {
   const then = new Date(iso).getTime();
   const now = Date.now();
   const sec = Math.floor((now - then) / 1000);
@@ -16,10 +16,10 @@ export function formatRelativeTime(iso: string): string {
     day: "numeric",
     year: "numeric",
   });
-}
+};
 
-export function formatCount(n: number): string {
+export const formatCount = (n: number): string => {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}m`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
   return String(n);
-}
+};

@@ -1,5 +1,6 @@
 'use client';
 
+import type { FC } from 'react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import type { ProfileActivityTab, ProfileActivityTabsProps } from '@/lib/types';
@@ -10,7 +11,7 @@ const tabs: { id: ProfileActivityTab; label: string }[] = [
   { id: 'comments', label: 'Comments' },
 ];
 
-export function ProfileActivityTabs({ overview, posts, comments }: ProfileActivityTabsProps) {
+export const ProfileActivityTabs: FC<ProfileActivityTabsProps> = ({ overview, posts, comments }: ProfileActivityTabsProps) => {
   const [activeTab, setActiveTab] = useState<ProfileActivityTab>('overview');
   const content = { overview, posts, comments };
 
@@ -36,4 +37,4 @@ export function ProfileActivityTabs({ overview, posts, comments }: ProfileActivi
       <div role='tabpanel'>{content[activeTab]}</div>
     </>
   );
-}
+};

@@ -1,5 +1,6 @@
 'use client';
 
+import type { FC } from 'react';
 import { voteCommentAction } from '@/lib/actions/comments';
 import { votePostAction } from '@/lib/actions/posts';
 import { cn } from '@/lib/utils';
@@ -13,7 +14,7 @@ const formatScore = (value: number): string => {
   return String(value);
 };
 
-const VoteButtons = ({ target, targetID, score, userVote }: VoteButtonsProps) => {
+const VoteButtons: FC<VoteButtonsProps> = ({ target, targetID, score, userVote }: VoteButtonsProps) => {
   const [pending, startTransition] = useTransition();
   const router = useRouter();
   const isPost = target === 'post';

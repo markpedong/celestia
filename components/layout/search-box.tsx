@@ -1,5 +1,6 @@
 'use client';
 
+import type { FC } from 'react';
 import type { SearchBoxProps, SearchSectionProps, SearchSuggestionsResponse } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Clock, Hash, Search, TrendingUp, X, Zap } from 'lucide-react';
@@ -30,7 +31,7 @@ const getSnippet = (body: string) => {
   return clean.length > 82 ? `${clean.slice(0, 82)}...` : clean;
 };
 
-const SearchBox = ({ trending, communities }: SearchBoxProps) => {
+const SearchBox: FC<SearchBoxProps> = ({ trending, communities }: SearchBoxProps) => {
   const router = useRouter();
   const pathname = usePathname();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -344,7 +345,7 @@ const SearchBox = ({ trending, communities }: SearchBoxProps) => {
   );
 };
 
-const SearchSection = ({ title, children }: SearchSectionProps) => (
+const SearchSection: FC<SearchSectionProps> = ({ title, children }: SearchSectionProps) => (
   <section className='py-1'>
     <h2 className='px-5 py-2 text-xs font-semibold text-muted-foreground'>{title}</h2>
     {children}

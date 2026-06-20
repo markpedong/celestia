@@ -1,7 +1,8 @@
+import type { FC } from 'react';
 import type { PostListProps } from '@/lib/types';
 import PostCard from './post-card';
 
-export function PostList({ rows, authorsById, tagsBySlug }: PostListProps) {
+export const PostList: FC<PostListProps> = ({ rows, authorsById, tagsBySlug }: PostListProps) => {
   return (
     <>
       {rows.map(row => {
@@ -21,4 +22,4 @@ export function PostList({ rows, authorsById, tagsBySlug }: PostListProps) {
       })}
     </>
   );
-}
+};

@@ -6,7 +6,7 @@ import { ArrowLeft, Send } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
-export default async function SubmitPage({ searchParams }: SubmitPageProps) {
+const SubmitPage = async ({ searchParams }: SubmitPageProps) => {
   const user = await getSessionUser();
   if (!user) {
     redirect('/auth/sign-in');
@@ -39,4 +39,6 @@ export default async function SubmitPage({ searchParams }: SubmitPageProps) {
       <SubmitPostForm communities={communities} defaultCommunitySlug={selectedCommunity} />
     </div>
   );
-}
+};
+
+export default SubmitPage;

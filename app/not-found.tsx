@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Home, Orbit, Search, Sparkles, Zap } from 'lucide-react';
 import Link from 'next/link';
 
-export default function NotFound() {
+const NotFound = () => {
   return (
     <main className='flex min-h-dvh items-center justify-center px-4 py-10'>
       <section className='relative w-full max-w-3xl overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-2xl shadow-primary/10'>
@@ -60,4 +60,6 @@ export default function NotFound() {
       </section>
     </main>
   );
-}
+};
+
+export default NotFound;

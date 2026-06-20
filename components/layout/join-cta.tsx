@@ -1,9 +1,10 @@
+import type { FC } from 'react';
 import Link from 'next/link';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Telescope } from 'lucide-react';
 
-const JoinCtaCard = () => {
+const JoinCtaCard: FC<Record<never, never>> = () => {
   return (
     <section className='celestia-card flex flex-col gap-4 overflow-hidden rounded bg-card py-4 text-sm text-card-foreground ring-1 ring-foreground/10'>
       <div className='grid auto-rows-min items-start gap-1 rounded-t-xl px-4 pb-2 [.border-b]:pb-4'>

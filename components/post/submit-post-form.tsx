@@ -1,4 +1,5 @@
 'use client';
+import type { FC } from 'react';
 import { createPostAction } from '@/lib/actions/posts';
 import { useActionState } from 'react';
 import { Label } from '../ui/label';
@@ -9,7 +10,7 @@ import { Send } from 'lucide-react';
 import type { SubmitPostFormProps } from '@/lib/types';
 import { ImageUploadField } from './image-upload-field';
 
-export function SubmitPostForm({ communities, defaultCommunitySlug }: SubmitPostFormProps) {
+export const SubmitPostForm: FC<SubmitPostFormProps> = ({ communities, defaultCommunitySlug }: SubmitPostFormProps) => {
   const [state, action, pending] = useActionState(createPostAction, null);
   return (
     <form action={action} className='celestia-card space-y-4 p-4 md:p-5'>
@@ -92,4 +93,4 @@ export function SubmitPostForm({ communities, defaultCommunitySlug }: SubmitPost
       </Button>
     </form>
   );
-}
+};

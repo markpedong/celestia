@@ -4,7 +4,7 @@ import { normalizeDatabaseUrl } from "./database-url";
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
-function createPrisma(): PrismaClient {
+const createPrisma = (): PrismaClient => {
   const connectionString = normalizeDatabaseUrl(process.env.DATABASE_URL);
   if (!connectionString) {
     throw new Error(
@@ -21,7 +21,7 @@ function createPrisma(): PrismaClient {
     adapter,
     log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
   });
-}
+};
 
 export const prisma = globalForPrisma.prisma ?? createPrisma();
 

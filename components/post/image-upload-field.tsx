@@ -1,5 +1,6 @@
 'use client';
 
+import type { FC } from 'react';
 import { ImagePlus, X, ZoomIn } from 'lucide-react';
 import Image from 'next/image';
 import { MAX_POST_IMAGES } from '@/lib/post-images';
@@ -7,11 +8,11 @@ import type { ImageUploadFieldProps } from '@/lib/types';
 import { useEffect, useRef, useState } from 'react';
 import { ImageLightbox } from './image-lightbox';
 
-export function ImageUploadField({
+export const ImageUploadField: FC<ImageUploadFieldProps> = ({
   initialImageUrls = [],
   name = 'image',
   multiple = false,
-}: ImageUploadFieldProps) {
+}: ImageUploadFieldProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [previewUrls, setPreviewUrls] = useState(initialImageUrls);
   const [imageNames, setImageNames] = useState<string[]>([]);
@@ -121,4 +122,4 @@ export function ImageUploadField({
       />
     </div>
   );
-}
+};

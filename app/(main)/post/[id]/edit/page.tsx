@@ -6,7 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 
-export default async function EditPostPage({ params }: PostPageProps) {
+const EditPostPage = async ({ params }: PostPageProps) => {
   const { id } = await params;
   const [post, user] = await Promise.all([getPostByID(id), getSessionUser()]);
   if (!post) notFound();
@@ -24,4 +24,6 @@ export default async function EditPostPage({ params }: PostPageProps) {
       <EditPostForm post={post} />
     </div>
   );
-}
+};
+
+export default EditPostPage;

@@ -1,5 +1,6 @@
 'use client';
 
+import type { FC } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
@@ -11,7 +12,7 @@ import type { Provider } from '@supabase/supabase-js';
 
 const supabase = createSupabaseBrowserClient();
 
-const AuthMethods = ({ mode }: AuthMethodsProps) => {
+const AuthMethods: FC<AuthMethodsProps> = ({ mode }: AuthMethodsProps) => {
   const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');

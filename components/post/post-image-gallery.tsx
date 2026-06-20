@@ -1,5 +1,6 @@
 'use client';
 
+import type { FC } from 'react';
 import { ChevronLeft, ChevronRight, ImageOff, Images, ZoomIn } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
@@ -19,7 +20,7 @@ const isImageUrl = (url: string) => {
   }
 };
 
-function ImagePlaceholder({ ratio }: { ratio: number }) {
+const ImagePlaceholder: FC<{ ratio: number }> = ({ ratio }: { ratio: number }) => {
   return (
     <div className='size-full' style={{ aspectRatio: ratio }}>
       <div className='flex size-full flex-col items-center justify-center gap-1 bg-muted text-xs text-muted-foreground'>
@@ -28,9 +29,9 @@ function ImagePlaceholder({ ratio }: { ratio: number }) {
       </div>
     </div>
   );
-}
+};
 
-export function PostImageGallery({ imageUrls, title, variant }: PostImageGalleryProps) {
+export const PostImageGallery: FC<PostImageGalleryProps> = ({ imageUrls, title, variant }: PostImageGalleryProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [failedImageUrls, setFailedImageUrls] = useState<string[]>([]);
@@ -155,4 +156,4 @@ export function PostImageGallery({ imageUrls, title, variant }: PostImageGallery
       {lightbox}
     </>
   );
-}
+};

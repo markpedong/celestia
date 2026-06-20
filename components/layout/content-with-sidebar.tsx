@@ -1,7 +1,8 @@
+import type { FC } from 'react';
 import { cn } from '@/lib/utils';
 import type { ContentWithSidebarProps } from '@/lib/types';
 
-export function ContentWithSidebar({ children, sidebar, className, contentClassName, sidebarClassName }: ContentWithSidebarProps) {
+export const ContentWithSidebar: FC<ContentWithSidebarProps> = ({ children, sidebar, className, contentClassName, sidebarClassName }: ContentWithSidebarProps) => {
   return (
     <div className={cn('grid gap-6 xl:grid-cols-[minmax(0,1fr)_18rem]', className)}>
       <div className={cn('min-w-0', contentClassName)}>{children}</div>
@@ -10,4 +11,4 @@ export function ContentWithSidebar({ children, sidebar, className, contentClassN
       </aside>
     </div>
   );
-}
+};

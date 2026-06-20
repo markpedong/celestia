@@ -1,5 +1,6 @@
 'use client';
 
+import type { FC } from 'react';
 import type { CommentNodeProps } from '@/lib/types';
 import { Badge } from '../ui/badge';
 import { formatRelativeTime } from '@/lib/format';
@@ -8,13 +9,13 @@ import CommentComposer from './comment-composer';
 import { Clock, CornerDownRight, Share2 } from 'lucide-react';
 import Link from 'next/link';
 
-export function CommentNode({
+export const CommentNode: FC<CommentNodeProps> = ({
   node,
   postAuthorId,
   sessionUser,
   activeReplyId,
   onReplyChange,
-}: CommentNodeProps) {
+}: CommentNodeProps) => {
   const isOp = node.authorId === postAuthorId;
   const isReplying = activeReplyId === node.id;
 
@@ -84,4 +85,4 @@ export function CommentNode({
       </div>
     </li>
   );
-}
+};

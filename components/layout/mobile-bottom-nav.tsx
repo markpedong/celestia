@@ -1,12 +1,13 @@
 'use client';
 
+import type { FC } from 'react';
 import { cn } from '@/lib/utils';
 import type { MobileBottomNavProps } from '@/lib/types';
 import { Compass, House, PlusCircle, Radio, UserRound } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 
-const MobileBottomNav = ({ isSignedIn }: MobileBottomNavProps) => {
+const MobileBottomNav: FC<MobileBottomNavProps> = ({ isSignedIn }: MobileBottomNavProps) => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const sort = searchParams.get('sort');

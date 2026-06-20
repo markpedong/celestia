@@ -1,3 +1,4 @@
+import type { FC } from 'react';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { formatRelativeTime } from '@/lib/format';
 import type { PostMetaProps } from '@/lib/types';
@@ -5,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { Clock } from 'lucide-react';
 import Link from 'next/link';
 
-export function PostMeta({ author, post, tagsBySlug, className, compact = false }: PostMetaProps) {
+export const PostMeta: FC<PostMetaProps> = ({ author, post, tagsBySlug, className, compact = false }: PostMetaProps) => {
   const primarySlug = post.tagSlugs[0];
   const primaryTag = primarySlug ? tagsBySlug.get(primarySlug) : undefined;
 
@@ -38,4 +39,4 @@ export function PostMeta({ author, post, tagsBySlug, className, compact = false 
       ) : null}
     </div>
   );
-}
+};

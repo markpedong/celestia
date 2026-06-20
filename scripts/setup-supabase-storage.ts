@@ -7,7 +7,7 @@ config();
 const imageMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 const buckets = ['profile-avatars', 'profile-covers', 'post-images'];
 
-async function main() {
+const main = async () => {
   const supabase = createSupabaseAdminClient();
 
   for (const id of buckets) {
@@ -23,7 +23,7 @@ async function main() {
 
     console.log(`Ready: ${id}`);
   }
-}
+};
 
 main().catch((error) => {
   console.error(error instanceof Error ? error.message : error);

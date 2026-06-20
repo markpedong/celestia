@@ -1,5 +1,6 @@
 'use client';
 
+import type { FC } from 'react';
 import { createCommunityAction } from '@/lib/actions/communities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useActionState } from 'react';
 import { Plus } from 'lucide-react';
 
-export function CreateCommunityForm() {
+export const CreateCommunityForm: FC<Record<never, never>> = () => {
   const [state, action, pending] = useActionState(createCommunityAction, null);
 
   return (
@@ -40,4 +41,4 @@ export function CreateCommunityForm() {
       </Button>
     </form>
   );
-}
+};

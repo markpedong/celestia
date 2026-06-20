@@ -1,8 +1,9 @@
+import type { FC } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { UserAvatarProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
-export function UserAvatar({ user, size = 'default', className }: UserAvatarProps) {
+export const UserAvatar: FC<UserAvatarProps> = ({ user, size = 'default', className }: UserAvatarProps) => {
   const label = user.displayName ?? user.username;
 
   return (
@@ -13,4 +14,4 @@ export function UserAvatar({ user, size = 'default', className }: UserAvatarProp
       </AvatarFallback>
     </Avatar>
   );
-}
+};

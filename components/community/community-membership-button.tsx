@@ -1,5 +1,6 @@
 'use client';
 
+import type { FC } from 'react';
 import { setCommunityMembershipAction } from '@/lib/actions/communities';
 import { Button } from '@/components/ui/button';
 import type { CommunityMembershipButtonProps } from '@/lib/types';
@@ -8,7 +9,7 @@ import Link from 'next/link';
 import { useOptimistic, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 
-export function CommunityMembershipButton({ slug, isMember, isSignedIn, isOwner = false }: CommunityMembershipButtonProps) {
+export const CommunityMembershipButton: FC<CommunityMembershipButtonProps> = ({ slug, isMember, isSignedIn, isOwner = false }: CommunityMembershipButtonProps) => {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [optimisticMember, setOptimisticMember] = useOptimistic(isMember, (_current, next: boolean) => next);
@@ -52,4 +53,4 @@ export function CommunityMembershipButton({ slug, isMember, isSignedIn, isOwner 
       {optimisticMember && !pending ? <UserMinus className='size-3.5' /> : null}
     </Button>
   );
-}
+};

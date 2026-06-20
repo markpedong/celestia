@@ -1,5 +1,6 @@
 'use client';
 
+import type { FC } from 'react';
 import { updateProfileMediaAction } from '@/lib/actions/profile';
 import { cn } from '@/lib/utils';
 import { Camera, Check, LoaderCircle, Pencil } from 'lucide-react';
@@ -16,7 +17,7 @@ const ProfileEditContext = createContext<ProfileEditContextValue>({
   toggleEditing: () => {},
 });
 
-export function ProfileMediaEditMode({ children }: ProfileMediaEditModeProps) {
+export const ProfileMediaEditMode: FC<ProfileMediaEditModeProps> = ({ children }: ProfileMediaEditModeProps) => {
   const [isEditing, setIsEditing] = useState(false);
 
   return (
@@ -24,9 +25,9 @@ export function ProfileMediaEditMode({ children }: ProfileMediaEditModeProps) {
       {children}
     </ProfileEditContext>
   );
-}
+};
 
-export function ProfileMediaEditButton() {
+export const ProfileMediaEditButton: FC<Record<never, never>> = () => {
   const { isEditing, toggleEditing } = useContext(ProfileEditContext);
 
   return (
@@ -35,9 +36,9 @@ export function ProfileMediaEditButton() {
       {isEditing ? 'Done' : 'Edit profile'}
     </Button>
   );
-}
+};
 
-export function ProfileMediaEditor({ field, className }: ProfileMediaEditorProps) {
+export const ProfileMediaEditor: FC<ProfileMediaEditorProps> = ({ field, className }: ProfileMediaEditorProps) => {
   const [state, action, pending] = useActionState(updateProfileMediaAction, null);
   const { isEditing } = useContext(ProfileEditContext);
   const inputId = `profile-${field}-upload`;
@@ -74,4 +75,4 @@ export function ProfileMediaEditor({ field, className }: ProfileMediaEditorProps
       {state?.error ? <p className='absolute right-0 top-full mt-2 w-max rounded-md bg-destructive px-2 py-1 text-[11px] text-destructive-foreground shadow-md' role='alert'>{state.error}</p> : null}
     </form>
   );
-}
+};

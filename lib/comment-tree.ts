@@ -1,8 +1,8 @@
 import type { EnrichedCommentNode, EnrichedCommentRow } from './types';
 
-export function nestCommentRows(
+export const nestCommentRows = (
   flat: EnrichedCommentRow[],
-): EnrichedCommentNode[] {
+): EnrichedCommentNode[] => {
   const map = new Map<string, EnrichedCommentNode>();
   for (const c of flat) {
     map.set(c.id, {
@@ -43,4 +43,4 @@ export function nestCommentRows(
 
   return roots;
 
-}
+};

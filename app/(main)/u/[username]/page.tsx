@@ -31,7 +31,7 @@ const excerpt = (body: string) => {
   return clean.length > 180 ? `${clean.slice(0, 180)}...` : clean;
 };
 
-export default async function UserPage({ params }: UserPageProps) {
+const UserPage = async ({ params }: UserPageProps) => {
   const { username: rawUsername } = await params;
   const username = decodeURIComponent(rawUsername);
   const profile = await getUserByUsername(username);
@@ -168,9 +168,9 @@ export default async function UserPage({ params }: UserPageProps) {
       />
     </ContentWithSidebar>
   );
-}
+};
 
-function CommentsList({ comments, title }: CommentsListProps) {
+const CommentsList = ({ comments, title }: CommentsListProps) => {
   return (
     <section className='celestia-card p-4'>
       <h2 className='mb-3 flex items-center gap-2 text-sm font-semibold'>
@@ -192,4 +192,6 @@ function CommentsList({ comments, title }: CommentsListProps) {
       </div>
     </section>
   );
-}
+};
+
+export default UserPage;

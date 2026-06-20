@@ -134,10 +134,10 @@ export const listPostsByAuthor = async (authorId: string, sort: FeedSort, userId
   return listEnrichedPosts(sort, { authorId }, userId);
 }
 
-async function userVotesForPosts(
+const userVotesForPosts = async (
   userId: string | undefined,
   postIds: string[],
-): Promise<Map<string, -1 | 0 | 1>> {
+): Promise<Map<string, -1 | 0 | 1>> => {
   const m = new Map<string, -1 | 0 | 1>();
   if (!userId || postIds.length === 0) return m;
   const rows = await prisma.vote.findMany({
@@ -152,7 +152,7 @@ async function userVotesForPosts(
     m.set(r.targetId, v === -1 || v === 1 ? v : 0);
   }
   return m;
-}
+};
 
 export const listTags = cache(async (): Promise<Tag[]> => {
   const rows = await prisma.tag.findMany({ orderBy: { slug: "asc" } });
@@ -351,6 +351,11 @@ export const getPostByID = async (id: string): Promise<Post | undefined> => {
   return mapPostRow(row, row.postTags.map(({ tagSlug }) => tagSlug), row._count.comments);
 
 }
+
+export const listPostIds = cache(async () => {
+  const posts = await prisma.post.findMany({ select: { id: true } });
+  return posts.map(post => post.id);
+});
 
 export const getAuthorByID = async (authorID: string): Promise<User> => {
   const row = await prisma.userProfile.findUnique({ where: { id: authorID } });

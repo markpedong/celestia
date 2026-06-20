@@ -4,7 +4,7 @@ import { ArrowLeft, UsersRound } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
-export default async function NewCommunityPage() {
+const NewCommunityPage = async () => {
   const user = await getSessionUser();
   if (!user) redirect('/auth/sign-in');
 
@@ -21,4 +21,6 @@ export default async function NewCommunityPage() {
       <CreateCommunityForm />
     </div>
   );
-}
+};
+
+export default NewCommunityPage;

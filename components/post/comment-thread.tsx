@@ -1,12 +1,13 @@
 'use client';
 
+import type { FC } from 'react';
 import type { CommentSubmitResult, CommentThreadProps, EnrichedCommentNode, PendingCommentInput } from '@/lib/types';
 import { CommentNode } from './comment-node';
 import { createCommentAction } from '@/lib/actions/comments';
 import { CommentSubmissionContext, createPendingComment } from './comment-submission-context';
 import { useOptimistic, useState, useTransition } from 'react';
 
-const CommentThread = ({
+const CommentThread: FC<CommentThreadProps> = ({
   tree,
   postAuthorId,
   sessionUser,
@@ -46,7 +47,7 @@ const CommentThread = ({
   );
 };
 
-function appendComment(tree: EnrichedCommentNode[], comment: EnrichedCommentNode): EnrichedCommentNode[] {
+const appendComment = (tree: EnrichedCommentNode[], comment: EnrichedCommentNode): EnrichedCommentNode[] => {
   if (!comment.parentId) return [...tree, comment];
 
   for (let index = 0; index < tree.length; index += 1) {
@@ -68,6 +69,6 @@ function appendComment(tree: EnrichedCommentNode[], comment: EnrichedCommentNode
   }
 
   return tree;
-}
+};
 
 export default CommentThread;

@@ -15,10 +15,10 @@ const normalizeSlug = (value: string) => value
   .replace(/^_+|_+$/g, '')
   .slice(0, 32);
 
-export async function createCommunityAction(
+export const createCommunityAction = async (
   _previousState: CommunityFormState,
   formData: FormData,
-): Promise<CommunityFormState> {
+): Promise<CommunityFormState> => {
   const userId = await getCurrentUserID();
   if (!userId) return { error: 'You must be signed in to create a community.' };
 
@@ -45,9 +45,9 @@ export async function createCommunityAction(
   revalidatePath('/');
   revalidatePath('/submit');
   redirect(`/r/${slug}`);
-}
+};
 
-export async function setCommunityMembershipAction(slug: string, shouldJoin: boolean) {
+export const setCommunityMembershipAction = async (slug: string, shouldJoin: boolean) => {
   const userId = await getCurrentUserID();
   if (!userId) return { error: 'Sign in to join a community.' };
 
@@ -73,12 +73,12 @@ export async function setCommunityMembershipAction(slug: string, shouldJoin: boo
   revalidatePath('/submit');
   revalidatePath(`/r/${communitySlug}`);
   return { isMember: shouldJoin };
-}
+};
 
-export async function updateCommunityAction(
+export const updateCommunityAction = async (
   _previousState: CommunitySettingsFormState,
   formData: FormData,
-): Promise<CommunitySettingsFormState> {
+): Promise<CommunitySettingsFormState> => {
   const userId = await getCurrentUserID();
   if (!userId) return { error: 'You must be signed in to manage a community.' };
 
@@ -101,4 +101,4 @@ export async function updateCommunityAction(
   revalidatePath(`/r/${slug}`);
   revalidatePath(`/r/${slug}/settings`);
   redirect(`/r/${slug}`);
-}
+};

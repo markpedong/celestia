@@ -1,7 +1,7 @@
 import { getSessionUser } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 
-export default async function ProfilePage() {
+const ProfilePage = async () => {
   const user = await getSessionUser();
 
   if (!user) {
@@ -9,4 +9,6 @@ export default async function ProfilePage() {
   }
 
   redirect(`/u/${user.username}`);
-}
+};
+
+export default ProfilePage;

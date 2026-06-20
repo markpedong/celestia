@@ -1,5 +1,6 @@
 'use client';
 
+import type { FC } from 'react';
 import { cn } from '@/lib/utils';
 import { BarChart2, Compass, Hash, Home, Radio } from 'lucide-react';
 import Link from 'next/link';
@@ -17,7 +18,14 @@ const nav = [
   { href: '/communities/new', label: 'Start a community', icon: Hash, match: 'communities' as const },
 ];
 
-const LeftSidebar = ({ showCta, tags, communityLabel }: {
+const LeftSidebar: FC<{
+  showCta: boolean;
+  tags: {
+    tag: Tag;
+    count: number;
+  }[];
+  communityLabel: string;
+}> = ({ showCta, tags, communityLabel }: {
   showCta: boolean;
   tags: {
     tag: Tag;

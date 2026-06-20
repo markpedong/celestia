@@ -1,3 +1,4 @@
+import type { FC } from 'react';
 import type { PostCardProps } from '@/lib/types';
 import { MessageSquare, Share2 } from 'lucide-react';
 import Link from 'next/link';
@@ -11,7 +12,7 @@ const snippet = (body: string, max = 160) => {
   return `${t.slice(0, max)}…`;
 };
 
-const PostCard = ({ post, author, tagsBySlug, score, userVote }: PostCardProps) => {
+const PostCard: FC<PostCardProps> = ({ post, author, tagsBySlug, score, userVote }: PostCardProps) => {
   return (
     <article className='celestia-card celestia-card-hover flex w-full overflow-hidden last:mb-7'>
       <div className='celestia-vote-rail flex min-w-[52px] flex-col items-center justify-center border-r border-border/60 px-3 py-4'>

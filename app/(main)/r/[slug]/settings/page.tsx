@@ -4,7 +4,7 @@ import { getTagBySlug } from '@/lib/db/queries';
 import type { CommunitySettingsPageProps } from '@/lib/types';
 import { notFound, redirect } from 'next/navigation';
 
-export default async function CommunitySettingsPage({ params }: CommunitySettingsPageProps) {
+const CommunitySettingsPage = async ({ params }: CommunitySettingsPageProps) => {
   const { slug: rawSlug } = await params;
   const community = await getTagBySlug(decodeURIComponent(rawSlug).toLowerCase());
   if (!community) notFound();
@@ -21,4 +21,6 @@ export default async function CommunitySettingsPage({ params }: CommunitySetting
       <CommunitySettingsForm community={community} />
     </main>
   );
-}
+};
+
+export default CommunitySettingsPage;

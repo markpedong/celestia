@@ -1,6 +1,7 @@
 import LeftSidebar from '@/components/layout/left-sidebar';
 import MobileBottomNav from '@/components/layout/mobile-bottom-nav';
 import Navbar from '@/components/layout/navbar';
+import { OnlineUsersProvider } from '@/components/presence/online-users';
 import { getSessionUser } from '@/lib/auth';
 import { listJoinedCommunities, tagsPostCounts } from '@/lib/db/queries';
 import { getTrendingToday } from '@/lib/trending';
@@ -21,7 +22,7 @@ const MainLayout = async ({ children }: MainLayoutProps) => {
   const sidebarCommunities = user ? tags.filter(({ tag }) => joinedSlugs.has(tag.slug)) : tags;
 
   return (
-    <>
+    <OnlineUsersProvider user={user}>
       <Navbar trending={trending} communities={communities} user={user} />
       <div className='mx-auto flex w-full max-w-[1600px] gap-0 px-4'>
         <LeftSidebar
@@ -32,7 +33,7 @@ const MainLayout = async ({ children }: MainLayoutProps) => {
         <main className='min-w-0 flex-1 pb-[calc(4.5rem+env(safe-area-inset-bottom))] pt-6 lg:px-6 lg:pb-0'>{children}</main>
       </div>
       <MobileBottomNav isSignedIn={Boolean(user)} />
-    </>
+    </OnlineUsersProvider>
   );
 };
 

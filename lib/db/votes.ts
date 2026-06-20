@@ -1,12 +1,12 @@
 import { prisma } from '../prisma';
 import type { VoteActionValue, VoteTarget, VoteValue } from '../types';
 
-export async function toggleVote(
+export const toggleVote = async (
   userId: string,
   targetType: VoteTarget,
   targetId: string,
   value: VoteActionValue,
-): Promise<VoteValue> {
+): Promise<VoteValue> => {
   return prisma.$transaction(async (tx) => {
     const current = await tx.vote.findUnique({
       where: { userId_targetType_targetId: { userId, targetType, targetId } },
@@ -28,4 +28,4 @@ export async function toggleVote(
 
     return next;
   });
-}
+};

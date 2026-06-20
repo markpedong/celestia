@@ -13,7 +13,7 @@ import { CakeSlice, Hash, Plus, Settings, ShieldCheck, Users } from 'lucide-reac
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-export default async function CommunityPage({ params, searchParams }: CommunityPageProps) {
+const CommunityPage = async ({ params, searchParams }: CommunityPageProps) => {
   const { slug: rawSlug } = await params;
   const query = await searchParams;
   const slug = decodeURIComponent(rawSlug).toLowerCase();
@@ -111,4 +111,6 @@ export default async function CommunityPage({ params, searchParams }: CommunityP
         </div>
     </ContentWithSidebar>
   );
-}
+};
+
+export default CommunityPage;

@@ -1,5 +1,6 @@
 'use client';
 
+import type { FC } from 'react';
 import { updateCommunityAction } from '@/lib/actions/communities';
 import type { CommunitySettingsFormProps } from '@/lib/types';
 import { useActionState } from 'react';
@@ -9,7 +10,7 @@ import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Save } from 'lucide-react';
 
-export function CommunitySettingsForm({ community }: CommunitySettingsFormProps) {
+export const CommunitySettingsForm: FC<CommunitySettingsFormProps> = ({ community }: CommunitySettingsFormProps) => {
   const [state, action, pending] = useActionState(updateCommunityAction, null);
 
   return (
@@ -39,4 +40,4 @@ export function CommunitySettingsForm({ community }: CommunitySettingsFormProps)
       </Button>
     </form>
   );
-}
+};

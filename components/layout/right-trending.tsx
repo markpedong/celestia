@@ -1,8 +1,10 @@
+import type { FC } from 'react';
 import Link from 'next/link';
+import { ActiveNow } from '@/components/presence/online-users';
 import type { RightTrendingProps } from '@/lib/types';
 import { Flame, Minus, Sparkles, TrendingUp, Users } from 'lucide-react';
 
-export function RightTrending({ items, communities }: RightTrendingProps) {
+export const RightTrending: FC<RightTrendingProps> = ({ items, communities }: RightTrendingProps) => {
   return (
     <div className='space-y-4'>
     <section className='celestia-card p-4'>
@@ -28,24 +30,7 @@ export function RightTrending({ items, communities }: RightTrendingProps) {
         </Link>
       </div>
     </section>
-    <section className='celestia-card p-4'>
-      <h3 className='mb-3 flex items-center gap-2 text-xs font-semibold text-foreground'>
-        <span className='size-1.5 rounded-full bg-success shadow-[0_0_6px] shadow-success/40' />
-        Active Now
-      </h3>
-      <div className='flex items-center'>
-        {['N', 'Q', 'L', 'C', 'A'].map((label, index) => (
-          <span
-            key={label}
-            className='grid size-8 place-items-center rounded-full border-2 border-card bg-primary/15 text-xs font-semibold text-primary'
-            style={{ marginLeft: index ? -8 : 0, zIndex: 10 - index }}
-          >
-            {label}
-          </span>
-        ))}
-        <span className='ml-3 text-xs text-muted-foreground'>+42 online</span>
-      </div>
-    </section>
+    <ActiveNow />
     <section className='celestia-card p-4'>
       <h3 className='mb-3 flex items-center gap-2 text-xs font-semibold text-foreground'>
         <Users className='size-3 text-accent' />
@@ -71,4 +56,4 @@ export function RightTrending({ items, communities }: RightTrendingProps) {
     </section>
     </div>
   );
-}
+};

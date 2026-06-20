@@ -1,5 +1,6 @@
 'use client';
 
+import type { FC } from 'react';
 import { createCommentAction } from '@/lib/actions/comments';
 import type { CommentComposerProps } from '@/lib/types';
 import { useRouter } from 'next/navigation';
@@ -9,13 +10,13 @@ import { Button } from '../ui/button';
 import { UserAvatar } from '../ui/user-avatar';
 import { useCommentSubmission } from './comment-submission-context';
 
-const CommentComposer = ({ postID, user, compact, parentId, placeholder }: CommentComposerProps) => {
+const CommentComposer: FC<CommentComposerProps> = ({ postID, user, compact, parentId, placeholder }: CommentComposerProps) => {
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const router = useRouter();
   const commentSubmission = useCommentSubmission();
 
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     const form = e.currentTarget;
@@ -43,7 +44,7 @@ const CommentComposer = ({ postID, user, compact, parentId, placeholder }: Comme
       form.reset();
       router.refresh();
     });
-  }
+  };
 
   return (
     <form onSubmit={onSubmit} className='flex gap-3'>

@@ -29,12 +29,12 @@ export const createCommentAction = async (_prev: CommentFormState, formData: For
   return { ok: true, comment };
 }
 
-export async function addComment(input: {
+export const addComment = async (input: {
   postId: string;
   authorId: string;
   parentId: string | null;
   body: string;
-}): Promise<Comment> {
+}): Promise<Comment> => {
   const row = await prisma.comment.create({
     data: {
       postId: input.postId,
@@ -52,7 +52,7 @@ export async function addComment(input: {
     body: row.body,
     createdAt: row.createdAt.toISOString(),
   };
-}
+};
 
 export const voteCommentAction = async (commentId: string, value: VoteActionValue) => {
   const userId = await getCurrentUserID();
@@ -66,13 +66,13 @@ export const voteCommentAction = async (commentId: string, value: VoteActionValu
   revalidatePath("/");
 }
 
-export async function voteComment(
+export const voteComment = async (
   userId: string,
   commentId: string,
   value: VoteActionValue,
-): Promise<void> {
+): Promise<void> => {
   await toggleVote(userId, 'comment', commentId, value);
-}
+};
 
 export const findCommentById = async (id: string): Promise<Comment | undefined> => {
   const c = await prisma.comment.findUnique({ where: { id } });
