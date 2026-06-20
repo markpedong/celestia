@@ -12,6 +12,7 @@ import {
     listCommentsByAuthor,
     listPostsByAuthor,
     listTags,
+    listUsernames,
 } from '@/lib/db/queries';
 import { formatCount, formatRelativeTime } from '@/lib/format';
 import { AtSign, CakeSlice, MessageSquare, Shield, Trophy } from 'lucide-react';
@@ -192,6 +193,11 @@ const CommentsList = ({ comments, title }: CommentsListProps) => {
       </div>
     </section>
   );
+};
+
+export const generateStaticParams = async () => {
+  const usernames = await listUsernames();
+  return usernames.map(username => ({ username }));
 };
 
 export default UserPage;

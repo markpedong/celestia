@@ -113,4 +113,9 @@ const CommunityPage = async ({ params, searchParams }: CommunityPageProps) => {
   );
 };
 
+export const generateStaticParams = async () => {
+  const communities = await listTags();
+  return communities.map(({ slug }) => ({ slug }));
+};
+
 export default CommunityPage;

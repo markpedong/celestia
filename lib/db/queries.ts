@@ -357,6 +357,11 @@ export const listPostIds = cache(async () => {
   return posts.map(post => post.id);
 });
 
+export const listUsernames = cache(async () => {
+  const profiles = await prisma.userProfile.findMany({ select: { username: true } });
+  return profiles.map(profile => profile.username);
+});
+
 export const getAuthorByID = async (authorID: string): Promise<User> => {
   const row = await prisma.userProfile.findUnique({ where: { id: authorID } });
   return row

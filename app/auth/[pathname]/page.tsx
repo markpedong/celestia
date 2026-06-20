@@ -24,4 +24,9 @@ const AuthPage = async ({ params }: AuthPageProps) => {
   );
 };
 
+export const generateStaticParams = () => [
+  { pathname: 'sign-in' },
+  { pathname: 'sign-up' },
+];
+
 export default AuthPage;
