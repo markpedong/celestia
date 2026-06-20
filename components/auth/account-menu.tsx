@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import type { AccountMenuProps, DisplayMode } from '@/lib/types';
-import { LaptopMinimal, LogOut, MonitorCog, Moon, Sun, UserRound } from 'lucide-react';
+import { LaptopMinimal, LogOut, MonitorCog, Moon, Sun } from 'lucide-react';
 import Link from 'next/link';
 import type { User } from '@supabase/supabase-js';
 import { useEffect, useState } from 'react';
@@ -60,6 +60,7 @@ const applyDisplayMode = (displayMode: DisplayMode) => {
 
 const AccountMenu = ({ initialUser }: AccountMenuProps) => {
   const [authUser, setAuthUser] = useState<User | null>(null);
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [displayMode, setDisplayMode] = useState<DisplayMode>(() => {
     if (typeof window === 'undefined') {
@@ -92,7 +93,9 @@ const AccountMenu = ({ initialUser }: AccountMenuProps) => {
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setAuthUser(data.user));
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => setAuthUser(nextSession?.user ?? null));
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, nextSession) => setAuthUser(nextSession?.user ?? null));
     return () => subscription.unsubscribe();
   }, []);
 
@@ -104,14 +107,22 @@ const AccountMenu = ({ initialUser }: AccountMenuProps) => {
     window.location.replace('/');
   };
 
-  const name = (typeof user?.user_metadata.full_name === 'string' && user.user_metadata.full_name) || initialUser.displayName || initialUser.username;
+  const name =
+    (typeof user?.user_metadata.full_name === 'string' && user.user_metadata.full_name) ||
+    initialUser.displayName ||
+    initialUser.username;
   const email = user?.email;
-  const avatarUrl = initialUser.avatarUrl ?? (typeof user?.user_metadata.avatar_url === 'string' ? user.user_metadata.avatar_url : undefined);
+  const avatarUrl =
+    initialUser.avatarUrl ??
+    (typeof user?.user_metadata.avatar_url === 'string' ? user.user_metadata.avatar_url : undefined);
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={isAccountMenuOpen} onOpenChange={setIsAccountMenuOpen}>
       <DropdownMenuTrigger asChild>
-        <button type='button' className='inline-flex size-8 shrink-0 items-center justify-center rounded-full outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'>
+        <button
+          type='button'
+          className='inline-flex size-8 shrink-0 items-center justify-center rounded-full outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
+        >
           <Avatar>
             <AvatarImage src={avatarUrl} alt={name} />
             <AvatarFallback>{getInitials(name, email)}</AvatarFallback>
@@ -120,23 +131,26 @@ const AccountMenu = ({ initialUser }: AccountMenuProps) => {
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align='end' className='w-64 space-y-2 p-3'>
-        <DropdownMenuLabel className='space-y-1.5 px-3 py-2.5'>
-          <span className='block truncate text-sm font-medium text-foreground'>{name}</span>
-          {email ? <span className='block truncate text-xs font-normal text-muted-foreground'>{email}</span> : null}
-        </DropdownMenuLabel>
-        <DropdownMenuItem asChild className='rounded-none px-3 py-2.5'>
-          <Link href='/profile'>
-            <UserRound className='size-4' />
-            Profile
+        <DropdownMenuLabel className='flex items-center gap-3 cursor-pointer'>
+          <Link href='/profile' onClick={() => setIsAccountMenuOpen(false)} className='flex gap-1 justify-start'>
+            <Avatar className='size-10'>
+              <AvatarImage src={avatarUrl} alt={name} />
+              <AvatarFallback>{getInitials(name, email)}</AvatarFallback>
+            </Avatar>
+            <span className='min-w-0 space-y-1.5'>
+              <span className='block truncate text-sm font-medium text-foreground'>View Profile</span>
+              <span className='block truncate text-xs font-normal text-muted-foreground'>u/{initialUser.username}</span>
+            </span>
           </Link>
-        </DropdownMenuItem>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator className='mb-2' />
         <DropdownMenuSub>
-          <DropdownMenuSubTrigger className='rounded-none px-3 py-2.5'>
+          <DropdownMenuSubTrigger className='rounded-none py-2'>
             <MonitorCog className='size-4' />
             Display mode
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent className='w-40'>
-            <DropdownMenuRadioGroup value={displayMode} onValueChange={(value) => setDisplayMode(value as DisplayMode)}>
+            <DropdownMenuRadioGroup value={displayMode} onValueChange={value => setDisplayMode(value as DisplayMode)}>
               {displayModeOptions.map(({ value, label, icon: Icon }) => (
                 <DropdownMenuRadioItem key={value} value={value} className='py-2 pl-2 pr-8'>
                   <Icon className='size-4' />
@@ -146,8 +160,8 @@ const AccountMenu = ({ initialUser }: AccountMenuProps) => {
             </DropdownMenuRadioGroup>
           </DropdownMenuSubContent>
         </DropdownMenuSub>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={handleSignOut} disabled={isSigningOut} className='gap-2 rounded-none px-3 py-2.5'>
+        <DropdownMenuSeparator className='mb-2' />
+        <DropdownMenuItem onSelect={handleSignOut} disabled={isSigningOut} className='gap-2 rounded-none'>
           <LogOut className='size-4' />
           {isSigningOut ? 'Signing out...' : 'Sign out'}
         </DropdownMenuItem>
