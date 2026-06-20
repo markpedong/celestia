@@ -9,6 +9,7 @@ import { removePostImages, uploadPostImages } from "../media";
 import { prisma } from '../prisma';
 import { toggleVote } from '../db/votes';
 import { MAX_POST_BODY_LENGTH, MAX_POST_TITLE_LENGTH, MIN_POST_TITLE_LENGTH } from '../constants';
+import { getUploadErrorMessage } from '../error-messages';
 
 export const votePostAction = async (postId: string, value: VoteActionValue) => {
   const userId = await getCurrentUserID();
@@ -65,7 +66,7 @@ export const createPostAction = async (
   try {
     imageUrls = await uploadPostImages(images, userId);
   } catch (error) {
-    return { error: error instanceof Error ? error.message : "Unable to upload images." };
+    return { error: getUploadErrorMessage(error, 'We could not upload your images. Please try again.') };
   }
 
   const post = await addPost({
@@ -117,7 +118,7 @@ export const updatePostAction = async (
       replacesExistingImages = true;
     }
   } catch (error) {
-    return { error: error instanceof Error ? error.message : 'Unable to upload images.' };
+    return { error: getUploadErrorMessage(error, 'We could not upload your images. Please try again.') };
   }
 
   await prisma.post.update({

@@ -5,6 +5,7 @@ import { getSessionUser } from '../auth';
 import { uploadImage } from '../media';
 import { prisma } from '../prisma';
 import type { ProfileMediaFormState } from '../types';
+import { getUploadErrorMessage } from '../error-messages';
 
 export const updateProfileMediaAction = async (
   _prev: ProfileMediaFormState,
@@ -22,7 +23,7 @@ export const updateProfileMediaAction = async (
       uploadImage(formData.get('cover'), 'profile-covers', profile.id),
     ]);
   } catch (error) {
-    return { error: error instanceof Error ? error.message : 'Unable to upload image.' };
+    return { error: getUploadErrorMessage(error, 'We could not upload your image. Please try again.') };
   }
 
   if (!avatarUrl && !coverUrl) return { error: 'Choose a profile image or cover photo first.' };

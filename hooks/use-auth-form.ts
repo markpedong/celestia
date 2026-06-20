@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import type { AuthMode } from '@/lib/types';
 import { MAX_DISPLAY_NAME_LENGTH, MAX_EMAIL_LENGTH, MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '@/lib/constants';
+import { getAuthErrorMessage } from '@/lib/error-messages';
 import { useZodForm } from './use-zod-form';
 
 const supabase = createSupabaseBrowserClient();
@@ -45,7 +46,7 @@ export const useAuthForm = (mode: AuthMode) => {
         : await supabase.auth.signInWithPassword({ email, password: values.password });
 
       if (result.error) {
-        setError(result.error.message);
+        setError(getAuthErrorMessage(result.error.message, isSignUp ? 'sign-up' : 'sign-in'));
         return;
       }
 
@@ -68,7 +69,7 @@ export const useAuthForm = (mode: AuthMode) => {
         provider,
         options: { redirectTo: `${window.location.origin}/auth/callback` },
       });
-      if (oauthError) setError(oauthError.message);
+      if (oauthError) setError(getAuthErrorMessage(oauthError.message, 'oauth'));
     });
   };
 
