@@ -72,11 +72,11 @@ const AuthMethods = ({ mode }: AuthMethodsProps) => {
   return (
     <div className='space-y-4'>
       <div className='grid gap-2 sm:grid-cols-2'>
-        <button type='button' onClick={() => continueWithProvider('google')} disabled={pending} className='flex h-11 items-center justify-center gap-2 rounded-xl border border-border bg-background text-sm font-medium text-card-foreground transition-colors hover:bg-muted disabled:opacity-60'>
+        <button type='button' onClick={() => continueWithProvider('google')} disabled={pending} className='flex h-11 items-center justify-center gap-2 rounded border border-border bg-background text-sm font-medium text-card-foreground transition-colors hover:bg-muted disabled:opacity-60'>
           <Globe className='size-4' />
           Google
         </button>
-        <button type='button' onClick={() => continueWithProvider('apple')} disabled={pending} className='flex h-11 items-center justify-center gap-2 rounded-xl border border-border bg-background text-sm font-medium text-card-foreground transition-colors hover:bg-muted disabled:opacity-60'>
+        <button type='button' onClick={() => continueWithProvider('apple')} disabled={pending} className='flex h-11 items-center justify-center gap-2 rounded border border-border bg-background text-sm font-medium text-card-foreground transition-colors hover:bg-muted disabled:opacity-60'>
           <Apple className='size-4' />
           Apple
         </button>
@@ -101,7 +101,7 @@ const AuthMethods = ({ mode }: AuthMethodsProps) => {
         <label htmlFor='password' className='text-sm font-medium text-card-foreground'>Password</label>
         <Input id='password' type='password' minLength={6} value={password} onChange={(event) => setPassword(event.target.value)} placeholder='At least 6 characters' required className='h-11 bg-background' />
         </div>
-        <Button type='submit' disabled={pending} className='celestia-primary-action h-11 w-full rounded-xl'>
+        <Button type='submit' disabled={pending} className='celestia-primary-action h-11 w-full rounded'>
           {isSignUp ? <Mail className='size-4' /> : <KeyRound className='size-4' />}
           {pending ? 'Please wait...' : isSignUp ? 'Create account' : 'Sign in'}
         </Button>

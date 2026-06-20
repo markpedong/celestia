@@ -99,7 +99,7 @@ export default async function CommunityPage({ params, searchParams }: CommunityP
 
         <FeedSortTabs current={sort} tag='' query={cleanedSearchQuery} basePath={`/r/${community.slug}`} />
         {cleanedSearchQuery ? (
-          <div className='mb-4 rounded-xl border border-border/80 bg-secondary/45 px-4 py-3 text-sm text-muted-foreground'>
+          <div className='mb-4 rounded border border-border/80 bg-secondary/45 px-4 py-3 text-sm text-muted-foreground'>
             Searching r/{community.slug} for <span className='font-semibold text-foreground'>&quot;{cleanedSearchQuery}&quot;</span>
           </div>
         ) : null}

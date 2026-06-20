@@ -99,7 +99,7 @@ export function ImageUploadField({
         </div>
       ) : null}
 
-      <button type='button' onClick={() => inputRef.current?.click()} className='flex w-full min-w-0 items-center justify-center gap-2 rounded-xl border border-dashed border-border bg-secondary/60 px-3 py-3 text-sm text-muted-foreground celestia-hover-surface'>
+      <button type='button' onClick={() => inputRef.current?.click()} className='flex w-full min-w-0 items-center justify-center gap-2 rounded border border-dashed border-border bg-secondary/60 px-3 py-3 text-sm text-muted-foreground celestia-hover-surface'>
         <ImagePlus className='size-4 text-primary' />
         <span className='truncate'>
           {imageNames.length > 0

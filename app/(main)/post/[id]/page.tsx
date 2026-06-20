@@ -40,10 +40,10 @@ const Page = async ({ params }: PostPageProps) => {
               Related Posts
             </h3>
             <div className='space-y-3 text-xs text-muted-foreground'>
-              <Link href='/?sort=hot' className='celestia-hover-surface block rounded-xl bg-muted/40 p-3 leading-5'>
+              <Link href='/?sort=hot' className='celestia-hover-surface block rounded bg-muted/40 p-3 leading-5'>
                 Explore the most active discussions right now.
               </Link>
-              <Link href='/' className='celestia-hover-surface block rounded-xl bg-muted/40 p-3 leading-5'>
+              <Link href='/' className='celestia-hover-surface block rounded bg-muted/40 p-3 leading-5'>
                 Return to the latest posts from all communities.
               </Link>
             </div>
@@ -113,7 +113,7 @@ const Page = async ({ params }: PostPageProps) => {
                 <CommentComposer postID={post.id} user={sessionUser} />
               </div>
             ) : (
-              <p className='mb-8 rounded-xl border border-dashed border-primary/25 bg-primary/5 p-4 text-sm text-muted-foreground'>
+              <p className='mb-8 rounded border border-dashed border-primary/25 bg-primary/5 p-4 text-sm text-muted-foreground'>
                 <Link href='/auth/sign-in' className='font-medium text-primary hover:underline'>
                   Sign in
                 </Link>{' '}

@@ -8,7 +8,7 @@ const JoinCtaCard = () => {
   return (
     <Card className='celestia-card'>
       <CardHeader className='pb-2'>
-        <div className='celestia-brand-mark mb-2 size-11 rounded-xl'>
+        <div className='celestia-brand-mark mb-2 size-11 rounded'>
           <Telescope className='size-5' aria-hidden />
         </div>
         <CardTitle className='text-base'>Join the community</CardTitle>

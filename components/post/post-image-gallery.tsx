@@ -39,7 +39,7 @@ export function PostImageGallery({ imageUrls, title, variant }: PostImageGallery
   const imageUnavailable = (imageUrl: string) => !isImageUrl(imageUrl) || failedImageUrls.includes(imageUrl);
   const displayImageUrls = variant === 'gallery' ? imageUrls.filter(imageUrl => !imageUnavailable(imageUrl)) : imageUrls;
   if (displayImageUrls.length === 0) {
-    return variant === 'thumbnail' ? <div className='h-20 w-28 shrink-0 self-center overflow-hidden rounded-xl border border-border/80 shadow-inner'><ImagePlaceholder ratio={7 / 5} /></div> : null;
+    return variant === 'thumbnail' ? <div className='h-20 w-28 shrink-0 self-center overflow-hidden rounded border border-border/80 shadow-inner'><ImagePlaceholder ratio={7 / 5} /></div> : null;
   }
 
   const open = (index: number) => {
@@ -63,7 +63,7 @@ export function PostImageGallery({ imageUrls, title, variant }: PostImageGallery
           type='button'
           onClick={() => open(0)}
           disabled={imageUnavailable(displayImageUrls[0])}
-          className='group relative h-20 w-28 shrink-0 self-center overflow-hidden rounded-xl border border-border/80 shadow-inner'
+          className='group relative h-20 w-28 shrink-0 self-center overflow-hidden rounded border border-border/80 shadow-inner'
           aria-label={`View ${displayImageUrls.length} image${displayImageUrls.length === 1 ? '' : 's'} attached to ${title}`}
         >
           {imageUnavailable(displayImageUrls[0]) ? <ImagePlaceholder ratio={7 / 5} /> : <>

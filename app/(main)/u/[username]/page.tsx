@@ -6,12 +6,12 @@ import { StatGrid } from '@/components/ui/stat-grid';
 import { ProfileActivityTabs } from '@/components/profile/profile-activity-tabs';
 import { getSessionUser } from '@/lib/auth';
 import {
-  batchAuthorsForIds,
-  getUserByUsername,
-  getUserStats,
-  listCommentsByAuthor,
-  listPostsByAuthor,
-  listTags,
+    batchAuthorsForIds,
+    getUserByUsername,
+    getUserStats,
+    listCommentsByAuthor,
+    listPostsByAuthor,
+    listTags,
 } from '@/lib/db/queries';
 import { formatCount, formatRelativeTime } from '@/lib/format';
 import { AtSign, CakeSlice, MessageSquare, Shield, Trophy } from 'lucide-react';
@@ -20,9 +20,9 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import {
-  ProfileMediaEditButton,
-  ProfileMediaEditor,
-  ProfileMediaEditMode,
+    ProfileMediaEditButton,
+    ProfileMediaEditor,
+    ProfileMediaEditMode,
 } from '@/components/profile/profile-media-editor';
 import type { CommentsListProps, UserPageProps } from '@/lib/types';
 
@@ -182,7 +182,7 @@ function CommentsList({ comments, title }: CommentsListProps) {
           <Link
             key={comment.id}
             href={`/post/${comment.postId}`}
-            className='block rounded-xl border border-border bg-muted/35 p-3 celestia-hover-surface'
+            className='block rounded border border-border bg-muted/35 p-3 celestia-hover-surface'
           >
             <p className='mb-1 truncate text-xs font-semibold text-primary'>Commented on {comment.postTitle}</p>
             <p className='text-sm leading-6 text-card-foreground'>{excerpt(comment.body)}</p>

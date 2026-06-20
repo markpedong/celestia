@@ -9,7 +9,7 @@ const AuthPage = async ({ params }: AuthPageProps) => {
   return (
     <div className='flex min-h-dvh w-full flex-col items-center justify-center px-4 py-8'>
       <Link href='/' className='mb-6 flex flex-col items-center text-center'>
-        <span className='celestia-brand-mark mb-3 size-11 rounded-xl'>
+        <span className='celestia-brand-mark mb-3 size-11 rounded'>
           <Zap className='size-5 fill-current' />
         </span>
         <span className='text-xl font-bold text-foreground'>{pathname === 'sign-up' ? 'Join Celestia' : 'Welcome back'}</span>

@@ -15,7 +15,7 @@ export function CommunitySettingsForm({ community }: CommunitySettingsFormProps)
   return (
     <form action={action} className='celestia-card space-y-5 p-5 md:p-6'>
       <input type='hidden' name='slug' value={community.slug} />
-      <div className='rounded-xl border border-border bg-secondary/50 px-4 py-3 text-sm text-muted-foreground'>
+      <div className='rounded border border-border bg-secondary/50 px-4 py-3 text-sm text-muted-foreground'>
         Community URL: <span className='font-semibold text-foreground'>r/{community.slug}</span>. URLs stay fixed after creation.
       </div>
       <div className='space-y-2'>
@@ -34,7 +34,7 @@ export function CommunitySettingsForm({ community }: CommunitySettingsFormProps)
         </div>
       </div>
       {state?.error ? <p className='rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive' role='alert'>{state.error}</p> : null}
-      <Button type='submit' disabled={pending} className='celestia-primary-action h-11 w-full rounded-xl'>
+      <Button type='submit' disabled={pending} className='celestia-primary-action h-11 w-full rounded'>
         <Save className='size-4' /> {pending ? 'Saving…' : 'Save community settings'}
       </Button>
     </form>

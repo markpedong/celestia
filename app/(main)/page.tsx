@@ -45,7 +45,7 @@ const Home: FC<HomePageProps> = async ({ searchParams }) => {
         <FeedSortTabs current={sort} tag={tagFilter} query={cleanedSearchQuery} />
 
         {hasSearch && (
-          <div className='mb-4 rounded-xl border border-border/80 bg-secondary/45 px-4 py-3 text-sm text-muted-foreground'>
+          <div className='mb-4 rounded border border-border/80 bg-secondary/45 px-4 py-3 text-sm text-muted-foreground'>
             Showing results for <span className='font-semibold text-foreground'>&quot;{cleanedSearchQuery}&quot;</span>
           </div>
         )}

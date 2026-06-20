@@ -24,7 +24,7 @@ export function SubmitPostForm({ communities, defaultCommunitySlug }: SubmitPost
           minLength={4}
           maxLength={300}
           placeholder='What do you want to discuss?'
-          className='h-10 rounded-xl border-border bg-secondary/80 px-4 text-[15px] focus-visible:border-primary/40 focus-visible:ring-primary/20'
+          className='h-10 rounded border-border bg-secondary/80 px-4 text-[15px] focus-visible:border-primary/40 focus-visible:ring-primary/20'
         />
       </div>
       <div className='space-y-2'>
@@ -36,7 +36,7 @@ export function SubmitPostForm({ communities, defaultCommunitySlug }: SubmitPost
           name='body'
           rows={5}
           placeholder='Add context, details, links...'
-          className='resize-y rounded-xl border-border bg-secondary/80 px-4 py-3 leading-6 focus-visible:border-primary/40 focus-visible:ring-primary/20'
+          className='resize-y rounded border-border bg-secondary/80 px-4 py-3 leading-6 focus-visible:border-primary/40 focus-visible:ring-primary/20'
         />
       </div>
       <div className='space-y-2'>
@@ -53,7 +53,7 @@ export function SubmitPostForm({ communities, defaultCommunitySlug }: SubmitPost
               : ''
           }
           disabled={communities.length === 0 || pending}
-          className='h-10 w-full rounded-xl border border-border bg-secondary/80 px-4 text-sm text-foreground outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60'
+          className='h-10 w-full rounded border border-border bg-secondary/80 px-4 text-sm text-foreground outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60'
         >
           <option value='' disabled>
             Select a community
@@ -85,7 +85,7 @@ export function SubmitPostForm({ communities, defaultCommunitySlug }: SubmitPost
       <Button
         type='submit'
         disabled={pending || communities.length === 0}
-        className='celestia-primary-action h-10 w-full rounded-xl'
+        className='celestia-primary-action h-10 w-full rounded'
       >
         <Send className='size-4' />
         {pending ? 'Posting...' : 'Create Post'}

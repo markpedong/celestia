@@ -64,7 +64,7 @@ export function EditPostForm({ post }: EditPostFormProps) {
           {state.error}
         </p>
       ) : null}
-      <Button type='submit' disabled={pending} className='celestia-primary-action h-11 w-full rounded-xl'>
+      <Button type='submit' disabled={pending} className='celestia-primary-action h-11 w-full rounded'>
         <Save className='size-4' /> {pending ? 'Saving…' : 'Save changes'}
       </Button>
     </form>
