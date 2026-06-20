@@ -37,14 +37,16 @@ export const createPostAction = async (
     return { error: "You must be signed in to post." };
   }
 
-  const title = String(formData.get("title") ?? "");
-  const body = String(formData.get("body") ?? "");
+  const title = String(formData.get("title") ?? "").trim();
+  const body = String(formData.get("body") ?? "").trim();
   const communitySlug = String(formData.get("communitySlug") ?? "").trim().toLowerCase();
   const images = formData.getAll("images");
 
   if (title.trim().length < 4) {
     return { error: "Title is too short." };
   }
+  if (title.length > 300) return { error: 'Title must be 300 characters or fewer.' };
+  if (body.length > 10_000) return { error: 'Post body must be 10,000 characters or fewer.' };
 
   if (!communitySlug) {
     return { error: 'Choose a community before posting.' };
@@ -94,6 +96,8 @@ export const updatePostAction = async (
 
   if (!postId) return { error: 'Post not found.' };
   if (title.length < 4) return { error: 'Title is too short.' };
+  if (title.length > 300) return { error: 'Title must be 300 characters or fewer.' };
+  if (body.length > 10_000) return { error: 'Post body must be 10,000 characters or fewer.' };
 
   const existing = await prisma.post.findUnique({
     where: { id: postId },

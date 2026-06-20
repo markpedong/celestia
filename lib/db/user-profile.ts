@@ -3,8 +3,9 @@ import { Prisma } from "../generated/prisma/client";
 import { User } from "../types";
 
 export const generateUsername = (name: string): string => {
+  const usernameSource = name.trim().includes('@') ? name.trim().split('@')[0] : name;
   const base =
-    name
+    usernameSource
       .trim()
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "_")

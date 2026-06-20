@@ -3,73 +3,23 @@
 import type { FC } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { createSupabaseBrowserClient } from '@/lib/supabase/client';
+import { useAuthForm } from '@/hooks/use-auth-form';
 import type { AuthMethodsProps } from '@/lib/types';
 import { Apple, Globe, KeyRound, Mail } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
-import type { Provider } from '@supabase/supabase-js';
-
-const supabase = createSupabaseBrowserClient();
 
 const AuthMethods: FC<AuthMethodsProps> = ({ mode }: AuthMethodsProps) => {
-  const router = useRouter();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [pending, startTransition] = useTransition();
-  const isSignUp = mode === 'sign-up';
-
-  const submit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setError(null);
-    setMessage(null);
-
-    startTransition(async () => {
-      const result = isSignUp
-        ? await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: { full_name: name.trim() || email.split('@')[0] },
-            emailRedirectTo: `${window.location.origin}/auth/sign-in`,
-          },
-        })
-        : await supabase.auth.signInWithPassword({ email, password });
-
-      if (result.error) {
-        setError(result.error.message);
-        return;
-      }
-
-      if (isSignUp && !result.data.session) {
-        setMessage('Check your inbox to confirm your account, then sign in.');
-        return;
-      }
-
-      router.replace('/');
-      router.refresh();
-    });
-  };
-
-  const continueWithProvider = (provider: Extract<Provider, 'google' | 'apple'>) => {
-    setError(null);
-    setMessage(null);
-
-    startTransition(async () => {
-      const { error: oauthError } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-
-      if (oauthError) setError(oauthError.message);
-    });
-  };
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    continueWithProvider,
+    error,
+    isSignUp,
+    message,
+    pending,
+    submit,
+  } = useAuthForm(mode);
 
   return (
     <div className='space-y-4'>
@@ -88,20 +38,23 @@ const AuthMethods: FC<AuthMethodsProps> = ({ mode }: AuthMethodsProps) => {
         <span className='text-xs font-medium text-muted-foreground'>or continue with email</span>
         <span className='h-px flex-1 bg-border' />
       </div>
-      <form onSubmit={submit} className='space-y-4'>
+      <form onSubmit={handleSubmit(submit)} className='space-y-4' noValidate>
         {isSignUp ? (
         <div className='space-y-2'>
           <label htmlFor='name' className='text-sm font-medium text-card-foreground'>Display name</label>
-          <Input id='name' value={name} onChange={(event) => setName(event.target.value)} placeholder='Your name' className='h-11 bg-background' />
+          <Input id='name' placeholder='Your name' maxLength={60} aria-invalid={Boolean(errors.name)} className='h-11 bg-background' {...register('name')} />
+          {errors.name ? <p className='text-xs text-destructive'>{errors.name.message}</p> : null}
         </div>
         ) : null}
         <div className='space-y-2'>
         <label htmlFor='email' className='text-sm font-medium text-card-foreground'>Email</label>
-        <Input id='email' type='email' value={email} onChange={(event) => setEmail(event.target.value)} placeholder='you@example.com' required className='h-11 bg-background' />
+        <Input id='email' type='email' autoComplete='email' placeholder='you@example.com' aria-invalid={Boolean(errors.email)} className='h-11 bg-background' {...register('email')} />
+        {errors.email ? <p className='text-xs text-destructive'>{errors.email.message}</p> : null}
         </div>
         <div className='space-y-2'>
         <label htmlFor='password' className='text-sm font-medium text-card-foreground'>Password</label>
-        <Input id='password' type='password' minLength={6} value={password} onChange={(event) => setPassword(event.target.value)} placeholder='At least 6 characters' required className='h-11 bg-background' />
+        <Input id='password' type='password' autoComplete={isSignUp ? 'new-password' : 'current-password'} placeholder='At least 6 characters' aria-invalid={Boolean(errors.password)} className='h-11 bg-background' {...register('password')} />
+        {errors.password ? <p className='text-xs text-destructive'>{errors.password.message}</p> : null}
         </div>
         <Button type='submit' disabled={pending} className='celestia-primary-action h-11 w-full rounded'>
           {isSignUp ? <Mail className='size-4' /> : <KeyRound className='size-4' />}

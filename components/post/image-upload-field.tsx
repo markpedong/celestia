@@ -8,6 +8,9 @@ import type { ImageUploadFieldProps } from '@/lib/types';
 import { useEffect, useRef, useState } from 'react';
 import { ImageLightbox } from './image-lightbox';
 
+const acceptedImageTypes = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
+const maxImageBytes = 2 * 1024 * 1024;
+
 export const ImageUploadField: FC<ImageUploadFieldProps> = ({
   initialImageUrls = [],
   name = 'image',
@@ -29,6 +32,15 @@ export const ImageUploadField: FC<ImageUploadFieldProps> = ({
   const selectImages = (files: FileList | null) => {
     const selected = Array.from(files ?? []).slice(0, multiple ? MAX_POST_IMAGES : 1);
     if (selected.length === 0) return;
+
+    const invalidFile = selected.find(file => !acceptedImageTypes.has(file.type) || file.size > maxImageBytes);
+    if (invalidFile) {
+      inputRef.current?.setCustomValidity('Use PNG, JPEG, WebP, or GIF images that are 2 MB or smaller.');
+      inputRef.current?.reportValidity();
+      if (inputRef.current) inputRef.current.value = '';
+      return;
+    }
+    inputRef.current?.setCustomValidity('');
 
     const transfer = new DataTransfer();
     selected.forEach(file => transfer.items.add(file));

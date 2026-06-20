@@ -9,17 +9,20 @@ import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
 import { UserAvatar } from '../ui/user-avatar';
 import { useCommentSubmission } from './comment-submission-context';
+import { commentSchema } from '@/lib/form-schemas';
+import { useZodForm } from '@/hooks/use-zod-form';
 
 const CommentComposer: FC<CommentComposerProps> = ({ postID, user, compact, parentId, placeholder }: CommentComposerProps) => {
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const router = useRouter();
   const commentSubmission = useCommentSubmission();
+  const { register, handleSubmit, reset, formState: { errors } } = useZodForm(commentSchema, { body: '' });
 
-  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const onSubmit = handleSubmit(async (_values, event) => {
     setError(null);
-    const form = e.currentTarget;
+    const form = event?.currentTarget;
+    if (!form) return;
     const fd = new FormData(form);
     const body = String(fd.get('body') ?? '').trim();
 
@@ -31,7 +34,7 @@ const CommentComposer: FC<CommentComposerProps> = ({ postID, user, compact, pare
         author: user,
       });
       if (res?.error) setError(res.error);
-      else form.reset();
+      else reset();
       return;
     }
 
@@ -41,24 +44,26 @@ const CommentComposer: FC<CommentComposerProps> = ({ postID, user, compact, pare
         setError(res.error);
         return;
       }
-      form.reset();
+      reset();
       router.refresh();
     });
-  };
+  });
 
   return (
-    <form onSubmit={onSubmit} className='flex gap-3'>
+    <form onSubmit={onSubmit} className='flex gap-3' noValidate>
       <input type='hidden' name='postId' value={postID} />
       <input type='hidden' name='parentId' value={parentId ?? ''} />
       <UserAvatar user={user} size={compact ? 'sm' : 'default'} className='mt-1 shrink-0' />
       <div className='min-w-0 flex-1 space-y-2'>
         <Textarea
-          name='body'
-          required
           placeholder={placeholder}
           rows={compact ? 2 : 3}
+          maxLength={10_000}
           className='min-h-0 resize-y rounded border-border bg-secondary/80 text-sm leading-7 focus-visible:border-primary/40 focus-visible:ring-primary/20'
+          aria-invalid={Boolean(errors.body)}
+          {...register('body')}
         />
+        {errors.body ? <p className='text-xs text-destructive'>{errors.body.message}</p> : null}
         {error ? (
           <p className='text-xs text-destructive' role='alert'>
             {error}

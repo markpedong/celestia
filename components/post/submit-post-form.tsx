@@ -1,7 +1,8 @@
 'use client';
 import type { FC } from 'react';
 import { createPostAction } from '@/lib/actions/posts';
-import { useActionState } from 'react';
+import { postSchema } from '@/lib/form-schemas';
+import { useServerActionForm } from '@/hooks/use-server-action-form';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
@@ -11,22 +12,30 @@ import type { SubmitPostFormProps } from '@/lib/types';
 import { ImageUploadField } from './image-upload-field';
 
 export const SubmitPostForm: FC<SubmitPostFormProps> = ({ communities, defaultCommunitySlug }: SubmitPostFormProps) => {
-  const [state, action, pending] = useActionState(createPostAction, null);
+  const selectedCommunity = defaultCommunitySlug && communities.some(community => community.slug === defaultCommunitySlug)
+    ? defaultCommunitySlug
+    : '';
+  const { form: { register, formState: { errors } }, onSubmit, pending, state } = useServerActionForm(
+    createPostAction,
+    null,
+    postSchema,
+    { title: '', body: '', communitySlug: selectedCommunity },
+  );
   return (
-    <form action={action} className='celestia-card space-y-4 p-4 md:p-5'>
+    <form onSubmit={onSubmit} className='celestia-card space-y-4 p-4 md:p-5' noValidate>
       <div className='space-y-2'>
         <Label htmlFor='title' className='text-sm text-card-foreground'>
           Post title
         </Label>
         <Input
           id='title'
-          name='title'
-          required
-          minLength={4}
           maxLength={300}
           placeholder='What do you want to discuss?'
           className='h-10 rounded border-border bg-secondary/80 px-4 text-[15px] focus-visible:border-primary/40 focus-visible:ring-primary/20'
+          aria-invalid={Boolean(errors.title)}
+          {...register('title')}
         />
+        {errors.title ? <p className='text-xs text-destructive'>{errors.title.message}</p> : null}
       </div>
       <div className='space-y-2'>
         <Label htmlFor='body' className='text-sm text-card-foreground'>
@@ -34,11 +43,14 @@ export const SubmitPostForm: FC<SubmitPostFormProps> = ({ communities, defaultCo
         </Label>
         <Textarea
           id='body'
-          name='body'
           rows={5}
+          maxLength={10_000}
           placeholder='Add context, details, links...'
           className='resize-y rounded border-border bg-secondary/80 px-4 py-3 leading-6 focus-visible:border-primary/40 focus-visible:ring-primary/20'
+          aria-invalid={Boolean(errors.body)}
+          {...register('body')}
         />
+        {errors.body ? <p className='text-xs text-destructive'>{errors.body.message}</p> : null}
       </div>
       <div className='space-y-2'>
         <Label htmlFor='communitySlug' className='text-sm text-card-foreground'>
@@ -46,15 +58,10 @@ export const SubmitPostForm: FC<SubmitPostFormProps> = ({ communities, defaultCo
         </Label>
         <select
           id='communitySlug'
-          name='communitySlug'
-          required
-          defaultValue={
-            defaultCommunitySlug && communities.some(community => community.slug === defaultCommunitySlug)
-              ? defaultCommunitySlug
-              : ''
-          }
           disabled={communities.length === 0 || pending}
           className='h-10 w-full rounded border border-border bg-secondary/80 px-4 text-sm text-foreground outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60'
+          aria-invalid={Boolean(errors.communitySlug)}
+          {...register('communitySlug')}
         >
           <option value='' disabled>
             Select a community
@@ -65,6 +72,7 @@ export const SubmitPostForm: FC<SubmitPostFormProps> = ({ communities, defaultCo
             </option>
           ))}
         </select>
+        {errors.communitySlug ? <p className='text-xs text-destructive'>{errors.communitySlug.message}</p> : null}
         <p className='text-xs text-muted-foreground'>
           You can post in communities you have joined. Communities are no longer created from post text.
         </p>

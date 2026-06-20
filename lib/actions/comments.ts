@@ -16,9 +16,11 @@ export const createCommentAction = async (_prev: CommentFormState, formData: For
   const parentIdRaw = String(formData.get("parentId") ?? "");
   const body = String(formData.get("body") ?? "");
 
-  if (!postId || body.trim().length < 1) {
+  const trimmedBody = body.trim();
+  if (!postId || trimmedBody.length < 1) {
     return { error: "Comment cannot be empty." };
   }
+  if (trimmedBody.length > 10_000) return { error: 'Comment must be 10,000 characters or fewer.' };
 
   const parentId = parentIdRaw && parentIdRaw !== "null" ? parentIdRaw : null;
 

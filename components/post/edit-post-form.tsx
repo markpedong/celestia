@@ -3,7 +3,8 @@
 import type { FC } from 'react';
 import { updatePostAction } from '@/lib/actions/posts';
 import type { EditPostFormProps } from '@/lib/types';
-import { useActionState } from 'react';
+import { editPostSchema } from '@/lib/form-schemas';
+import { useServerActionForm } from '@/hooks/use-server-action-form';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
@@ -12,32 +13,38 @@ import { ImageUploadField } from './image-upload-field';
 import { Save } from 'lucide-react';
 
 export const EditPostForm: FC<EditPostFormProps> = ({ post }: EditPostFormProps) => {
-  const [state, action, pending] = useActionState(updatePostAction, null);
+  const { form: { register, formState: { errors } }, onSubmit, pending, state } = useServerActionForm(
+    updatePostAction,
+    null,
+    editPostSchema,
+    { title: post.title, body: post.body },
+  );
 
   return (
-    <form action={action} className='celestia-card space-y-5 p-5 md:p-6'>
+    <form onSubmit={onSubmit} className='celestia-card space-y-5 p-5 md:p-6' noValidate>
       <input type='hidden' name='postId' value={post.id} />
       <div className='space-y-2'>
         <Label htmlFor='title'>Post title</Label>
         <Input
           id='title'
-          name='title'
-          required
-          minLength={4}
           maxLength={300}
-          defaultValue={post.title}
           className='h-11 bg-secondary/80'
+          aria-invalid={Boolean(errors.title)}
+          {...register('title')}
         />
+        {errors.title ? <p className='text-xs text-destructive'>{errors.title.message}</p> : null}
       </div>
       <div className='space-y-2'>
         <Label htmlFor='body'>Body</Label>
         <Textarea
           id='body'
-          name='body'
           rows={8}
-          defaultValue={post.body}
+          maxLength={10_000}
           className='resize-y bg-secondary/80 leading-6'
+          aria-invalid={Boolean(errors.body)}
+          {...register('body')}
         />
+        {errors.body ? <p className='text-xs text-destructive'>{errors.body.message}</p> : null}
       </div>
       <div className='space-y-2'>
         <Label>
