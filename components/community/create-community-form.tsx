@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { createCommunitySchema } from '@/lib/form-schemas';
 import { useServerActionForm } from '@/hooks/use-server-action-form';
+import { MAX_COMMUNITY_DESCRIPTION_LENGTH, MAX_COMMUNITY_NAME_LENGTH, MAX_COMMUNITY_SLUG_LENGTH } from '@/lib/constants';
 import { Plus } from 'lucide-react';
 
 export const CreateCommunityForm: FC<Record<never, never>> = () => {
@@ -22,21 +23,21 @@ export const CreateCommunityForm: FC<Record<never, never>> = () => {
     <form onSubmit={onSubmit} className='celestia-card space-y-5 p-5 md:p-6' noValidate>
       <div className='space-y-2'>
         <Label htmlFor='label'>Community name</Label>
-        <Input id='label' maxLength={60} placeholder='e.g. Indie Makers' className='h-11 bg-secondary/80' aria-invalid={Boolean(errors.label)} {...register('label')} />
+        <Input id='label' maxLength={MAX_COMMUNITY_NAME_LENGTH} placeholder='e.g. Indie Makers' className='h-11 bg-secondary/80' aria-invalid={Boolean(errors.label)} {...register('label')} />
         {errors.label ? <p className='text-xs text-destructive'>{errors.label.message}</p> : null}
       </div>
       <div className='space-y-2'>
         <Label htmlFor='slug'>Community URL</Label>
         <div className='flex items-center rounded border border-border bg-secondary/80 px-3 focus-within:border-primary/40 focus-within:ring-2 focus-within:ring-primary/20'>
           <span className='shrink-0 text-sm text-muted-foreground'>r/</span>
-          <Input id='slug' maxLength={32} placeholder='indie_makers' className='h-11 border-0 bg-transparent px-1 shadow-none focus-visible:ring-0' aria-invalid={Boolean(errors.slug)} {...register('slug')} />
+          <Input id='slug' maxLength={MAX_COMMUNITY_SLUG_LENGTH} placeholder='indie_makers' className='h-11 border-0 bg-transparent px-1 shadow-none focus-visible:ring-0' aria-invalid={Boolean(errors.slug)} {...register('slug')} />
         </div>
         <p className='text-xs text-muted-foreground'>Use letters, numbers, spaces, hyphens, or underscores. The URL is permanent.</p>
         {errors.slug ? <p className='text-xs text-destructive'>{errors.slug.message}</p> : null}
       </div>
       <div className='space-y-2'>
         <Label htmlFor='description'>Description <span className='text-muted-foreground'>(optional)</span></Label>
-        <Textarea id='description' maxLength={500} rows={4} placeholder='What conversations belong here?' className='resize-y bg-secondary/80' aria-invalid={Boolean(errors.description)} {...register('description')} />
+        <Textarea id='description' maxLength={MAX_COMMUNITY_DESCRIPTION_LENGTH} rows={4} placeholder='What conversations belong here?' className='resize-y bg-secondary/80' aria-invalid={Boolean(errors.description)} {...register('description')} />
         {errors.description ? <p className='text-xs text-destructive'>{errors.description.message}</p> : null}
       </div>
       <div className='space-y-2'>

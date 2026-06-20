@@ -5,15 +5,14 @@ import { prisma } from '../prisma';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import type { CommunityFormState, CommunitySettingsFormState } from '../types';
-
-const RESERVED_SLUGS = new Set(['all', 'auth', 'communities', 'new', 'post', 'profile', 'r', 'submit', 'u']);
+import { MAX_COMMUNITY_DESCRIPTION_LENGTH, MAX_COMMUNITY_NAME_LENGTH, MAX_COMMUNITY_SLUG_LENGTH, MIN_COMMUNITY_NAME_LENGTH, MIN_COMMUNITY_SLUG_LENGTH, RESERVED_COMMUNITY_SLUGS } from '../constants';
 
 const normalizeSlug = (value: string) => value
   .trim()
   .toLowerCase()
   .replace(/[^a-z0-9]+/g, '_')
   .replace(/^_+|_+$/g, '')
-  .slice(0, 32);
+  .slice(0, MAX_COMMUNITY_SLUG_LENGTH);
 
 export const createCommunityAction = async (
   _previousState: CommunityFormState,
@@ -27,9 +26,9 @@ export const createCommunityAction = async (
   const description = String(formData.get('description') ?? '').trim();
   const hashColor = String(formData.get('hashColor') ?? '').trim();
 
-  if (label.length < 3 || label.length > 60) return { error: 'Community name must be 3–60 characters.' };
-  if (slug.length < 3 || RESERVED_SLUGS.has(slug)) return { error: 'Choose a different community URL.' };
-  if (description.length > 500) return { error: 'Description must be 500 characters or fewer.' };
+  if (label.length < MIN_COMMUNITY_NAME_LENGTH || label.length > MAX_COMMUNITY_NAME_LENGTH) return { error: `Community name must be ${MIN_COMMUNITY_NAME_LENGTH}–${MAX_COMMUNITY_NAME_LENGTH} characters.` };
+  if (slug.length < MIN_COMMUNITY_SLUG_LENGTH || RESERVED_COMMUNITY_SLUGS.has(slug)) return { error: 'Choose a different community URL.' };
+  if (description.length > MAX_COMMUNITY_DESCRIPTION_LENGTH) return { error: `Description must be ${MAX_COMMUNITY_DESCRIPTION_LENGTH} characters or fewer.` };
   if (!/^#[0-9a-f]{6}$/i.test(hashColor)) return { error: 'Choose a valid community color.' };
 
   const existing = await prisma.tag.findUnique({ where: { slug }, select: { slug: true } });
@@ -87,8 +86,8 @@ export const updateCommunityAction = async (
   const description = String(formData.get('description') ?? '').trim();
   const hashColor = String(formData.get('hashColor') ?? '').trim();
 
-  if (label.length < 3 || label.length > 60) return { error: 'Community name must be 3–60 characters.' };
-  if (description.length > 500) return { error: 'Description must be 500 characters or fewer.' };
+  if (label.length < MIN_COMMUNITY_NAME_LENGTH || label.length > MAX_COMMUNITY_NAME_LENGTH) return { error: `Community name must be ${MIN_COMMUNITY_NAME_LENGTH}–${MAX_COMMUNITY_NAME_LENGTH} characters.` };
+  if (description.length > MAX_COMMUNITY_DESCRIPTION_LENGTH) return { error: `Description must be ${MAX_COMMUNITY_DESCRIPTION_LENGTH} characters or fewer.` };
   if (!/^#[0-9a-f]{6}$/i.test(hashColor)) return { error: 'Choose a valid community color.' };
 
   const community = await prisma.tag.findUnique({ where: { slug }, select: { createdById: true } });

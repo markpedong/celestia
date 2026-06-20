@@ -11,6 +11,7 @@ import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { ImageUploadField } from './image-upload-field';
 import { Save } from 'lucide-react';
+import { MAX_POST_BODY_LENGTH, MAX_POST_TITLE_LENGTH } from '@/lib/constants';
 
 export const EditPostForm: FC<EditPostFormProps> = ({ post }: EditPostFormProps) => {
   const { form: { register, formState: { errors } }, onSubmit, pending, state } = useServerActionForm(
@@ -27,7 +28,7 @@ export const EditPostForm: FC<EditPostFormProps> = ({ post }: EditPostFormProps)
         <Label htmlFor='title'>Post title</Label>
         <Input
           id='title'
-          maxLength={300}
+          maxLength={MAX_POST_TITLE_LENGTH}
           className='h-11 bg-secondary/80'
           aria-invalid={Boolean(errors.title)}
           {...register('title')}
@@ -39,7 +40,7 @@ export const EditPostForm: FC<EditPostFormProps> = ({ post }: EditPostFormProps)
         <Textarea
           id='body'
           rows={8}
-          maxLength={10_000}
+          maxLength={MAX_POST_BODY_LENGTH}
           className='resize-y bg-secondary/80 leading-6'
           aria-invalid={Boolean(errors.body)}
           {...register('body')}

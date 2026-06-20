@@ -6,14 +6,15 @@ import { useState, useTransition } from 'react';
 import { z } from 'zod';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import type { AuthMode } from '@/lib/types';
+import { MAX_DISPLAY_NAME_LENGTH, MAX_EMAIL_LENGTH, MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '@/lib/constants';
 import { useZodForm } from './use-zod-form';
 
 const supabase = createSupabaseBrowserClient();
 
 const authSchema = z.object({
-  name: z.string().trim().max(60, 'Display name must be 60 characters or fewer.'),
-  email: z.string().trim().email('Enter a valid email address.').max(254, 'Email address is too long.'),
-  password: z.string().min(6, 'Password must be at least 6 characters.').max(72, 'Password must be 72 characters or fewer.'),
+  name: z.string().trim().max(MAX_DISPLAY_NAME_LENGTH, `Display name must be ${MAX_DISPLAY_NAME_LENGTH} characters or fewer.`),
+  email: z.string().trim().email('Enter a valid email address.').max(MAX_EMAIL_LENGTH, 'Email address is too long.'),
+  password: z.string().min(MIN_PASSWORD_LENGTH, `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`).max(MAX_PASSWORD_LENGTH, `Password must be ${MAX_PASSWORD_LENGTH} characters or fewer.`),
 });
 
 type AuthValues = z.infer<typeof authSchema>;

@@ -10,6 +10,7 @@ import { Button } from '../ui/button';
 import { Send } from 'lucide-react';
 import type { SubmitPostFormProps } from '@/lib/types';
 import { ImageUploadField } from './image-upload-field';
+import { MAX_POST_BODY_LENGTH, MAX_POST_TITLE_LENGTH } from '@/lib/constants';
 
 export const SubmitPostForm: FC<SubmitPostFormProps> = ({ communities, defaultCommunitySlug }: SubmitPostFormProps) => {
   const selectedCommunity = defaultCommunitySlug && communities.some(community => community.slug === defaultCommunitySlug)
@@ -29,7 +30,7 @@ export const SubmitPostForm: FC<SubmitPostFormProps> = ({ communities, defaultCo
         </Label>
         <Input
           id='title'
-          maxLength={300}
+          maxLength={MAX_POST_TITLE_LENGTH}
           placeholder='What do you want to discuss?'
           className='h-10 rounded border-border bg-secondary/80 px-4 text-[15px] focus-visible:border-primary/40 focus-visible:ring-primary/20'
           aria-invalid={Boolean(errors.title)}
@@ -44,7 +45,7 @@ export const SubmitPostForm: FC<SubmitPostFormProps> = ({ communities, defaultCo
         <Textarea
           id='body'
           rows={5}
-          maxLength={10_000}
+          maxLength={MAX_POST_BODY_LENGTH}
           placeholder='Add context, details, links...'
           className='resize-y rounded border-border bg-secondary/80 px-4 py-3 leading-6 focus-visible:border-primary/40 focus-visible:ring-primary/20'
           aria-invalid={Boolean(errors.body)}

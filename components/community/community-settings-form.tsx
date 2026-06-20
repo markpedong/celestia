@@ -5,6 +5,7 @@ import { updateCommunityAction } from '@/lib/actions/communities';
 import type { CommunitySettingsFormProps } from '@/lib/types';
 import { communitySettingsSchema } from '@/lib/form-schemas';
 import { useServerActionForm } from '@/hooks/use-server-action-form';
+import { MAX_COMMUNITY_DESCRIPTION_LENGTH, MAX_COMMUNITY_NAME_LENGTH } from '@/lib/constants';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
@@ -27,12 +28,12 @@ export const CommunitySettingsForm: FC<CommunitySettingsFormProps> = ({ communit
       </div>
       <div className='space-y-2'>
         <Label htmlFor='label'>Community name</Label>
-        <Input id='label' maxLength={60} className='h-11 bg-secondary/80' aria-invalid={Boolean(errors.label)} {...register('label')} />
+        <Input id='label' maxLength={MAX_COMMUNITY_NAME_LENGTH} className='h-11 bg-secondary/80' aria-invalid={Boolean(errors.label)} {...register('label')} />
         {errors.label ? <p className='text-xs text-destructive'>{errors.label.message}</p> : null}
       </div>
       <div className='space-y-2'>
         <Label htmlFor='description'>Description</Label>
-        <Textarea id='description' rows={5} maxLength={500} className='resize-y bg-secondary/80 leading-6' aria-invalid={Boolean(errors.description)} {...register('description')} />
+        <Textarea id='description' rows={5} maxLength={MAX_COMMUNITY_DESCRIPTION_LENGTH} className='resize-y bg-secondary/80 leading-6' aria-invalid={Boolean(errors.description)} {...register('description')} />
         {errors.description ? <p className='text-xs text-destructive'>{errors.description.message}</p> : null}
       </div>
       <div className='space-y-2'>

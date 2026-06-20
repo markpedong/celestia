@@ -3,13 +3,10 @@
 import type { FC } from 'react';
 import { ImagePlus, X, ZoomIn } from 'lucide-react';
 import Image from 'next/image';
-import { MAX_POST_IMAGES } from '@/lib/post-images';
+import { ACCEPTED_IMAGE_TYPES, IMAGE_ACCEPT, MAX_IMAGE_BYTES, MAX_POST_IMAGES } from '@/lib/constants';
 import type { ImageUploadFieldProps } from '@/lib/types';
 import { useEffect, useRef, useState } from 'react';
 import { ImageLightbox } from './image-lightbox';
-
-const acceptedImageTypes = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
-const maxImageBytes = 2 * 1024 * 1024;
 
 export const ImageUploadField: FC<ImageUploadFieldProps> = ({
   initialImageUrls = [],
@@ -33,7 +30,7 @@ export const ImageUploadField: FC<ImageUploadFieldProps> = ({
     const selected = Array.from(files ?? []).slice(0, multiple ? MAX_POST_IMAGES : 1);
     if (selected.length === 0) return;
 
-    const invalidFile = selected.find(file => !acceptedImageTypes.has(file.type) || file.size > maxImageBytes);
+    const invalidFile = selected.find(file => !ACCEPTED_IMAGE_TYPES.has(file.type) || file.size > MAX_IMAGE_BYTES);
     if (invalidFile) {
       inputRef.current?.setCustomValidity('Use PNG, JPEG, WebP, or GIF images that are 2 MB or smaller.');
       inputRef.current?.reportValidity();
@@ -80,7 +77,7 @@ export const ImageUploadField: FC<ImageUploadFieldProps> = ({
         id={name}
         name={name}
         type='file'
-        accept='image/png,image/jpeg,image/webp,image/gif'
+        accept={IMAGE_ACCEPT}
         multiple={multiple}
         className='sr-only'
         onChange={event => selectImages(event.target.files)}

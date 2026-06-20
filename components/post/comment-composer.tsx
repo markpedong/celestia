@@ -11,6 +11,7 @@ import { UserAvatar } from '../ui/user-avatar';
 import { useCommentSubmission } from './comment-submission-context';
 import { commentSchema } from '@/lib/form-schemas';
 import { useZodForm } from '@/hooks/use-zod-form';
+import { MAX_COMMENT_LENGTH } from '@/lib/constants';
 
 const CommentComposer: FC<CommentComposerProps> = ({ postID, user, compact, parentId, placeholder }: CommentComposerProps) => {
   const [error, setError] = useState<string | null>(null);
@@ -58,7 +59,7 @@ const CommentComposer: FC<CommentComposerProps> = ({ postID, user, compact, pare
         <Textarea
           placeholder={placeholder}
           rows={compact ? 2 : 3}
-          maxLength={10_000}
+          maxLength={MAX_COMMENT_LENGTH}
           className='min-h-0 resize-y rounded border-border bg-secondary/80 text-sm leading-7 focus-visible:border-primary/40 focus-visible:ring-primary/20'
           aria-invalid={Boolean(errors.body)}
           {...register('body')}

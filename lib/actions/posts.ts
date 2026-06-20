@@ -8,6 +8,7 @@ import { redirect } from "next/navigation";
 import { removePostImages, uploadPostImages } from "../media";
 import { prisma } from '../prisma';
 import { toggleVote } from '../db/votes';
+import { MAX_POST_BODY_LENGTH, MAX_POST_TITLE_LENGTH, MIN_POST_TITLE_LENGTH } from '../constants';
 
 export const votePostAction = async (postId: string, value: VoteActionValue) => {
   const userId = await getCurrentUserID();
@@ -42,11 +43,11 @@ export const createPostAction = async (
   const communitySlug = String(formData.get("communitySlug") ?? "").trim().toLowerCase();
   const images = formData.getAll("images");
 
-  if (title.trim().length < 4) {
+  if (title.trim().length < MIN_POST_TITLE_LENGTH) {
     return { error: "Title is too short." };
   }
-  if (title.length > 300) return { error: 'Title must be 300 characters or fewer.' };
-  if (body.length > 10_000) return { error: 'Post body must be 10,000 characters or fewer.' };
+  if (title.length > MAX_POST_TITLE_LENGTH) return { error: `Title must be ${MAX_POST_TITLE_LENGTH} characters or fewer.` };
+  if (body.length > MAX_POST_BODY_LENGTH) return { error: `Post body must be ${MAX_POST_BODY_LENGTH.toLocaleString()} characters or fewer.` };
 
   if (!communitySlug) {
     return { error: 'Choose a community before posting.' };
@@ -95,9 +96,9 @@ export const updatePostAction = async (
   const images = formData.getAll('images');
 
   if (!postId) return { error: 'Post not found.' };
-  if (title.length < 4) return { error: 'Title is too short.' };
-  if (title.length > 300) return { error: 'Title must be 300 characters or fewer.' };
-  if (body.length > 10_000) return { error: 'Post body must be 10,000 characters or fewer.' };
+  if (title.length < MIN_POST_TITLE_LENGTH) return { error: 'Title is too short.' };
+  if (title.length > MAX_POST_TITLE_LENGTH) return { error: `Title must be ${MAX_POST_TITLE_LENGTH} characters or fewer.` };
+  if (body.length > MAX_POST_BODY_LENGTH) return { error: `Post body must be ${MAX_POST_BODY_LENGTH.toLocaleString()} characters or fewer.` };
 
   const existing = await prisma.post.findUnique({
     where: { id: postId },

@@ -5,6 +5,7 @@ import { getCurrentUserID } from "../auth";
 import { prisma } from "../prisma";
 import type { Comment, CommentFormState, VoteActionValue } from "../types";
 import { toggleVote } from '../db/votes';
+import { MAX_COMMENT_LENGTH } from '../constants';
 
 export const createCommentAction = async (_prev: CommentFormState, formData: FormData): Promise<CommentFormState> => {
   const userId = await getCurrentUserID();
@@ -20,7 +21,7 @@ export const createCommentAction = async (_prev: CommentFormState, formData: For
   if (!postId || trimmedBody.length < 1) {
     return { error: "Comment cannot be empty." };
   }
-  if (trimmedBody.length > 10_000) return { error: 'Comment must be 10,000 characters or fewer.' };
+  if (trimmedBody.length > MAX_COMMENT_LENGTH) return { error: `Comment must be ${MAX_COMMENT_LENGTH.toLocaleString()} characters or fewer.` };
 
   const parentId = parentIdRaw && parentIdRaw !== "null" ? parentIdRaw : null;
 

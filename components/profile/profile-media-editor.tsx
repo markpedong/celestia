@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { Camera, Check, LoaderCircle, Pencil } from 'lucide-react';
 import { createContext, useActionState, useContext, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { IMAGE_ACCEPT } from '@/lib/constants';
 import type {
   ProfileEditContextValue,
   ProfileMediaEditorProps,
@@ -50,7 +51,7 @@ export const ProfileMediaEditor: FC<ProfileMediaEditorProps> = ({ field, classNa
         id={inputId}
         name={field}
         type='file'
-        accept='image/png,image/jpeg,image/webp,image/gif'
+        accept={IMAGE_ACCEPT}
         className='sr-only'
         disabled={pending}
         onChange={event => {

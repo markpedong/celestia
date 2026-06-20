@@ -4,6 +4,7 @@ import type { FC } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuthForm } from '@/hooks/use-auth-form';
+import { MAX_DISPLAY_NAME_LENGTH } from '@/lib/constants';
 import type { AuthMethodsProps } from '@/lib/types';
 import { Apple, Globe, KeyRound, Mail } from 'lucide-react';
 import Link from 'next/link';
@@ -42,7 +43,7 @@ const AuthMethods: FC<AuthMethodsProps> = ({ mode }: AuthMethodsProps) => {
         {isSignUp ? (
         <div className='space-y-2'>
           <label htmlFor='name' className='text-sm font-medium text-card-foreground'>Display name</label>
-          <Input id='name' placeholder='Your name' maxLength={60} aria-invalid={Boolean(errors.name)} className='h-11 bg-background' {...register('name')} />
+          <Input id='name' placeholder='Your name' maxLength={MAX_DISPLAY_NAME_LENGTH} aria-invalid={Boolean(errors.name)} className='h-11 bg-background' {...register('name')} />
           {errors.name ? <p className='text-xs text-destructive'>{errors.name.message}</p> : null}
         </div>
         ) : null}

@@ -1,9 +1,6 @@
 import { createSupabaseServerClient } from './supabase/server';
-import { MAX_POST_IMAGES } from './post-images';
+import { ACCEPTED_IMAGE_TYPES, IMAGE_CACHE_CONTROL, MAX_IMAGE_BYTES, MAX_POST_IMAGES } from './constants';
 import type { ImageBucket } from './types';
-
-const acceptedImageTypes = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
-const maxImageBytes = 2 * 1024 * 1024;
 
 const extensionFor = (mimeType: string) => ({
   'image/jpeg': 'jpg',
@@ -13,8 +10,8 @@ const extensionFor = (mimeType: string) => ({
 }[mimeType] ?? 'img');
 
 const validateImage = (value: File) => {
-  if (!acceptedImageTypes.has(value.type)) throw new Error('Use a PNG, JPEG, WebP, or GIF image.');
-  if (value.size > maxImageBytes) throw new Error('Images must be 2 MB or smaller.');
+  if (!ACCEPTED_IMAGE_TYPES.has(value.type)) throw new Error('Use a PNG, JPEG, WebP, or GIF image.');
+  if (value.size > MAX_IMAGE_BYTES) throw new Error('Images must be 2 MB or smaller.');
 };
 
 export const uploadImage = async (
@@ -28,7 +25,7 @@ export const uploadImage = async (
   const supabase = await createSupabaseServerClient();
   const path = `${userId}/${crypto.randomUUID()}.${extensionFor(value.type)}`;
   const { error } = await supabase.storage.from(bucket).upload(path, value, {
-    cacheControl: '31536000',
+    cacheControl: IMAGE_CACHE_CONTROL,
     contentType: value.type,
     upsert: false,
   });
