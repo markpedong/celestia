@@ -1,8 +1,7 @@
 import { config } from 'dotenv';
 import { createSupabaseAdminClient } from '../lib/supabase/admin';
 
-config({ path: '.env.local' });
-config();
+config({ path: '.env' });
 
 const imageMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 const buckets = ['profile-avatars', 'profile-covers', 'post-images'];

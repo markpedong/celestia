@@ -5,7 +5,11 @@ export const createSupabaseAdminClient = () => {
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!url || !serviceRoleKey) {
-    throw new Error('Supabase Storage requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.');
+    const missing = [
+      !url && 'NEXT_PUBLIC_SUPABASE_URL',
+      !serviceRoleKey && 'SUPABASE_SERVICE_ROLE_KEY',
+    ].filter(Boolean).join(', ');
+    throw new Error(`Supabase Storage is missing: ${missing}.`);
   }
 
   return createClient(url, serviceRoleKey, {

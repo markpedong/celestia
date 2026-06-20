@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "db:push": "prisma db push && prisma generate",
+    "db:reset": "prisma migrate reset --force && tsx scripts/empty-supabase-storage.ts",
     "supabase:storage": "tsx scripts/setup-supabase-storage.ts"
   },
   "dependencies": {
