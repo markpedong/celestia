@@ -85,9 +85,9 @@ export function ImageUploadField({
                   fill
                   unoptimized
                   sizes='(max-width: 768px) 100vw, 336px'
-                  className='object-cover transition-transform duration-200 group-hover:scale-[1.02]'
+                  className='object-cover transition-transform duration-200 hover:scale-[1.02]'
                 />
-                <span className='absolute inset-0 flex items-center justify-center bg-foreground/0 text-transparent transition-colors group-hover:bg-foreground/35 group-hover:text-background'>
+                <span className='absolute inset-0 flex items-center justify-center bg-foreground/0 text-transparent transition-colors hover:bg-foreground/35 hover:text-background'>
                   <ZoomIn className='size-5' />
                 </span>
               </button>

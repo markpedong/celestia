@@ -21,7 +21,7 @@ const PostCard = ({ post, author, tagsBySlug, score, userVote }: PostCardProps) 
         <div className='min-w-0 flex-1'>
           <PostMeta author={author} post={post} tagsBySlug={tagsBySlug} compact className='mb-2' />
           <Link href={`/post/${post.id}`} className='group/post-link block'>
-            <h2 className='text-[15px] font-semibold leading-snug text-foreground transition-colors group-hover/post-link:text-primary'>
+            <h2 className='text-[15px] font-semibold leading-snug text-foreground transition-colors hover:text-primary'>
               {post.title}
             </h2>
             <p className='mt-2 line-clamp-2 text-sm leading-relaxed text-muted-foreground'>{snippet(post.body)}</p>

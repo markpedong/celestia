@@ -7,7 +7,9 @@ const LeftTags = ({ tags, emptyMessage }: LeftTagsProps) => {
 
   return (
     <ul className='space-y-1'>
-      {sorted.length === 0 && emptyMessage ? <li className='px-3 py-2 text-xs leading-5 text-muted-foreground'>{emptyMessage}</li> : null}
+      {sorted.length === 0 && emptyMessage ? (
+        <li className='px-3 py-2 text-xs leading-5 text-muted-foreground'>{emptyMessage}</li>
+      ) : null}
       {sorted.map(({ tag, count }) => (
         <li key={tag.slug}>
           <Link
@@ -19,7 +21,7 @@ const LeftTags = ({ tags, emptyMessage }: LeftTagsProps) => {
                 className='size-1.5 shrink-0 rounded-full shadow-[0_0_6px_currentColor]'
                 style={{ background: tag.hashColor, color: tag.hashColor }}
               />
-              <span className='truncate text-muted-foreground group-hover:text-foreground'>{tag.label}</span>
+              <span className='truncate text-muted-foreground hover:text-foreground'>{tag.label}</span>
             </span>
             <span className='shrink-0 font-mono text-xs text-muted-foreground/70'>{formatCount(count)}</span>
           </Link>

@@ -22,7 +22,7 @@ export function RightTrending({ items, communities }: RightTrendingProps) {
           <Link key={t.rank} href={`/?q=${encodeURIComponent(t.title)}`} className='group flex items-center gap-2.5 rounded px-2 py-2 text-sm celestia-hover-surface'>
             <span className='w-4 shrink-0 text-right font-mono text-[10px] text-muted-foreground/60'>{t.rank}</span>
             <div className='min-w-0 flex-1'>
-              <p className='truncate text-sm font-medium leading-snug text-card-foreground transition-colors group-hover:text-foreground'>
+              <p className='truncate text-sm font-medium leading-snug text-card-foreground transition-colors hover:text-foreground'>
                 {t.title}
               </p>
               <p className='font-mono text-[11px] text-muted-foreground'>{t.postCount} posts</p>
