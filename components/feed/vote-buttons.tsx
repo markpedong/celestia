@@ -3,38 +3,32 @@
 import { voteCommentAction } from '@/lib/actions/comments';
 import { votePostAction } from '@/lib/actions/posts';
 import { cn } from '@/lib/utils';
+import type { VoteActionValue, VoteButtonsProps, VoteValue } from '@/lib/types';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useOptimistic, useTransition } from 'react';
-
-type Props = {
-  target: string;
-  targetID: string;
-  score: number;
-  userVote: -1 | 0 | 1;
-};
 
 const formatScore = (value: number): string => {
   if (Math.abs(value) >= 1000) return `${(value / 1000).toFixed(1)}k`;
   return String(value);
 };
 
-const VoteButtons = ({ target, targetID, score, userVote }: Props) => {
+const VoteButtons = ({ target, targetID, score, userVote }: VoteButtonsProps) => {
   const [pending, startTransition] = useTransition();
   const router = useRouter();
   const isPost = target === 'post';
   const [optimisticVote, setOptimisticVote] = useOptimistic(
     { score, userVote },
-    (current, value: -1 | 1) => {
-      const nextVote = current.userVote === value ? 0 : value;
+    (current, value: VoteActionValue) => {
+      const nextVote: VoteValue = current.userVote === value ? 0 : value;
       return {
-        userVote: nextVote as -1 | 0 | 1,
+        userVote: nextVote,
         score: current.score + nextVote - current.userVote,
       };
     },
   );
 
-  const vote = (value: -1 | 1) => {
+  const vote = (value: VoteActionValue) => {
     startTransition(async () => {
       setOptimisticVote(value);
       const result = isPost

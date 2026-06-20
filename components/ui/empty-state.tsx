@@ -1,15 +1,7 @@
 import { cn } from '@/lib/utils';
-import type { LucideIcon } from 'lucide-react';
+import type { EmptyStateProps } from '@/lib/types';
 
-type Props = {
-  icon: LucideIcon;
-  title: string;
-  description: string;
-  className?: string;
-  children?: React.ReactNode;
-};
-
-export function EmptyState({ icon: Icon, title, description, className, children }: Props) {
+export function EmptyState({ icon: Icon, title, description, className, children }: EmptyStateProps) {
   return (
     <div className={cn('celestia-card px-6 py-16 text-center', className)}>
       <Icon className='mx-auto mb-3 size-8 text-primary' aria-hidden />

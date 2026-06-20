@@ -1,7 +1,6 @@
 'use client';
 
-import { EnrichedCommentNode } from '@/lib/comment-tree';
-import { User } from '@/lib/types';
+import type { CommentNodeProps } from '@/lib/types';
 import { Badge } from '../ui/badge';
 import { formatRelativeTime } from '@/lib/format';
 import VoteButtons from '../feed/vote-buttons';
@@ -15,13 +14,7 @@ export function CommentNode({
   sessionUser,
   activeReplyId,
   onReplyChange,
-}: {
-  node: EnrichedCommentNode;
-  postAuthorId: string;
-  sessionUser: User | null;
-  activeReplyId: string | null;
-  onReplyChange: (commentId: string | null) => void;
-}) {
+}: CommentNodeProps) {
   const isOp = node.authorId === postAuthorId;
   const isReplying = activeReplyId === node.id;
 

@@ -4,9 +4,7 @@ import { getCurrentUserID } from '../auth';
 import { prisma } from '../prisma';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-
-export type CommunityFormState = { error?: string } | null;
-export type CommunitySettingsFormState = { error?: string } | null;
+import type { CommunityFormState, CommunitySettingsFormState } from '../types';
 
 const RESERVED_SLUGS = new Set(['all', 'auth', 'communities', 'new', 'post', 'profile', 'r', 'submit', 'u']);
 

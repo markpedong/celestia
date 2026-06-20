@@ -24,17 +24,14 @@ import {
   ProfileMediaEditor,
   ProfileMediaEditMode,
 } from '@/components/profile/profile-media-editor';
-
-type Props = {
-  params: Promise<{ username: string }>;
-};
+import type { CommentsListProps, UserPageProps } from '@/lib/types';
 
 const excerpt = (body: string) => {
   const clean = body.replace(/\s+/g, ' ').trim();
   return clean.length > 180 ? `${clean.slice(0, 180)}...` : clean;
 };
 
-export default async function UserPage({ params }: Props) {
+export default async function UserPage({ params }: UserPageProps) {
   const { username: rawUsername } = await params;
   const username = decodeURIComponent(rawUsername);
   const profile = await getUserByUsername(username);
@@ -173,13 +170,7 @@ export default async function UserPage({ params }: Props) {
   );
 }
 
-function CommentsList({
-  comments,
-  title,
-}: {
-  comments: Awaited<ReturnType<typeof listCommentsByAuthor>>;
-  title: string;
-}) {
+function CommentsList({ comments, title }: CommentsListProps) {
   return (
     <section className='celestia-card p-4'>
       <h2 className='mb-3 flex items-center gap-2 text-sm font-semibold'>

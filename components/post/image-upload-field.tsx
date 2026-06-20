@@ -4,13 +4,10 @@ import Lightbox from 'yet-another-react-lightbox';
 import 'yet-another-react-lightbox/styles.css';
 import { ImagePlus, Trash2, ZoomIn } from 'lucide-react';
 import Image from 'next/image';
+import type { ImageUploadFieldProps } from '@/lib/types';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-type Props = {
-  initialImageUrl?: string;
-};
-
-export function ImageUploadField({ initialImageUrl }: Props) {
+export function ImageUploadField({ initialImageUrl }: ImageUploadFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [previewUrl, setPreviewUrl] = useState(initialImageUrl ?? '');
   const [imageName, setImageName] = useState<string | null>(null);

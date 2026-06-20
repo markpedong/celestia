@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
-import type { User as ProfileUser } from '@/lib/types';
+import type { AccountMenuProps, DisplayMode } from '@/lib/types';
 import { LaptopMinimal, LogOut, MonitorCog, Moon, Sun, UserRound } from 'lucide-react';
 import Link from 'next/link';
 import type { User } from '@supabase/supabase-js';
@@ -29,8 +29,6 @@ const displayModeOptions = [
   { value: 'dark', label: 'Dark', icon: Moon },
   { value: 'light', label: 'Light', icon: Sun },
 ] as const;
-
-type DisplayMode = (typeof displayModeOptions)[number]['value'];
 
 const getInitials = (name?: string | null, email?: string | null) => {
   const source = name?.trim() || email?.split('@')[0] || 'User';
@@ -60,7 +58,7 @@ const applyDisplayMode = (displayMode: DisplayMode) => {
   root.style.colorScheme = resolvedMode;
 };
 
-const AccountMenu = ({ initialUser }: { initialUser: ProfileUser }) => {
+const AccountMenu = ({ initialUser }: AccountMenuProps) => {
   const [authUser, setAuthUser] = useState<User | null>(null);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [displayMode, setDisplayMode] = useState<DisplayMode>(() => {

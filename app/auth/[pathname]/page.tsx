@@ -1,8 +1,9 @@
 import AuthMethods from '@/components/auth/auth-methods';
+import type { AuthPageProps } from '@/lib/types';
 import { Zap } from 'lucide-react';
 import Link from 'next/link';
 
-const AuthPage = async ({ params }: { params: Promise<{ pathname: string }> }) => {
+const AuthPage = async ({ params }: AuthPageProps) => {
   const { pathname } = await params;
 
   return (

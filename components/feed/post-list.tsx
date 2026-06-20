@@ -1,14 +1,7 @@
-import type { FeedPostRow } from '@/lib/db/queries';
-import type { Tag, User } from '@/lib/types';
+import type { PostListProps } from '@/lib/types';
 import PostCard from './post-card';
 
-type Props = {
-  rows: FeedPostRow[];
-  authorsById: Map<string, User>;
-  tagsBySlug: Map<string, Tag>;
-};
-
-export function PostList({ rows, authorsById, tagsBySlug }: Props) {
+export function PostList({ rows, authorsById, tagsBySlug }: PostListProps) {
   return (
     <>
       {rows.map(row => {

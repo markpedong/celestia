@@ -1,19 +1,11 @@
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { formatRelativeTime } from '@/lib/format';
-import type { Post, Tag, User } from '@/lib/types';
+import type { PostMetaProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Clock } from 'lucide-react';
 import Link from 'next/link';
 
-type Props = {
-  author: User;
-  post: Pick<Post, 'createdAt' | 'tagSlugs'>;
-  tagsBySlug: Map<string, Tag>;
-  className?: string;
-  compact?: boolean;
-};
-
-export function PostMeta({ author, post, tagsBySlug, className, compact = false }: Props) {
+export function PostMeta({ author, post, tagsBySlug, className, compact = false }: PostMetaProps) {
   const primarySlug = post.tagSlugs[0];
   const primaryTag = primarySlug ? tagsBySlug.get(primarySlug) : undefined;
 

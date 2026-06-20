@@ -1,24 +1,4 @@
-import { Comment, User } from "./types";
-
-export type EnrichedCommentNode = {
-  id: string;
-  postId: string;
-  parentId: string | null;
-  body: string;
-  createdAt: string;
-  authorId: string;
-  author: User;
-  score: number;
-  userVote: -1 | 0 | 1;
-  isPending?: boolean;
-  children: EnrichedCommentNode[];
-};
-
-export type EnrichedCommentRow = Comment & {
-  author: User;
-  score: number;
-  userVote: -1 | 0 | 1;
-};
+import type { EnrichedCommentNode, EnrichedCommentRow } from './types';
 
 export function nestCommentRows(
   flat: EnrichedCommentRow[],

@@ -1,4 +1,4 @@
-import { Post, Tag, User } from '@/lib/types';
+import type { PostCardProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { MessageSquare, Share2 } from 'lucide-react';
 import Link from 'next/link';
@@ -6,21 +6,13 @@ import Image from 'next/image';
 import VoteButtons from './vote-buttons';
 import { PostMeta } from './post-meta';
 
-type Props = {
-  post: Post;
-  author: User;
-  tagsBySlug: Map<string, Tag>;
-  score: number;
-  userVote: -1 | 0 | 1;
-};
-
 const snippet = (body: string, max = 160) => {
   const t = body.replace(/\s+/g, ' ').trim();
   if (t.length <= max) return t;
   return `${t.slice(0, max)}…`;
 };
 
-const PostCard = ({ post, author, tagsBySlug, score, userVote }: Props) => {
+const PostCard = ({ post, author, tagsBySlug, score, userVote }: PostCardProps) => {
   return (
     <article className='celestia-card celestia-card-hover flex w-full overflow-hidden last:mb-7'>
       <div className='celestia-vote-rail flex min-w-[52px] flex-col items-center justify-center border-r border-border/60 px-3 py-4'>

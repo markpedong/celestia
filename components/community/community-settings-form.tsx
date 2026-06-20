@@ -1,7 +1,7 @@
 'use client';
 
 import { updateCommunityAction } from '@/lib/actions/communities';
-import type { Community } from '@/lib/types';
+import type { CommunitySettingsFormProps } from '@/lib/types';
 import { useActionState } from 'react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -9,7 +9,7 @@ import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Save } from 'lucide-react';
 
-export function CommunitySettingsForm({ community }: { community: Community }) {
+export function CommunitySettingsForm({ community }: CommunitySettingsFormProps) {
   const [state, action, pending] = useActionState(updateCommunityAction, null);
 
   return (

@@ -5,18 +5,18 @@ import { cn } from '@/lib/utils';
 import { Camera, Check, LoaderCircle, Pencil } from 'lucide-react';
 import { createContext, useActionState, useContext, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import type {
+  ProfileEditContextValue,
+  ProfileMediaEditorProps,
+  ProfileMediaEditModeProps,
+} from '@/lib/types';
 
-type Props = {
-  field: 'avatar' | 'cover';
-  className?: string;
-};
-
-const ProfileEditContext = createContext({
+const ProfileEditContext = createContext<ProfileEditContextValue>({
   isEditing: false,
   toggleEditing: () => {},
 });
 
-export function ProfileMediaEditMode({ children }: { children: React.ReactNode }) {
+export function ProfileMediaEditMode({ children }: ProfileMediaEditModeProps) {
   const [isEditing, setIsEditing] = useState(false);
 
   return (
@@ -37,7 +37,7 @@ export function ProfileMediaEditButton() {
   );
 }
 
-export function ProfileMediaEditor({ field, className }: Props) {
+export function ProfileMediaEditor({ field, className }: ProfileMediaEditorProps) {
   const [state, action, pending] = useActionState(updateProfileMediaAction, null);
   const { isEditing } = useContext(ProfileEditContext);
   const inputId = `profile-${field}-upload`;

@@ -8,17 +8,12 @@ import { StatGrid } from '@/components/ui/stat-grid';
 import { getSessionUser } from '@/lib/auth';
 import { batchAuthorsForIds, getCommunityMembership, getCommunityStats, getTagBySlug, listPostSorted, listTags } from '@/lib/db/queries';
 import { formatCount } from '@/lib/format';
-import { FeedSort } from '@/lib/types';
+import type { CommunityPageProps, FeedSort } from '@/lib/types';
 import { CakeSlice, Hash, Plus, Settings, ShieldCheck, Users } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-type Props = {
-  params: Promise<{ slug: string }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-};
-
-export default async function CommunityPage({ params, searchParams }: Props) {
+export default async function CommunityPage({ params, searchParams }: CommunityPageProps) {
   const { slug: rawSlug } = await params;
   const query = await searchParams;
   const slug = decodeURIComponent(rawSlug).toLowerCase();

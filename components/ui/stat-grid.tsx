@@ -1,16 +1,7 @@
 import { cn } from '@/lib/utils';
+import type { StatGridProps } from '@/lib/types';
 
-type Stat = {
-  label: string;
-  value: string;
-};
-
-type Props = {
-  stats: Stat[];
-  className?: string;
-};
-
-export function StatGrid({ stats, className }: Props) {
+export function StatGrid({ stats, className }: StatGridProps) {
   return (
     <div className={cn('grid grid-cols-3 gap-2 text-sm', className)}>
       {stats.map(({ label, value }) => (

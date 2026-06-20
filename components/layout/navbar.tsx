@@ -6,16 +6,9 @@ import { cn } from '@/lib/utils';
 import { buttonVariants } from '../ui/button';
 import AccountMenu from '@/components/auth/account-menu';
 import SearchBox from './search-box';
-import type { TrendingItem } from '@/lib/trending';
-import type { SearchTagSuggestion, User } from '@/lib/types';
+import type { NavbarProps } from '@/lib/types';
 
-type Props = {
-  trending: TrendingItem[];
-  communities: SearchTagSuggestion[];
-  user: User | null;
-};
-
-const Navbar = ({ trending, communities, user }: Props) => {
+const Navbar = ({ trending, communities, user }: NavbarProps) => {
   return (
     <header className='celestia-nav-shadow sticky top-0 z-50 border-b border-border/80 bg-background/88 backdrop-blur-xl'>
       <div className='mx-auto flex h-14 w-full max-w-[1600px] items-center gap-3 px-4'>

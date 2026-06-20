@@ -1,24 +1,17 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import type { ProfileActivityTab, ProfileActivityTabsProps } from '@/lib/types';
 
-type Tab = 'overview' | 'posts' | 'comments';
-
-type Props = {
-  overview: ReactNode;
-  posts: ReactNode;
-  comments: ReactNode;
-};
-
-const tabs: { id: Tab; label: string }[] = [
+const tabs: { id: ProfileActivityTab; label: string }[] = [
   { id: 'overview', label: 'Overview' },
   { id: 'posts', label: 'Posts' },
   { id: 'comments', label: 'Comments' },
 ];
 
-export function ProfileActivityTabs({ overview, posts, comments }: Props) {
-  const [activeTab, setActiveTab] = useState<Tab>('overview');
+export function ProfileActivityTabs({ overview, posts, comments }: ProfileActivityTabsProps) {
+  const [activeTab, setActiveTab] = useState<ProfileActivityTab>('overview');
   const content = { overview, posts, comments };
 
   return (

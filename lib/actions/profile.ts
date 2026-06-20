@@ -4,8 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { getSessionUser } from '../auth';
 import { uploadImage } from '../media';
 import { prisma } from '../prisma';
-
-export type ProfileMediaFormState = { error?: string; success?: string } | null;
+import type { ProfileMediaFormState } from '../types';
 
 export const updateProfileMediaAction = async (
   _prev: ProfileMediaFormState,

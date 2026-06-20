@@ -1,11 +1,12 @@
 import { SubmitPostForm } from '@/components/post/submit-post-form';
 import { getSessionUser } from '@/lib/auth';
 import { listJoinedCommunities } from '@/lib/db/queries';
+import type { SubmitPageProps } from '@/lib/types';
 import { ArrowLeft, MessageSquare, Send } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
-export default async function SubmitPage({ searchParams }: { searchParams: Promise<{ community?: string | string[] }> }) {
+export default async function SubmitPage({ searchParams }: SubmitPageProps) {
   const user = await getSessionUser();
   if (!user) {
     redirect('/auth/sign-in');

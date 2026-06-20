@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Geist_Mono, Inter } from 'next/font/google';
 import Script from 'next/script';
 import { QueryProvider } from '@/components/providers/query-provider';
+import type { RootLayoutProps } from '@/lib/types';
 import './globals.css';
 import './design.scss';
 
@@ -87,9 +88,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: RootLayoutProps) {
   return (
     <html
       lang='en'

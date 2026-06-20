@@ -1,9 +1,8 @@
 import { createSupabaseServerClient } from './supabase/server';
+import type { ImageBucket } from './types';
 
 const acceptedImageTypes = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
 const maxImageBytes = 2 * 1024 * 1024;
-
-type ImageBucket = 'profile-avatars' | 'profile-covers' | 'post-images';
 
 const extensionFor = (mimeType: string) => ({
   'image/jpeg': 'jpg',

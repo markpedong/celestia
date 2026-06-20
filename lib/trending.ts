@@ -1,4 +1,4 @@
-export type TrendingItem = { rank: number; title: string; postCount: string };
+import type { TrendingItem } from './types';
 
 export function getTrendingToday(): TrendingItem[] {
   return [

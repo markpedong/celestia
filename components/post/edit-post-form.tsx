@@ -1,7 +1,7 @@
 'use client';
 
 import { updatePostAction } from '@/lib/actions/posts';
-import type { Post } from '@/lib/types';
+import type { EditPostFormProps, Post } from '@/lib/types';
 import { useQuery } from '@tanstack/react-query';
 import { useActionState } from 'react';
 import { Button } from '../ui/button';
@@ -17,7 +17,7 @@ async function fetchPost(postId: string): Promise<Post> {
   return response.json() as Promise<Post>;
 }
 
-export function EditPostForm({ post }: { post: Post }) {
+export function EditPostForm({ post }: EditPostFormProps) {
   const [state, action, pending] = useActionState(updatePostAction, null);
   const { data } = useQuery({
     queryKey: ['post', post.id],

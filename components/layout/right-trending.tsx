@@ -1,16 +1,15 @@
 import Link from 'next/link';
-import type { TrendingItem } from '@/lib/trending';
-import type { SearchTagSuggestion } from '@/lib/types';
+import type { MomentumIconProps, RightTrendingProps } from '@/lib/types';
 import { Flame, Minus, Sparkles, TrendingUp, Users } from 'lucide-react';
 
-const MomentumIcon = ({ index }: { index: number }) => {
+const MomentumIcon = ({ index }: MomentumIconProps) => {
   if (index === 0) return <Flame className='size-3 text-amber-400' />;
   if (index === 1) return <TrendingUp className='size-3 text-success' />;
   if (index === 2) return <Sparkles className='size-3 text-primary' />;
   return <Minus className='size-3 text-muted-foreground' />;
 };
 
-export function RightTrending({ items, communities }: { items: TrendingItem[]; communities: SearchTagSuggestion[] }) {
+export function RightTrending({ items, communities }: RightTrendingProps) {
   return (
     <div className='space-y-4'>
     <section className='celestia-card p-4'>

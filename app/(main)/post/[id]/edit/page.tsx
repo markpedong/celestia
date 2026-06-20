@@ -1,11 +1,12 @@
 import { EditPostForm } from '@/components/post/edit-post-form';
 import { getSessionUser } from '@/lib/auth';
 import { getPostByID } from '@/lib/db/queries';
+import type { PostPageProps } from '@/lib/types';
 import { ArrowLeft, Pencil } from 'lucide-react';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 
-export default async function EditPostPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function EditPostPage({ params }: PostPageProps) {
   const { id } = await params;
   const [post, user] = await Promise.all([getPostByID(id), getSessionUser()]);
   if (!post) notFound();

@@ -3,10 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { getCurrentUserID } from "../auth";
 import { prisma } from "../prisma";
-import { Comment } from "../types";
+import type { Comment, CommentFormState, VoteActionValue } from "../types";
 import { toggleVote } from '../db/votes';
-
-export type CommentFormState = { error?: string; ok?: boolean; comment?: Comment } | null;
 
 export const createCommentAction = async (_prev: CommentFormState, formData: FormData): Promise<CommentFormState> => {
   const userId = await getCurrentUserID();
@@ -56,7 +54,7 @@ export async function addComment(input: {
   };
 }
 
-export const voteCommentAction = async (commentId: string, value: -1 | 1) => {
+export const voteCommentAction = async (commentId: string, value: VoteActionValue) => {
   const userId = await getCurrentUserID();
   if (!userId) {
     return { error: "Sign in to vote." };
@@ -71,7 +69,7 @@ export const voteCommentAction = async (commentId: string, value: -1 | 1) => {
 export async function voteComment(
   userId: string,
   commentId: string,
-  value: -1 | 1,
+  value: VoteActionValue,
 ): Promise<void> {
   await toggleVote(userId, 'comment', commentId, value);
 }

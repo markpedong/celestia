@@ -1,22 +1,11 @@
 'use client';
 
-import type { EnrichedCommentNode } from '@/lib/comment-tree';
-import type { User } from '@/lib/types';
+import type {
+  CommentSubmissionContextValue,
+  EnrichedCommentNode,
+  PendingCommentInput,
+} from '@/lib/types';
 import { createContext, useContext } from 'react';
-
-export type PendingCommentInput = {
-  postId: string;
-  parentId: string | null;
-  body: string;
-  author: User;
-};
-
-export type CommentSubmitResult = { error?: string } | null;
-
-type CommentSubmissionContextValue = {
-  submitComment: (formData: FormData, pendingComment: PendingCommentInput) => Promise<CommentSubmitResult>;
-  pending: boolean;
-};
 
 export const CommentSubmissionContext = createContext<CommentSubmissionContextValue | null>(null);
 

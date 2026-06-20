@@ -1,9 +1,9 @@
-import { EnrichedCommentNode, nestCommentRows } from "../comment-tree";
+import { nestCommentRows } from "../comment-tree";
 import { cache } from "react";
 import { Prisma } from "../generated/prisma/client";
 import { PostModel } from "../generated/prisma/models";
 import { prisma } from "../prisma";
-import { Comment, Community, CommunityStats, FeedSort, Post, SearchPostSuggestion, SearchTagSuggestion, Tag, User, UserCommentActivity, UserStats, VoteTarget } from "../types";
+import type { Comment, Community, CommunityStats, EnrichedCommentNode, FeedPostRow, FeedSort, Post, SearchPostSuggestion, SearchTagSuggestion, Tag, TagPostCount, User, UserCommentActivity, UserStats, VoteTarget } from "../types";
 
 const fallbackUsernameForId = (id: string) => {
   return id
@@ -44,12 +44,6 @@ export const batchAuthorsForIds = async (authorIds: string[]): Promise<Map<strin
   }
 
   return result;
-}
-
-export type FeedPostRow = {
-  post: Post
-  score: number
-  userVote: -1 | 0 | 1
 }
 
 const listEnrichedPosts = async (
@@ -517,7 +511,7 @@ export const listCommentsForPost = async (postID: string): Promise<Comment[]> =>
   }))
 }
 
-export const tagsPostCounts = cache(async (): Promise<{ tag: Tag, count: number }[]> => {
+export const tagsPostCounts = cache(async (): Promise<TagPostCount[]> => {
   const allTags = await listTags();
   const rows = await prisma.postTag.groupBy({
     by: ["tagSlug"],

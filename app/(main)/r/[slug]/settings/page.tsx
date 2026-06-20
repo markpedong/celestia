@@ -1,11 +1,10 @@
 import { CommunitySettingsForm } from '@/components/community/community-settings-form';
 import { getSessionUser } from '@/lib/auth';
 import { getTagBySlug } from '@/lib/db/queries';
+import type { CommunitySettingsPageProps } from '@/lib/types';
 import { notFound, redirect } from 'next/navigation';
 
-type Props = { params: Promise<{ slug: string }> };
-
-export default async function CommunitySettingsPage({ params }: Props) {
+export default async function CommunitySettingsPage({ params }: CommunitySettingsPageProps) {
   const { slug: rawSlug } = await params;
   const community = await getTagBySlug(decodeURIComponent(rawSlug).toLowerCase());
   if (!community) notFound();

@@ -1,14 +1,7 @@
-import { FeedSort } from '@/lib/types';
+import type { FeedSort, FeedSortTabsProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { BarChart2, Clock, Flame, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';
-
-type Props = {
-  current: FeedSort;
-  tag: string;
-  query: string;
-  basePath?: string;
-};
 
 const hrefFor = (sort: FeedSort, tag?: string, query?: string, basePath = '/') => {
   const params = new URLSearchParams();
@@ -19,7 +12,7 @@ const hrefFor = (sort: FeedSort, tag?: string, query?: string, basePath = '/') =
   return q ? `${basePath}?${q}` : basePath;
 }
 
-const FeedSortTabs = ({ current, tag, query, basePath = '/' }: Props) => {
+const FeedSortTabs = ({ current, tag, query, basePath = '/' }: FeedSortTabsProps) => {
   const activeSort = current ?? 'hot';
   const tabs: { id: FeedSort; label: string; icon: LucideIcon }[] = [
     { id: 'hot', label: 'Hot', icon: Flame },

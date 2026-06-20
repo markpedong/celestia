@@ -1,15 +1,7 @@
 import { cn } from '@/lib/utils';
-import type { ReactNode } from 'react';
+import type { ContentWithSidebarProps } from '@/lib/types';
 
-type Props = {
-  children: ReactNode;
-  sidebar: ReactNode;
-  className?: string;
-  contentClassName?: string;
-  sidebarClassName?: string;
-};
-
-export function ContentWithSidebar({ children, sidebar, className, contentClassName, sidebarClassName }: Props) {
+export function ContentWithSidebar({ children, sidebar, className, contentClassName, sidebarClassName }: ContentWithSidebarProps) {
   return (
     <div className={cn('grid gap-6 xl:grid-cols-[minmax(0,1fr)_18rem]', className)}>
       <div className={cn('min-w-0', contentClassName)}>{children}</div>

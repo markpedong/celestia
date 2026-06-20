@@ -1,15 +1,12 @@
 'use client';
 
 import { cn } from '@/lib/utils';
+import type { MobileBottomNavProps } from '@/lib/types';
 import { Compass, House, PlusCircle, Radio, UserRound } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 
-type Props = {
-  isSignedIn: boolean;
-};
-
-const MobileBottomNav = ({ isSignedIn }: Props) => {
+const MobileBottomNav = ({ isSignedIn }: MobileBottomNavProps) => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const sort = searchParams.get('sort');

@@ -1,3 +1,22 @@
+import type { LucideIcon } from 'lucide-react';
+import type { ReactNode } from 'react';
+
+export type WithChildren<T extends object = Record<never, never>> = T & {
+  children: ReactNode;
+};
+
+export type WithOptionalChildren<T extends object = Record<never, never>> = T & {
+  children?: ReactNode;
+};
+
+export type WithClassName<T extends object = Record<never, never>> = T & {
+  className?: string;
+};
+
+export type ErrorFormState<T extends object = Record<never, never>> = (T & {
+  error?: string;
+}) | null;
+
 export type User = {
   id: string;
   username: string;
@@ -72,4 +91,287 @@ export type UserCommentActivity = {
   postTitle: string;
   body: string;
   createdAt: string;
+};
+
+export type VoteValue = -1 | 0 | 1;
+
+export type VoteActionValue = -1 | 1;
+
+export type TrendingItem = {
+  rank: number;
+  title: string;
+  postCount: string;
+};
+
+export type TagPostCount = {
+  tag: Tag;
+  count: number;
+};
+
+export type FeedPostRow = {
+  post: Post;
+  score: number;
+  userVote: VoteValue;
+};
+
+export type EnrichedCommentNode = {
+  id: string;
+  postId: string;
+  parentId: string | null;
+  body: string;
+  createdAt: string;
+  authorId: string;
+  author: User;
+  score: number;
+  userVote: VoteValue;
+  isPending?: boolean;
+  children: EnrichedCommentNode[];
+};
+
+export type EnrichedCommentRow = Comment & {
+  author: User;
+  score: number;
+  userVote: VoteValue;
+};
+
+export type ImageBucket = 'profile-avatars' | 'profile-covers' | 'post-images';
+
+export type PostFormState = ErrorFormState;
+
+export type CommentFormState = ErrorFormState<{ ok?: boolean; comment?: Comment }>;
+
+export type CommunityFormState = ErrorFormState;
+
+export type CommunitySettingsFormState = ErrorFormState;
+
+export type ProfileMediaFormState = ErrorFormState<{ success?: string }>;
+
+export type AuthMode = 'sign-in' | 'sign-up';
+
+export type DisplayMode = 'system' | 'dark' | 'light';
+
+export type AuthMethodsProps = {
+  mode: AuthMode;
+};
+
+export type AccountMenuProps = {
+  initialUser: User;
+};
+
+export type CommunityMembershipButtonProps = {
+  slug: string;
+  isMember: boolean;
+  isSignedIn: boolean;
+  isOwner?: boolean;
+};
+
+export type CommunitySettingsFormProps = {
+  community: Community;
+};
+
+export type FeedSortTabsProps = {
+  current: FeedSort;
+  tag: string;
+  query: string;
+  basePath?: string;
+};
+
+export type PostCardProps = {
+  post: Post;
+  author: User;
+  tagsBySlug: Map<string, Tag>;
+  score: number;
+  userVote: VoteValue;
+};
+
+export type PostListProps = {
+  rows: FeedPostRow[];
+  authorsById: Map<string, User>;
+  tagsBySlug: Map<string, Tag>;
+};
+
+export type PostMetaProps = WithClassName<{
+  author: User;
+  post: Pick<Post, 'createdAt' | 'tagSlugs'>;
+  tagsBySlug: Map<string, Tag>;
+  compact?: boolean;
+}>;
+
+export type VoteButtonsProps = {
+  target: VoteTarget;
+  targetID: string;
+  score: number;
+  userVote: VoteValue;
+};
+
+export type ContentWithSidebarProps = WithChildren<WithClassName<{
+  sidebar: ReactNode;
+  contentClassName?: string;
+  sidebarClassName?: string;
+}>>;
+
+export type LeftTagsProps = {
+  tags: TagPostCount[];
+  emptyMessage?: string;
+};
+
+export type MobileBottomNavProps = {
+  isSignedIn: boolean;
+};
+
+export type NavbarProps = {
+  trending: TrendingItem[];
+  communities: SearchTagSuggestion[];
+  user: User | null;
+};
+
+export type SearchSuggestionsResponse = {
+  posts: SearchPostSuggestion[];
+  tags: SearchTagSuggestion[];
+};
+
+export type SearchBoxProps = {
+  trending: TrendingItem[];
+  communities: SearchTagSuggestion[];
+};
+
+export type SearchSectionProps = {
+  title: string;
+  children: ReactNode;
+};
+
+export type MomentumIconProps = {
+  index: number;
+};
+
+export type RightTrendingProps = {
+  items: TrendingItem[];
+  communities: SearchTagSuggestion[];
+};
+
+export type CommentComposerProps = {
+  postID: string;
+  user: User;
+  parentId?: string | null;
+  placeholder?: string;
+  compact?: boolean;
+};
+
+export type PendingCommentInput = {
+  postId: string;
+  parentId: string | null;
+  body: string;
+  author: User;
+};
+
+export type CommentSubmitResult = ErrorFormState;
+
+export type CommentSubmissionContextValue = {
+  submitComment: (formData: FormData, pendingComment: PendingCommentInput) => Promise<CommentSubmitResult>;
+  pending: boolean;
+};
+
+export type CommentNodeProps = {
+  node: EnrichedCommentNode;
+  postAuthorId: string;
+  sessionUser: User | null;
+  activeReplyId: string | null;
+  onReplyChange: (commentId: string | null) => void;
+};
+
+export type CommentThreadProps = {
+  tree: EnrichedCommentNode[];
+  postAuthorId: string;
+  sessionUser: User | null;
+  children: ReactNode;
+};
+
+export type ImageUploadFieldProps = {
+  initialImageUrl?: string;
+};
+
+export type SubmitPostFormProps = {
+  communities: Community[];
+  defaultCommunitySlug?: string;
+};
+
+export type EditPostFormProps = {
+  post: Post;
+};
+
+export type ProfileActivityTab = 'overview' | 'posts' | 'comments';
+
+export type ProfileActivityTabsProps = {
+  overview: ReactNode;
+  posts: ReactNode;
+  comments: ReactNode;
+};
+
+export type ProfileMediaField = 'avatar' | 'cover';
+
+export type ProfileMediaEditorProps = WithClassName<{
+  field: ProfileMediaField;
+}>;
+
+export type ProfileMediaEditModeProps = WithChildren;
+
+export type ProfileEditContextValue = {
+  isEditing: boolean;
+  toggleEditing: () => void;
+};
+
+export type EmptyStateProps = WithOptionalChildren<WithClassName<{
+  icon: LucideIcon;
+  title: string;
+  description: string;
+}>>;
+
+export type StatItem = {
+  label: string;
+  value: string;
+};
+
+export type StatGridProps = WithClassName<{
+  stats: StatItem[];
+}>;
+
+export type UserAvatarProps = {
+  user: User;
+  size?: 'sm' | 'default' | 'lg';
+  className?: string;
+};
+
+export type QueryProviderProps = WithChildren;
+
+export type SearchParams = Record<string, string | string[] | undefined>;
+
+export type RouteProps<T extends Record<string, string>> = {
+  params: Promise<T>;
+};
+
+export type SearchParamsProps<T extends SearchParams = SearchParams> = {
+  searchParams: Promise<T>;
+};
+
+export type MainLayoutProps = WithChildren;
+
+export type RootLayoutProps = Readonly<MainLayoutProps>;
+
+export type HomePageProps = SearchParamsProps;
+
+export type PostPageProps = RouteProps<{ id: string }>;
+
+export type CommunityPageProps = RouteProps<{ slug: string }> & SearchParamsProps;
+
+export type CommunitySettingsPageProps = RouteProps<{ slug: string }>;
+
+export type UserPageProps = RouteProps<{ username: string }>;
+
+export type AuthPageProps = RouteProps<{ pathname: string }>;
+
+export type SubmitPageProps = SearchParamsProps<{ community?: string | string[] }>;
+
+export type CommentsListProps = {
+  comments: UserCommentActivity[];
+  title: string;
 };

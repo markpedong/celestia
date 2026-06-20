@@ -6,16 +6,13 @@ import CommentThread from '@/components/post/comment-thread';
 import { Separator } from '@/components/ui/separator';
 import { getSessionUser } from '@/lib/auth';
 import { getAuthorByID, getCommentTree, getPostByID, getPostScore, getUserVote, listTags } from '@/lib/db/queries';
+import type { PostPageProps } from '@/lib/types';
 import { ArrowLeft, MessageSquare, Pencil, Radio, Share2, Users } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 
-type Props = {
-  params: Promise<{ id: string }>;
-};
-
-const Page = async ({ params }: Props) => {
+const Page = async ({ params }: PostPageProps) => {
   const { id } = await params;
   const post = await getPostByID(id);
   if (!post) return notFound();

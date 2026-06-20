@@ -1,7 +1,7 @@
 'use client';
 
 import { createCommentAction } from '@/lib/actions/comments';
-import { User } from '@/lib/types';
+import type { CommentComposerProps } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 import { useRef, useState, useTransition } from 'react';
 import { Textarea } from '../ui/textarea';
@@ -9,15 +9,7 @@ import { Button } from '../ui/button';
 import { UserAvatar } from '../ui/user-avatar';
 import { useCommentSubmission } from './comment-submission-context';
 
-type Props = {
-  postID: string;
-  user: User;
-  parentId?: string | null;
-  placeholder?: string;
-  compact?: boolean;
-};
-
-const CommentComposer = ({ postID, user, compact, parentId, placeholder }: Props) => {
+const CommentComposer = ({ postID, user, compact, parentId, placeholder }: CommentComposerProps) => {
   const formRef = useRef<HTMLFormElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();

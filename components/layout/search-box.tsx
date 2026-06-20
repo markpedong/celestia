@@ -1,7 +1,6 @@
 'use client';
 
-import type { TrendingItem } from '@/lib/trending';
-import type { SearchPostSuggestion, SearchTagSuggestion } from '@/lib/types';
+import type { SearchBoxProps, SearchSectionProps, SearchSuggestionsResponse } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import { useClickAway, useDebounce } from '@uidotdev/usehooks';
@@ -9,17 +8,7 @@ import { uniq } from 'lodash';
 import { Clock, Hash, Search, TrendingUp, X, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { FormEvent, MouseEvent, ReactNode, useEffect, useMemo, useRef, useState, useTransition } from 'react';
-
-type SearchResponse = {
-  posts: SearchPostSuggestion[];
-  tags: SearchTagSuggestion[];
-};
-
-type Props = {
-  trending: TrendingItem[];
-  communities: SearchTagSuggestion[];
-};
+import { FormEvent, MouseEvent, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 
 const RECENT_SEARCHES_KEY = 'celestia:recent-searches';
 
@@ -42,7 +31,7 @@ const getSnippet = (body: string) => {
   return clean.length > 82 ? `${clean.slice(0, 82)}...` : clean;
 };
 
-const SearchBox = ({ trending, communities }: Props) => {
+const SearchBox = ({ trending, communities }: SearchBoxProps) => {
   const router = useRouter();
   const pathname = usePathname();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -59,7 +48,7 @@ const SearchBox = ({ trending, communities }: Props) => {
     queryFn: async () => {
       const response = await fetch(`/api/search/suggestions?q=${encodeURIComponent(debouncedQuery)}`);
       if (!response.ok) throw new Error('Unable to load search suggestions.');
-      return response.json() as Promise<SearchResponse>;
+      return response.json() as Promise<SearchSuggestionsResponse>;
     },
     enabled: Boolean(debouncedQuery),
     staleTime: 30_000,
@@ -330,7 +319,7 @@ const SearchBox = ({ trending, communities }: Props) => {
   );
 };
 
-const SearchSection = ({ title, children }: { title: string; children: ReactNode }) => (
+const SearchSection = ({ title, children }: SearchSectionProps) => (
   <section className='py-1'>
     <h2 className='px-5 py-2 text-xs font-semibold text-muted-foreground'>{title}</h2>
     {children}

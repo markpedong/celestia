@@ -1,10 +1,9 @@
 'use client';
 
-import { User } from '@/lib/types';
-import { EnrichedCommentNode } from '@/lib/comment-tree';
+import type { CommentSubmitResult, CommentThreadProps, EnrichedCommentNode, PendingCommentInput } from '@/lib/types';
 import { CommentNode } from './comment-node';
 import { createCommentAction } from '@/lib/actions/comments';
-import { CommentSubmissionContext, createPendingComment, type PendingCommentInput } from './comment-submission-context';
+import { CommentSubmissionContext, createPendingComment } from './comment-submission-context';
 import { useOptimistic, useState, useTransition } from 'react';
 
 const CommentThread = ({
@@ -12,12 +11,7 @@ const CommentThread = ({
   postAuthorId,
   sessionUser,
   children,
-}: {
-  tree: EnrichedCommentNode[];
-  postAuthorId: string;
-  sessionUser: User | null;
-  children: React.ReactNode;
-}) => {
+}: CommentThreadProps) => {
   const [pending, startTransition] = useTransition();
   const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
   const [optimisticTree, addOptimisticComment] = useOptimistic(
@@ -25,7 +19,7 @@ const CommentThread = ({
     (currentTree, pendingComment: EnrichedCommentNode) => appendComment(currentTree, pendingComment),
   );
 
-  const submitComment = (formData: FormData, pendingComment: PendingCommentInput) => new Promise<{ error?: string } | null>((resolve) => {
+  const submitComment = (formData: FormData, pendingComment: PendingCommentInput) => new Promise<CommentSubmitResult>((resolve) => {
     startTransition(async () => {
       addOptimisticComment(createPendingComment(pendingComment));
       const result = await createCommentAction(null, formData);

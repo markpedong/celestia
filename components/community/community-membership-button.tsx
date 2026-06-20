@@ -2,19 +2,13 @@
 
 import { setCommunityMembershipAction } from '@/lib/actions/communities';
 import { Button } from '@/components/ui/button';
+import type { CommunityMembershipButtonProps } from '@/lib/types';
 import { Check, LoaderCircle, Plus, UserMinus } from 'lucide-react';
 import Link from 'next/link';
 import { useOptimistic, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 
-type Props = {
-  slug: string;
-  isMember: boolean;
-  isSignedIn: boolean;
-  isOwner?: boolean;
-};
-
-export function CommunityMembershipButton({ slug, isMember, isSignedIn, isOwner = false }: Props) {
+export function CommunityMembershipButton({ slug, isMember, isSignedIn, isOwner = false }: CommunityMembershipButtonProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [optimisticMember, setOptimisticMember] = useOptimistic(isMember, (_current, next: boolean) => next);

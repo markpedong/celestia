@@ -6,11 +6,11 @@ import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
 import { Send } from 'lucide-react';
-import type { Community } from '@/lib/types';
+import type { SubmitPostFormProps } from '@/lib/types';
 import Link from 'next/link';
 import { ImageUploadField } from './image-upload-field';
 
-export function SubmitPostForm({ communities, defaultCommunitySlug }: { communities: Community[]; defaultCommunitySlug?: string }) {
+export function SubmitPostForm({ communities, defaultCommunitySlug }: SubmitPostFormProps) {
   const [state, action, pending] = useActionState(createPostAction, null);
   return (
     <form action={action} className='celestia-card space-y-4 p-4 md:p-5'>

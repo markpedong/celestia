@@ -1,9 +1,8 @@
 import { formatCount } from '@/lib/format';
-import { Tag } from '@/lib/types';
+import type { LeftTagsProps } from '@/lib/types';
 import Link from 'next/link';
-type Props = { tags: { tag: Tag; count: number }[]; emptyMessage?: string };
 
-const LeftTags = ({ tags, emptyMessage }: Props) => {
+const LeftTags = ({ tags, emptyMessage }: LeftTagsProps) => {
   const sorted = [...tags].sort((a, b) => b.count - a.count).slice(0, 8);
 
   return (

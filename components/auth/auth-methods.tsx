@@ -3,18 +3,15 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
+import type { AuthMethodsProps } from '@/lib/types';
 import { Apple, Globe, KeyRound, Mail } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import type { Provider } from '@supabase/supabase-js';
 
-type Props = {
-  mode: 'sign-in' | 'sign-up';
-};
-
 const supabase = createSupabaseBrowserClient();
 
-const AuthMethods = ({ mode }: Props) => {
+const AuthMethods = ({ mode }: AuthMethodsProps) => {
   const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');

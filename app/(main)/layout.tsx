@@ -4,13 +4,10 @@ import Navbar from '@/components/layout/navbar';
 import { getSessionUser } from '@/lib/auth';
 import { listJoinedCommunities, tagsPostCounts } from '@/lib/db/queries';
 import { getTrendingToday } from '@/lib/trending';
+import type { MainLayoutProps } from '@/lib/types';
 import { FC } from 'react';
 
-type Props = {
-  children: React.ReactNode;
-};
-
-const MainLayout: FC<Props> = async ({ children }) => {
+const MainLayout: FC<MainLayoutProps> = async ({ children }) => {
   const user = await getSessionUser();
   const [tags, joinedCommunities] = await Promise.all([
     tagsPostCounts(),

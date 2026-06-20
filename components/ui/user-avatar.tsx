@@ -1,14 +1,8 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User } from '@/lib/types';
+import type { UserAvatarProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
-type Props = {
-  user: User;
-  size?: 'sm' | 'default' | 'lg';
-  className?: string;
-};
-
-export function UserAvatar({ user, size = 'default', className }: Props) {
+export function UserAvatar({ user, size = 'default', className }: UserAvatarProps) {
   const label = user.displayName ?? user.username;
 
   return (

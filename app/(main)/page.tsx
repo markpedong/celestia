@@ -5,15 +5,11 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { getSessionUser } from '@/lib/auth';
 import { batchAuthorsForIds, listPostSorted, listTags, tagsPostCounts } from '@/lib/db/queries';
 import { getTrendingToday } from '@/lib/trending';
-import { FeedSort } from '@/lib/types';
+import type { FeedSort, HomePageProps } from '@/lib/types';
 import { FileQuestion } from 'lucide-react';
 import { FC } from 'react';
 
-type Props = {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-};
-
-const Home: FC<Props> = async ({ searchParams }) => {
+const Home: FC<HomePageProps> = async ({ searchParams }) => {
   const [sessionUser, query] = await Promise.all([getSessionUser(), searchParams]);
 
   const rawSort = Array.isArray(query.sort) ? query.sort[0] : query.sort;

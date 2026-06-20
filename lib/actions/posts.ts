@@ -2,14 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { getCurrentUserID } from "../auth";
-import { Post } from "../types";
+import type { Post, PostFormState, VoteActionValue } from "../types";
 import { PostModel } from "../generated/prisma/models";
 import { redirect } from "next/navigation";
 import { uploadImage } from "../media";
 import { prisma } from '../prisma';
 import { toggleVote } from '../db/votes';
 
-export const votePostAction = async (postId: string, value: -1 | 1) => {
+export const votePostAction = async (postId: string, value: VoteActionValue) => {
   const userId = await getCurrentUserID();
   if (!userId) {
     return { error: "Sign in to vote." };
@@ -23,12 +23,10 @@ export const votePostAction = async (postId: string, value: -1 | 1) => {
 export const votePost = async (
   userId: string,
   postId: string,
-  value: -1 | 1,
+  value: VoteActionValue,
 ): Promise<void> => {
   await toggleVote(userId, 'post', postId, value);
 }
-
-export type PostFormState = { error?: string } | null;
 
 export const createPostAction = async (
   _prev: PostFormState,
