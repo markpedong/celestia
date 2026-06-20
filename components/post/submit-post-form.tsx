@@ -7,6 +7,7 @@ import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
 import { Image as ImageIcon, Link2, Send } from 'lucide-react';
 import type { Community } from '@/lib/types';
+import Link from 'next/link';
 
 export function SubmitPostForm({ communities, defaultCommunitySlug }: { communities: Community[]; defaultCommunitySlug?: string }) {
   const [state, action, pending] = useActionState(createPostAction, null);
@@ -53,7 +54,7 @@ export function SubmitPostForm({ communities, defaultCommunitySlug }: { communit
           ))}
         </select>
         <p className='text-xs text-muted-foreground'>You can post in communities you have joined. Communities are no longer created from post text.</p>
-        {communities.length === 0 ? <p className='text-xs text-primary'>Join a community first, then come back here to post.</p> : null}
+        {communities.length === 0 ? <p className='text-xs text-primary'>Join a community first, or <Link href='/communities/new' className='font-semibold underline underline-offset-2'>create one</Link>.</p> : null}
       </div>
 
       <div className='grid gap-3 sm:grid-cols-2'>

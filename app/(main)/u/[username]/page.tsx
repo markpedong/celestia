@@ -94,18 +94,15 @@ export default async function UserPage({ params }: Props) {
             ) : null}
             {isSelf ? <ProfileMediaEditor field='cover' className='right-3 bottom-3 group' /> : null}
           </div>
-          <div className='px-5 pb-5'>
-            <div className='flex flex-wrap items-end justify-between gap-4'>
-              <div className='-mt-14 flex min-w-0 items-end gap-4'>
+          <div className='px-5 py-5'>
+            <div className='flex flex-wrap items-start justify-between gap-5'>
+              <div className='flex min-w-0 items-center gap-5'>
                 <div className='group relative shrink-0'>
-                  <UserAvatar user={author} size='lg' className='size-28 border-4 border-card shadow-lg' />
+                  <UserAvatar user={author} size='lg' className='size-32 border-4 border-card shadow-lg' />
                   {isSelf ? <ProfileMediaEditor field='avatar' className='inset-0' /> : null}
                 </div>
-                <div className='min-w-0 pb-1'>
-                  <p className='text-sm font-semibold text-muted-foreground'>u/{profile.username}</p>
-                  <h1 className='truncate text-2xl font-bold tracking-tight text-foreground'>
-                    {isSelf ? 'Your profile' : profile.username}
-                  </h1>
+                <div className='min-w-0'>
+                  <h1 className='truncate text-2xl font-bold tracking-tight text-foreground'>u/{profile.username}</h1>
                 </div>
               </div>
               <div className='flex items-center gap-2'>

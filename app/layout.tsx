@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Geist_Mono, Inter } from 'next/font/google';
+import Script from 'next/script';
 import './globals.css';
 import './design.scss';
 
@@ -95,7 +96,9 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: displayModeScript }} />
+        <Script id='display-mode' strategy='beforeInteractive'>
+          {displayModeScript}
+        </Script>
       </head>
       <body className='celestia-app-shell min-h-full flex flex-col bg-background text-foreground'>
         {children}

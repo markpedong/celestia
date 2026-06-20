@@ -85,7 +85,7 @@ export default async function CommunityPage({ params, searchParams }: Props) {
               </div>
             </div>
             <p className='mt-4 max-w-2xl text-sm leading-6 text-muted-foreground'>
-              Browse community discussions, sort what is hot, and join to post or add this community to your list.
+              {community.description || 'Browse community discussions, sort what is hot, and join to post or add this community to your list.'}
             </p>
             <StatGrid className='mt-4 max-w-lg' stats={[
               { label: 'Posts', value: formatCount(stats.postCount) },

@@ -39,9 +39,12 @@ model Post {
 }
 
 model Tag {
-  slug      String @id
-  label     String
-  hashColor String @map("hash_color")
+  slug        String   @id
+  label       String
+  description String   @default("")
+  hashColor   String   @map("hash_color")
+  createdById String?  @map("created_by_id")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   postTags     PostTag[]
   memberships CommunityMembership[]

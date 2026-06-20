@@ -37,9 +37,10 @@ export default async function SubmitPage({ searchParams }: { searchParams: Promi
                 Signed in as {user.displayName ?? user.username}. Choose one of your communities, then add a title and body.
               </p>
             </div>
-            <Link href='/' className='text-sm font-medium text-muted-foreground hover:text-foreground'>
-              Discard
-            </Link>
+            <div className='flex items-center gap-4 text-sm font-medium'>
+              <Link href='/communities/new' className='text-primary hover:text-primary-hover'>Create community</Link>
+              <Link href='/' className='text-muted-foreground hover:text-foreground'>Discard</Link>
+            </div>
           </div>
           <SubmitPostForm communities={communities} defaultCommunitySlug={selectedCommunity} />
         </div>

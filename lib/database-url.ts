@@ -5,6 +5,18 @@ export const normalizeDatabaseUrl = (databaseUrl: string | undefined): string | 
 
   try {
     const url = new URL(databaseUrl);
+    const directSupabaseHost = /^db\.([a-z0-9]+)\.supabase\.co$/i.exec(url.hostname);
+    const poolerHost = process.env.SUPABASE_POOLER_HOST;
+
+    if (directSupabaseHost && poolerHost) {
+      const projectRef = directSupabaseHost[1];
+      url.hostname = poolerHost;
+      url.port = process.env.SUPABASE_POOLER_PORT ?? '5432';
+      if (decodeURIComponent(url.username) === 'postgres') {
+        url.username = `postgres.${projectRef}`;
+      }
+    }
+
     const sslMode = url.searchParams.get("sslmode");
 
     if (sslMode && LEGACY_SSL_MODES.has(sslMode) && !url.searchParams.has("uselibpqcompat")) {

@@ -13,7 +13,11 @@ export type Tag = {
   hashColor: string;
 };
 
-export type Community = Tag;
+export type Community = Tag & {
+  description: string;
+  createdById?: string;
+  createdAt?: string;
+};
 
 export type Post = {
   id: string;

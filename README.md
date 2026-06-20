@@ -8,7 +8,8 @@ Celestia is a cosmic community forum for discovering signals, sharing posts, vot
 - Post search and topic filtering
 - Threaded comments for deeper discussions
 - Upvotes and downvotes for posts and comments
-- Authenticated posting with Neon Auth
+- Community creation, membership, and joined-community posting
+- Authenticated posting with Supabase Auth
 - Responsive dark and light visual theme
 
 ## Tech Stack
@@ -18,7 +19,7 @@ Celestia is a cosmic community forum for discovering signals, sharing posts, vot
 - TypeScript
 - Tailwind CSS 4 and Sass
 - Prisma 7
-- Neon Postgres and Neon Auth
+- Supabase Postgres and Supabase Auth
 
 ## Getting Started
 
@@ -28,12 +29,12 @@ Install dependencies:
 npm install
 ```
 
-Create a local `.env` file with the required connection values:
+Create a local `.env.local` file with the required connection values:
 
 ```bash
 DATABASE_URL="postgresql://..."
-NEON_AUTH_BASE_URL="https://..."
-NEON_AUTH_COOKIES_SECRET="..."
+NEXT_PUBLIC_SUPABASE_URL="https://<project-ref>.supabase.co"
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="..."
 NEXT_PUBLIC_SITE_URL="http://localhost:3000"
 ```
 
@@ -41,12 +42,6 @@ Push the Prisma schema and generate the client:
 
 ```bash
 npm run db:push
-```
-
-Seed the database with starter content:
-
-```bash
-npm run db:seed
 ```
 
 Start the development server:
@@ -64,7 +59,6 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 - `npm run start` serves the production build.
 - `npm run lint` runs ESLint.
 - `npm run db:push` applies the Prisma schema and generates the Prisma client.
-- `npm run db:seed` seeds starter content.
 
 ## Branding
 

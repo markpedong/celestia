@@ -169,9 +169,16 @@ export const listTags = cache(async (): Promise<Tag[]> => {
   }));
 });
 
-export const getTagBySlug = cache(async (slug: string): Promise<Tag | undefined> => {
+export const getTagBySlug = cache(async (slug: string): Promise<Community | undefined> => {
   const row = await prisma.tag.findUnique({ where: { slug: slug.toLowerCase() } });
-  return row ? { slug: row.slug, label: row.label, hashColor: row.hashColor } : undefined;
+  return row ? {
+    slug: row.slug,
+    label: row.label,
+    description: row.description,
+    hashColor: row.hashColor,
+    createdById: row.createdById ?? undefined,
+    createdAt: row.createdAt.toISOString(),
+  } : undefined;
 });
 
 export const getCommunityStats = async (slug: string): Promise<CommunityStats> => {
@@ -212,7 +219,10 @@ export const listJoinedCommunities = async (userId: string): Promise<Community[]
   return memberships.map(({ community }) => ({
     slug: community.slug,
     label: community.label,
+    description: community.description,
     hashColor: community.hashColor,
+    createdById: community.createdById ?? undefined,
+    createdAt: community.createdAt.toISOString(),
   }));
 };
 
