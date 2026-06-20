@@ -121,7 +121,7 @@ const AccountMenu = ({ initialUser }: AccountMenuProps) => {
       <DropdownMenuTrigger asChild>
         <button
           type='button'
-          className='inline-flex size-8 shrink-0 items-center justify-center rounded-full outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
+          className='inline-flex size-8 shrink-0 items-center justify-center rounded-full outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-02 cursor-pointer'
         >
           <Avatar>
             <AvatarImage src={avatarUrl} alt={name} />
