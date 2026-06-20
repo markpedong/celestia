@@ -4,7 +4,7 @@ export const getAuthErrorMessage = (message: string, intent: AuthIntent): string
   const normalized = message.toLowerCase();
 
   if (normalized.includes('user already registered') || normalized.includes('already been registered')) {
-    return 'An account already exists for this email in Supabase Auth. A database reset does not remove authentication accounts—sign in instead.';
+    return 'An account already exists for this email in Supabase Auth.';
   }
   if (normalized.includes('invalid login credentials')) {
     return 'That email or password is incorrect. Check your details and try again.';
