@@ -14,16 +14,14 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 const CommunityPage = async ({ params, searchParams }: CommunityPageProps) => {
-  const { slug: rawSlug } = await params;
-  const query = await searchParams;
+  const [{ slug: rawSlug }, query] = await Promise.all([params, searchParams]);
   const slug = decodeURIComponent(rawSlug).toLowerCase();
-  const community = await getTagBySlug(slug);
+  const [community, sessionUser] = await Promise.all([getTagBySlug(slug), getSessionUser()]);
 
   if (!community) {
     notFound();
   }
 
-  const sessionUser = await getSessionUser();
   const isOwner = sessionUser?.id === community.createdById;
   const rawSort = (Array.isArray(query.sort) ? query.sort[0] : query.sort) as FeedSort | undefined;
   const sort: FeedSort = rawSort === 'new' || rawSort === 'top' ? rawSort : 'hot';

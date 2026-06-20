@@ -6,10 +6,12 @@ import { notFound, redirect } from 'next/navigation';
 
 const CommunitySettingsPage = async ({ params }: CommunitySettingsPageProps) => {
   const { slug: rawSlug } = await params;
-  const community = await getTagBySlug(decodeURIComponent(rawSlug).toLowerCase());
+  const [community, user] = await Promise.all([
+    getTagBySlug(decodeURIComponent(rawSlug).toLowerCase()),
+    getSessionUser(),
+  ]);
   if (!community) notFound();
 
-  const user = await getSessionUser();
   if (!user) redirect('/auth/sign-in');
   if (community.createdById !== user.id) redirect(`/r/${community.slug}`);
 

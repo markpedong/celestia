@@ -451,11 +451,12 @@ export const getCommentTree = async (postID: string, sessionID?: string): Promis
   if (flat.length === 0) return []
 
   const authorIDs = [...new Set(flat.map(c => c.authorId))]
-  const authorMap = await batchAuthorsForIds(authorIDs)
-
   const commentIDs = flat.map(c => c.id)
-  const scoreMap = await batchCommentScores(commentIDs);
-  const voteMap = sessionID ? await batchUserVotesForComments(sessionID, commentIDs) : new Map<string, -1 | 0 | 1>();
+  const [authorMap, scoreMap, voteMap] = await Promise.all([
+    batchAuthorsForIds(authorIDs),
+    batchCommentScores(commentIDs),
+    sessionID ? batchUserVotesForComments(sessionID, commentIDs) : Promise.resolve(new Map<string, -1 | 0 | 1>()),
+  ]);
 
   const enriched = flat.map(c => {
     const author = authorMap.get(c.authorId)

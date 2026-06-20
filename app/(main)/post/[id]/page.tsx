@@ -22,17 +22,19 @@ const Page = async ({ params }: PostPageProps) => {
   const post = await getPostByID(id);
   if (!post) return notFound();
 
-  const author = await getAuthorByID(post.authorId);
-  const sessionUser = await getSessionUser();
+  const [author, sessionUser, score, tags] = await Promise.all([
+    getAuthorByID(post.authorId),
+    getSessionUser(),
+    getPostScore(post.id),
+    listTags(),
+  ]);
   if (!author) return notFound();
 
-  const score = await getPostScore(post.id);
-  const userVote = await getUserVote(sessionUser?.id, 'post', post.id);
-
-  const tags = await listTags();
+  const [userVote, commentTree] = await Promise.all([
+    getUserVote(sessionUser?.id, 'post', post.id),
+    getCommentTree(post.id, sessionUser?.id),
+  ]);
   const tagsBySlug = new Map(tags.map(tag => [tag.slug, tag]));
-
-  const commentTree = await getCommentTree(post.id, sessionUser?.id);
 
   return (
     <ContentWithSidebar

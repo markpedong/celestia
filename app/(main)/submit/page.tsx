@@ -7,12 +7,11 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 const SubmitPage = async ({ searchParams }: SubmitPageProps) => {
-  const user = await getSessionUser();
+  const [user, query] = await Promise.all([getSessionUser(), searchParams]);
   if (!user) {
     redirect('/auth/sign-in');
   }
 
-  const query = await searchParams;
   const selectedCommunity = Array.isArray(query.community) ? query.community[0] : query.community;
   const communities = await listJoinedCommunities(user.id);
 

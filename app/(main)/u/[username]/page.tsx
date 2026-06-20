@@ -33,7 +33,7 @@ const excerpt = (body: string) => {
 };
 
 const UserPage = async ({ params }: UserPageProps) => {
-  const { username: rawUsername } = await params;
+  const [{ username: rawUsername }, sessionUser] = await Promise.all([params, getSessionUser()]);
   const username = decodeURIComponent(rawUsername);
   const profile = await getUserByUsername(username);
 
@@ -41,16 +41,15 @@ const UserPage = async ({ params }: UserPageProps) => {
     notFound();
   }
 
-  const sessionUser = await getSessionUser();
   const isSelf = sessionUser?.id === profile.id;
-  const [posts, tags, stats, comments] = await Promise.all([
+  const [posts, tags, stats, comments, authorById] = await Promise.all([
     listPostsByAuthor(profile.id, 'new', sessionUser?.id),
     listTags(),
     getUserStats(profile.id),
     listCommentsByAuthor(profile.id),
+    batchAuthorsForIds([profile.id]),
   ]);
   const tagsMap = new Map(tags.map(tag => [tag.slug, tag]));
-  const authorById = await batchAuthorsForIds([profile.id]);
   const author = authorById.get(profile.id) ?? profile;
 
   return (
