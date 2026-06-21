@@ -3,42 +3,52 @@
 import type { FC } from 'react';
 import { voteCommentAction } from '@/lib/actions/comments';
 import { votePostAction } from '@/lib/actions/posts';
+import { showSignInToVoteToast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 import type { VoteActionValue, VoteButtonsProps, VoteValue } from '@/lib/types';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useOptimistic, useTransition } from 'react';
+import { toast } from 'sonner';
 
 const formatScore = (value: number): string => {
   if (Math.abs(value) >= 1000) return `${(value / 1000).toFixed(1)}k`;
   return String(value);
 };
 
-const VoteButtons: FC<VoteButtonsProps> = ({ target, targetID, score, userVote }: VoteButtonsProps) => {
+const VoteButtons: FC<VoteButtonsProps> = ({ target, targetID, score, userVote, isSignedIn }: VoteButtonsProps) => {
   const [pending, startTransition] = useTransition();
   const router = useRouter();
   const isPost = target === 'post';
-  const [optimisticVote, setOptimisticVote] = useOptimistic(
-    { score, userVote },
-    (current, value: VoteActionValue) => {
-      const nextVote: VoteValue = current.userVote === value ? 0 : value;
-      return {
-        userVote: nextVote,
-        score: current.score + nextVote - current.userVote,
-      };
-    },
-  );
+  const [optimisticVote, setOptimisticVote] = useOptimistic({ score, userVote }, (current, value: VoteActionValue) => {
+    const nextVote: VoteValue = current.userVote === value ? 0 : value;
+    return {
+      userVote: nextVote,
+      score: current.score + nextVote - current.userVote,
+    };
+  });
 
   const vote = (value: VoteActionValue) => {
+    if (!isSignedIn) {
+      showSignInToVoteToast();
+      return;
+    }
+
     startTransition(async () => {
-      setOptimisticVote(value);
-      const result = isPost
-        ? await votePostAction(targetID, value)
-        : await voteCommentAction(targetID, value);
+      const result = isPost ? await votePostAction(targetID, value) : await voteCommentAction(targetID, value);
 
       if (result?.error) {
+        if (result.error.toLowerCase().includes('sign in')) {
+          showSignInToVoteToast();
+        } else {
+          toast.error(result.error, { position: 'bottom-right' });
+        }
         router.refresh();
+        return;
       }
+
+      setOptimisticVote(value);
+      router.refresh();
     });
   };
 
@@ -47,7 +57,12 @@ const VoteButtons: FC<VoteButtonsProps> = ({ target, targetID, score, userVote }
   const scoreClass = isPost ? 'min-w-9 text-xs' : 'min-w-8 text-[11px]';
 
   return (
-    <div className={cn('inline-flex items-center overflow-hidden text-sm', isPost ? 'flex-col gap-0.5 rounded-none border-0 bg-transparent shadow-none' : 'celestia-surface-control')}>
+    <div
+      className={cn(
+        'inline-flex items-center overflow-hidden text-sm',
+        isPost ? 'flex-col gap-0.5 rounded-none border-0 bg-transparent shadow-none' : 'celestia-surface-control'
+      )}
+    >
       <button
         onClick={() => vote(1)}
         disabled={pending}
@@ -60,7 +75,14 @@ const VoteButtons: FC<VoteButtonsProps> = ({ target, targetID, score, userVote }
       >
         <ChevronUp className={iconClass} />
       </button>
-      <span className={cn('text-center font-mono font-medium tabular-nums', scoreClass, optimisticVote.userVote === 1 && 'text-upvote', optimisticVote.userVote === -1 && 'text-downvote')}>
+      <span
+        className={cn(
+          'text-center font-mono font-medium tabular-nums',
+          scoreClass,
+          optimisticVote.userVote === 1 && 'text-upvote',
+          optimisticVote.userVote === -1 && 'text-downvote'
+        )}
+      >
         {formatScore(optimisticVote.score)}
       </span>
       <button

@@ -129,7 +129,7 @@ const UserPage = async ({ params }: UserPageProps) => {
         overview={
           <div className='space-y-3'>
             {posts.length > 0 ? (
-              <PostList rows={posts} authorsById={new Map([[profile.id, author]])} authorStatsById={new Map([[profile.id, stats]])} tagsBySlug={tagsMap} />
+              <PostList rows={posts} authorsById={new Map([[profile.id, author]])} authorStatsById={new Map([[profile.id, stats]])} tagsBySlug={tagsMap} isSignedIn={Boolean(sessionUser)} />
             ) : null}
             {comments.length > 0 ? <CommentsList comments={comments} title='Recent comments' /> : null}
             {posts.length === 0 && comments.length === 0 ? (
@@ -144,7 +144,7 @@ const UserPage = async ({ params }: UserPageProps) => {
         posts={
           posts.length > 0 ? (
             <div className='space-y-3'>
-              <PostList rows={posts} authorsById={new Map([[profile.id, author]])} authorStatsById={new Map([[profile.id, stats]])} tagsBySlug={tagsMap} />
+              <PostList rows={posts} authorsById={new Map([[profile.id, author]])} authorStatsById={new Map([[profile.id, stats]])} tagsBySlug={tagsMap} isSignedIn={Boolean(sessionUser)} />
             </div>
           ) : (
             <EmptyState

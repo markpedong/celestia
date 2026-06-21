@@ -52,7 +52,7 @@ const Home = async ({ searchParams }: HomePageProps) => {
         )}
 
         <div className='w-full space-y-3'>
-          <PostList rows={rows} authorsById={authorById} authorStatsById={authorStatsById} tagsBySlug={tagsMap} />
+          <PostList rows={rows} authorsById={authorById} authorStatsById={authorStatsById} tagsBySlug={tagsMap} isSignedIn={Boolean(sessionUser)} />
 
           {isEmpty && (
             <EmptyState

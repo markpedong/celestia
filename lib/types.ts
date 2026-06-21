@@ -184,6 +184,7 @@ export type PostCardProps = {
   tagsBySlug: Map<string, Tag>;
   score: number;
   userVote: VoteValue;
+  isSignedIn: boolean;
 };
 
 export type PostListProps = {
@@ -191,6 +192,7 @@ export type PostListProps = {
   authorsById: Map<string, User>;
   authorStatsById: Map<string, UserStats>;
   tagsBySlug: Map<string, Tag>;
+  isSignedIn: boolean;
 };
 
 export type PostMetaProps = WithClassName<{
@@ -206,6 +208,7 @@ export type VoteButtonsProps = {
   targetID: string;
   score: number;
   userVote: VoteValue;
+  isSignedIn: boolean;
 };
 
 export type ContentWithSidebarProps = WithChildren<WithClassName<{

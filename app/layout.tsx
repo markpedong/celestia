@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Geist_Mono, Inter } from 'next/font/google';
 import Script from 'next/script';
 import type { RootLayoutProps } from '@/lib/types';
+import { Toaster } from '@/components/ui/sonner';
 import './globals.css';
 import './design.scss';
 
@@ -101,6 +102,7 @@ const RootLayout = ({
       </head>
       <body className='celestia-app-shell min-h-full flex flex-col bg-background text-foreground'>
         {children}
+        <Toaster />
       </body>
     </html>
   );

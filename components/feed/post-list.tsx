@@ -2,7 +2,7 @@ import type { FC } from 'react';
 import type { PostListProps } from '@/lib/types';
 import PostCard from './post-card';
 
-export const PostList: FC<PostListProps> = ({ rows, authorsById, authorStatsById, tagsBySlug }: PostListProps) => {
+export const PostList: FC<PostListProps> = ({ rows, authorsById, authorStatsById, tagsBySlug, isSignedIn }: PostListProps) => {
   return (
     <>
       {rows.map(row => {
@@ -18,6 +18,7 @@ export const PostList: FC<PostListProps> = ({ rows, authorsById, authorStatsById
             tagsBySlug={tagsBySlug}
             score={row.score}
             userVote={row.userVote}
+            isSignedIn={isSignedIn}
           />
         );
       })}

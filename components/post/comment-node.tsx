@@ -39,7 +39,7 @@ export const CommentNode: FC<CommentNodeProps> = ({
           </div>
           <p className='whitespace-pre-wrap text-sm leading-7 text-card-foreground'>{node.body}</p>
           <div className='mt-3 flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground'>
-            {node.isPending ? <span className='px-2 py-1 text-muted-foreground'>Sending…</span> : <VoteButtons target='comment' targetID={node.id} score={node.score} userVote={node.userVote} />}
+            {node.isPending ? <span className='px-2 py-1 text-muted-foreground'>Sending…</span> : <VoteButtons target='comment' targetID={node.id} score={node.score} userVote={node.userVote} isSignedIn={Boolean(sessionUser)} />}
             {sessionUser && !node.isPending ? (
               <button
                 type='button'

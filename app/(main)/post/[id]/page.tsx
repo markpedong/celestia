@@ -78,7 +78,7 @@ const Page = async ({ params }: PostPageProps) => {
       <article className='celestia-card overflow-hidden'>
         <div className='flex'>
           <div className='celestia-vote-rail flex min-w-14.5 flex-col items-center justify-start border-r border-border/70 px-3 py-6'>
-            <VoteButtons target='post' targetID={post.id} score={score} userVote={userVote} />
+            <VoteButtons target='post' targetID={post.id} score={score} userVote={userVote} isSignedIn={Boolean(sessionUser)} />
           </div>
           <div className='min-w-0 flex-1 p-5 md:p-6'>
             <PostMeta author={author} post={post} tagsBySlug={tagsBySlug} className='mb-4' />

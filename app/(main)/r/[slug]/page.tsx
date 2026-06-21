@@ -103,7 +103,7 @@ const CommunityPage = async ({ params, searchParams }: CommunityPageProps) => {
           </div>
         ) : null}
         <div className='space-y-3'>
-          <PostList rows={rows} authorsById={authorById} authorStatsById={authorStatsById} tagsBySlug={tagsMap} />
+          <PostList rows={rows} authorsById={authorById} authorStatsById={authorStatsById} tagsBySlug={tagsMap} isSignedIn={Boolean(sessionUser)} />
           {rows.length === 0 ? (
             <EmptyState icon={Hash} title={`No posts in r/${community.slug} yet`} description='Start the first thread for this community.' />
           ) : null}
