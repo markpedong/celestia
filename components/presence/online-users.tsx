@@ -10,8 +10,26 @@ type OnlineUser = Pick<User, 'id' | 'username' | 'displayName'>;
 const OnlineUsersContext = createContext<OnlineUser[]>([]);
 const supabase = createSupabaseBrowserClient();
 
-export const OnlineUsersProvider: FC<{ user: User | null; children: ReactNode }> = ({ user, children }: { user: User | null; children: ReactNode }) => {
+export const OnlineUsersProvider: FC<{ children: ReactNode }> = ({ children }: { children: ReactNode }) => {
   const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
+  const [user, setUser] = useState<OnlineUser | null>(null);
+
+  useEffect(() => {
+    const loadUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      if (!data.user) return setUser(null);
+
+      const displayName =
+        (typeof data.user.user_metadata.full_name === 'string' && data.user.user_metadata.full_name) ||
+        (typeof data.user.user_metadata.name === 'string' && data.user.user_metadata.name) ||
+        undefined;
+      setUser({ id: data.user.id, username: data.user.email?.split('@')[0] || 'user', displayName });
+    };
+
+    void loadUser();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => void loadUser());
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     const channel = supabase.channel('celestia:online', {

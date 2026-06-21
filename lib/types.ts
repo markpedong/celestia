@@ -164,6 +164,7 @@ export type CommunityMembershipButtonProps = {
   isMember: boolean;
   isSignedIn: boolean;
   isOwner?: boolean;
+  ownerId?: string;
 };
 
 export type CommunitySettingsFormProps = {
@@ -223,13 +224,12 @@ export type LeftTagsProps = {
 };
 
 export type MobileBottomNavProps = {
-  isSignedIn: boolean;
+  isSignedIn?: boolean;
 };
 
 export type NavbarProps = {
   trending: TrendingItem[];
   communities: SearchTagSuggestion[];
-  user: User | null;
 };
 
 export type SearchSuggestionsResponse = {

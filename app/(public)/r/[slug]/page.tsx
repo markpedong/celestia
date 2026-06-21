@@ -5,34 +5,33 @@ import { Button } from '@/components/ui/button';
 import { CommunityMembershipButton } from '@/components/community/community-membership-button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { StatGrid } from '@/components/ui/stat-grid';
-import { getSessionUser } from '@/lib/auth';
-import { batchAuthorsForIds, batchUserStatsForIds, getCommunityMembership, getCommunityStats, getTagBySlug, listPostSorted, listTags } from '@/lib/db/queries';
+import { batchAuthorsForIds, batchUserStatsForIds, getCommunityStats, getTagBySlug, listPostSorted, listTags } from '@/lib/db/queries';
 import { formatCount } from '@/lib/format';
 import type { CommunityPageProps, FeedSort } from '@/lib/types';
-import { CakeSlice, Hash, Plus, Settings, ShieldCheck, Users } from 'lucide-react';
+import { CakeSlice, Hash, Plus, Users } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-const CommunityPage = async ({ params, searchParams }: CommunityPageProps) => {
-  const [{ slug: rawSlug }, query] = await Promise.all([params, searchParams]);
+export const revalidate = 300;
+export const dynamicParams = true;
+
+const CommunityPage = async ({ params }: CommunityPageProps) => {
+  const { slug: rawSlug } = await params;
   const slug = decodeURIComponent(rawSlug).toLowerCase();
-  const [community, sessionUser] = await Promise.all([getTagBySlug(slug), getSessionUser()]);
+  const community = await getTagBySlug(slug);
 
   if (!community) {
     notFound();
   }
 
-  const isOwner = sessionUser?.id === community.createdById;
-  const rawSort = (Array.isArray(query.sort) ? query.sort[0] : query.sort) as FeedSort | undefined;
-  const sort: FeedSort = rawSort === 'new' || rawSort === 'top' ? rawSort : 'hot';
-  const searchQuery = Array.isArray(query.q) ? query.q[0] ?? '' : query.q ?? '';
-  const cleanedSearchQuery = searchQuery.trim();
+  const sort: FeedSort = 'hot';
+  const cleanedSearchQuery = '';
 
   const [rows, tags, stats, isMember] = await Promise.all([
-    listPostSorted(sort, community.slug, sessionUser?.id, cleanedSearchQuery),
+    listPostSorted(sort, community.slug, undefined, cleanedSearchQuery),
     listTags(),
     getCommunityStats(community.slug),
-    getCommunityMembership(sessionUser?.id, community.slug),
+    Promise.resolve(false),
   ]);
   const tagsMap = new Map(tags.map(tag => [tag.slug, tag]));
   const authorIds = [...new Set(rows.map(row => row.post.authorId))];
@@ -70,24 +69,18 @@ const CommunityPage = async ({ params, searchParams }: CommunityPageProps) => {
                 </div>
               </div>
               <div className='flex items-center gap-2'>
-                <CommunityMembershipButton slug={community.slug} isMember={isMember} isSignedIn={Boolean(sessionUser)} isOwner={isOwner} />
-                {isMember ? <Button asChild size='sm' className='celestia-primary-action rounded-full'>
+                <CommunityMembershipButton slug={community.slug} isMember={isMember} isSignedIn={false} ownerId={community.createdById} />
+                <Button asChild size='sm' className='celestia-primary-action rounded-full'>
                   <Link href={`/submit?community=${encodeURIComponent(community.slug)}`}>
                     <Plus className='size-3.5' />
                     Create Post
                   </Link>
-                </Button> : null}
-                {isOwner ? <Button asChild size='sm' variant='outline' className='rounded-full'>
-                  <Link href={`/r/${encodeURIComponent(community.slug)}/settings`}>
-                    <Settings className='size-3.5' /> Manage
-                  </Link>
-                </Button> : null}
+                </Button>
               </div>
             </div>
             <p className='mt-4 max-w-2xl text-sm leading-6 text-muted-foreground'>
               {community.description || 'Browse community discussions, sort what is hot, and join to post or add this community to your list.'}
             </p>
-            {isOwner ? <p className='mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-primary'><ShieldCheck className='size-3.5' /> You created and own this community.</p> : null}
             <StatGrid className='mt-4 max-w-lg' stats={[
               { label: 'Posts', value: formatCount(stats.postCount) },
               { label: 'Members', value: formatCount(stats.memberCount) },
@@ -103,7 +96,7 @@ const CommunityPage = async ({ params, searchParams }: CommunityPageProps) => {
           </div>
         ) : null}
         <div className='space-y-3'>
-          <PostList rows={rows} authorsById={authorById} authorStatsById={authorStatsById} tagsBySlug={tagsMap} isSignedIn={Boolean(sessionUser)} />
+          <PostList rows={rows} authorsById={authorById} authorStatsById={authorStatsById} tagsBySlug={tagsMap} isSignedIn={false} />
           {rows.length === 0 ? (
             <EmptyState icon={Hash} title={`No posts in r/${community.slug} yet`} description='Start the first thread for this community.' />
           ) : null}

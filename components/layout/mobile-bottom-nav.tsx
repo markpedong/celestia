@@ -6,8 +6,27 @@ import type { MobileBottomNavProps } from '@/lib/types';
 import { Compass, House, PlusCircle, Radio, UserRound } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
+import { createSupabaseBrowserClient } from '@/lib/supabase/client';
+import { useEffect, useState } from 'react';
 
-const MobileBottomNav: FC<MobileBottomNavProps> = ({ isSignedIn }: MobileBottomNavProps) => {
+const supabase = createSupabaseBrowserClient();
+
+const MobileBottomNav: FC<MobileBottomNavProps> = () => {
+  const [isSignedIn, setIsSignedIn] = useState(false);
+
+  useEffect(() => {
+    const loadSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      setIsSignedIn(Boolean(data.session));
+    };
+
+    void loadSession();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsSignedIn(Boolean(session));
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const sort = searchParams.get('sort');

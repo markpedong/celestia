@@ -1,10 +1,9 @@
 import { PostList } from '@/components/feed/post-list';
 import { ContentWithSidebar } from '@/components/layout/content-with-sidebar';
-import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { StatGrid } from '@/components/ui/stat-grid';
 import { ProfileActivityTabs } from '@/components/profile/profile-activity-tabs';
-import { getSessionUser } from '@/lib/auth';
+import { ClientProfileControls } from '@/components/auth/client-profile-controls';
 import {
     batchAuthorsForIds,
     getUserByUsername,
@@ -15,17 +14,16 @@ import {
     listUsernames,
 } from '@/lib/db/queries';
 import { formatCount, formatRelativeTime } from '@/lib/format';
-import { AtSign, CakeSlice, MessageSquare, Shield, Trophy } from 'lucide-react';
+import { AtSign, CakeSlice, MessageSquare, Trophy } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { UserAvatar } from '@/components/ui/user-avatar';
-import {
-    ProfileMediaEditButton,
-    ProfileMediaEditor,
-    ProfileMediaEditMode,
-} from '@/components/profile/profile-media-editor';
+import { ProfileMediaEditor, ProfileMediaEditMode } from '@/components/profile/profile-media-editor';
 import type { CommentsListProps, UserPageProps } from '@/lib/types';
+
+export const revalidate = 300;
+export const dynamicParams = true;
 
 const excerpt = (body: string) => {
   const clean = body.replace(/\s+/g, ' ').trim();
@@ -33,7 +31,7 @@ const excerpt = (body: string) => {
 };
 
 const UserPage = async ({ params }: UserPageProps) => {
-  const [{ username: rawUsername }, sessionUser] = await Promise.all([params, getSessionUser()]);
+  const { username: rawUsername } = await params;
   const username = decodeURIComponent(rawUsername);
   const profile = await getUserByUsername(username);
 
@@ -41,9 +39,8 @@ const UserPage = async ({ params }: UserPageProps) => {
     notFound();
   }
 
-  const isSelf = sessionUser?.id === profile.id;
   const [posts, tags, stats, comments, authorById] = await Promise.all([
-    listPostsByAuthor(profile.id, 'new', sessionUser?.id),
+    listPostsByAuthor(profile.id, 'new', undefined),
     listTags(),
     getUserStats(profile.id),
     listCommentsByAuthor(profile.id),
@@ -66,11 +63,6 @@ const UserPage = async ({ params }: UserPageProps) => {
                 <CakeSlice className='size-3 text-primary' /> Joined {formatRelativeTime(profile.createdAt)}
               </p>
             ) : null}
-            {isSelf ? (
-              <p className='flex items-center gap-2'>
-                <Shield className='size-3 text-primary' /> This is your public profile
-              </p>
-            ) : null}
           </div>
         </section>
       }
@@ -89,28 +81,21 @@ const UserPage = async ({ params }: UserPageProps) => {
                 loading='eager'
               />
             ) : null}
-            {isSelf ? <ProfileMediaEditor field='cover' className='right-3 bottom-3 group' /> : null}
+            <ProfileMediaEditor field='cover' className='right-3 bottom-3 group' />
           </div>
           <div className='px-5 py-5'>
             <div className='flex flex-wrap items-start justify-between gap-5'>
               <div className='flex min-w-0 items-center gap-5'>
                 <div className='group relative shrink-0'>
                   <UserAvatar user={author} size='lg' className='size-32 border-4 border-card shadow-lg' />
-                  {isSelf ? <ProfileMediaEditor field='avatar' className='inset-0' /> : null}
+                  <ProfileMediaEditor field='avatar' className='inset-0' />
                 </div>
                 <div className='min-w-0'>
                   <h1 className='truncate text-2xl font-bold tracking-tight text-foreground'>u/{profile.username}</h1>
                 </div>
               </div>
               <div className='flex items-center gap-2'>
-                {isSelf ? (
-                  <ProfileMediaEditButton />
-                ) : (
-                  <Button variant='outline' size='sm' className='rounded-full'>
-                    <AtSign className='size-3.5' />
-                    Follow
-                  </Button>
-                )}
+                <ClientProfileControls profileId={profile.id} />
               </div>
             </div>
             <StatGrid
@@ -129,7 +114,7 @@ const UserPage = async ({ params }: UserPageProps) => {
         overview={
           <div className='space-y-3'>
             {posts.length > 0 ? (
-              <PostList rows={posts} authorsById={new Map([[profile.id, author]])} authorStatsById={new Map([[profile.id, stats]])} tagsBySlug={tagsMap} isSignedIn={Boolean(sessionUser)} />
+              <PostList rows={posts} authorsById={new Map([[profile.id, author]])} authorStatsById={new Map([[profile.id, stats]])} tagsBySlug={tagsMap} isSignedIn={false} />
             ) : null}
             {comments.length > 0 ? <CommentsList comments={comments} title='Recent comments' /> : null}
             {posts.length === 0 && comments.length === 0 ? (
@@ -144,7 +129,7 @@ const UserPage = async ({ params }: UserPageProps) => {
         posts={
           posts.length > 0 ? (
             <div className='space-y-3'>
-              <PostList rows={posts} authorsById={new Map([[profile.id, author]])} authorStatsById={new Map([[profile.id, stats]])} tagsBySlug={tagsMap} isSignedIn={Boolean(sessionUser)} />
+              <PostList rows={posts} authorsById={new Map([[profile.id, author]])} authorStatsById={new Map([[profile.id, stats]])} tagsBySlug={tagsMap} isSignedIn={false} />
             </div>
           ) : (
             <EmptyState
