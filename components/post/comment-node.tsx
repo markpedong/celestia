@@ -29,7 +29,13 @@ export const CommentNode: FC<CommentNodeProps> = ({
       <div className='flex items-start gap-2'>
         <Avatar>
           <AvatarImage src={node.author.avatarUrl ?? ''} alt='@shadcn' className='grayscale' />
-          <AvatarFallback>{node.author.username.slice(0, 1).toUpperCase()}</AvatarFallback>
+          <AvatarFallback>
+            {node.author.username
+              .split(' ')
+              .map(word => word[0])
+              .join('')
+              .toUpperCase()}
+          </AvatarFallback>
         </Avatar>
         <div className='flex flex-col'>
           <div className='mb-3 mt-[0.4rem] flex flex-wrap items-center gap-2 text-xs text-muted-foreground'>
