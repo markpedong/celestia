@@ -14,9 +14,7 @@ type AuthorHoverCardProps = {
 };
 
 const formatJoinDate = (iso: string) => {
-  const date = new Date(iso);
-  const month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][date.getUTCMonth()];
-  return `${month} ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
+  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }).format(new Date(iso));
 };
 
 export const AuthorHoverCard: FC<AuthorHoverCardProps> = ({ author, authorStats }) => {

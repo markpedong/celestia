@@ -1,27 +1,10 @@
 import type { Metadata } from 'next';
 import { Geist_Mono, Inter } from 'next/font/google';
-import Script from 'next/script';
 import type { RootLayoutProps } from '@/lib/types';
 import { Toaster } from '@/components/ui/sonner';
+import { ThemeProvider } from '@/components/theme-provider';
 import './globals.css';
 import './design.scss';
-
-
-const displayModeScript = `
-(() => {
-  const storageKey = 'celestia-display-mode';
-  const root = document.documentElement;
-  const storedMode = window.localStorage.getItem(storageKey);
-  const displayMode = storedMode === 'dark' || storedMode === 'light' || storedMode === 'system' ? storedMode : 'system';
-  const resolvedMode = displayMode === 'system'
-    ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-    : displayMode;
-
-  root.classList.toggle('dark', resolvedMode === 'dark');
-  root.classList.toggle('light', resolvedMode === 'light');
-  root.style.colorScheme = resolvedMode;
-})();
-`;
 
 const inter = Inter({
   variable: '--font-inter',
@@ -92,17 +75,14 @@ const RootLayout = ({
   return (
     <html
       lang='en'
-      className={`dark ${inter.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <head>
-        <Script id='display-mode' strategy='beforeInteractive'>
-          {displayModeScript}
-        </Script>
-      </head>
       <body className='celestia-app-shell min-h-full flex flex-col bg-background text-foreground'>
-        {children}
-        <Toaster />
+        <ThemeProvider>
+          {children}
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );

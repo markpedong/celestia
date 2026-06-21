@@ -5,17 +5,13 @@ import { voteCommentAction } from '@/lib/actions/comments';
 import { votePostAction } from '@/lib/actions/posts';
 import { showSignInToVoteToast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
+import { formatCount } from '@/lib/format';
 import type { VoteActionValue, VoteButtonsProps, VoteValue } from '@/lib/types';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { useSession } from '@/hooks/useSession';
-
-const formatScore = (value: number): string => {
-  if (Math.abs(value) >= 1000) return `${(value / 1000).toFixed(1)}k`;
-  return String(value);
-};
 
 const VoteButtons: FC<VoteButtonsProps> = ({ target, targetID, score, userVote, isSignedIn = false }) => {
   const [pending, startTransition] = useTransition();
@@ -88,7 +84,7 @@ const VoteButtons: FC<VoteButtonsProps> = ({ target, targetID, score, userVote, 
           voteState.userVote === -1 && 'text-downvote'
         )}
       >
-        {formatScore(voteState.score)}
+        {formatCount(voteState.score)}
       </span>
       <button
         onClick={() => vote(-1)}

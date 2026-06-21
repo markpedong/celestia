@@ -3,6 +3,7 @@
 import type { FC } from 'react';
 import type { SearchBoxProps, SearchSectionProps, SearchSuggestionsResponse } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
 import { Clock, Hash, Search, TrendingUp, X, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -35,7 +36,6 @@ const SearchBox: FC<SearchBoxProps> = ({ trending, communities }) => {
   const router = useRouter();
   const pathname = usePathname();
   const inputRef = useRef<HTMLInputElement>(null);
-  const rootRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>(getStoredRecentSearches);
@@ -91,14 +91,6 @@ const SearchBox: FC<SearchBoxProps> = ({ trending, communities }) => {
     };
   }, [trimmedQuery]);
 
-  useEffect(() => {
-    const handlePointerDown = (event: PointerEvent) => {
-      if (rootRef.current && !rootRef.current.contains(event.target as Node)) setIsOpen(false);
-    };
-    document.addEventListener('pointerdown', handlePointerDown);
-    return () => document.removeEventListener('pointerdown', handlePointerDown);
-  }, []);
-
   const updateRecentSearches = (updater: (current: string[]) => string[]) => {
     setRecentSearches(current => {
       const next = updater(current);
@@ -149,7 +141,9 @@ const SearchBox: FC<SearchBoxProps> = ({ trending, communities }) => {
   };
 
   return (
-    <div ref={rootRef} className='relative mx-auto min-w-0 max-w-2xl flex-1'>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverAnchor asChild>
+        <div className='mx-auto min-w-0 max-w-2xl flex-1'>
       <form
         onSubmit={handleSubmit}
         aria-busy={isNavigating}
@@ -189,7 +183,13 @@ const SearchBox: FC<SearchBoxProps> = ({ trending, communities }) => {
       </form>
 
       {isOpen ? (
-        <div className='absolute left-0 right-0 top-[calc(100%+6px)] z-50 overflow-hidden rounded-b-[24px] rounded-t-md border border-border/90 bg-popover py-3 text-sm text-popover-foreground shadow-2xl shadow-foreground/10'>
+        <PopoverContent
+          align='start'
+          side='bottom'
+          sideOffset={6}
+          onOpenAutoFocus={event => event.preventDefault()}
+          className='z-50 w-(--radix-popover-trigger-width) overflow-hidden rounded-b-[24px] rounded-t-md border border-border/90 bg-popover py-3 text-sm text-popover-foreground shadow-2xl shadow-foreground/10'
+        >
           {!trimmedQuery ? (
             <div className='max-h-[min(72vh,720px)] overflow-y-auto'>
               <SearchSection title='Recent'>
@@ -339,9 +339,11 @@ const SearchBox: FC<SearchBoxProps> = ({ trending, communities }) => {
               </SearchSection>
             </div>
           )}
-        </div>
+        </PopoverContent>
       ) : null}
-    </div>
+        </div>
+      </PopoverAnchor>
+    </Popover>
   );
 };
 

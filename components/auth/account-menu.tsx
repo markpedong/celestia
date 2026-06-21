@@ -15,13 +15,12 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { AccountMenuProps, DisplayMode } from '@/lib/types';
+import type { AccountMenuProps } from '@/lib/types';
 import { LaptopMinimal, LogOut, MonitorCog, Moon, Sun } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useTheme } from 'next-themes';
 import { useSession } from '@/hooks/useSession';
-
-const DISPLAY_MODE_STORAGE_KEY = 'celestia-display-mode';
 
 const displayModeOptions = [
   { value: 'system', label: 'System', icon: LaptopMinimal },
@@ -40,53 +39,11 @@ const getInitials = (name?: string | null, email?: string | null) => {
   return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
 };
 
-const getResolvedMode = (displayMode: DisplayMode) => {
-  if (displayMode !== 'system') {
-    return displayMode;
-  }
-
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-};
-
-const applyDisplayMode = (displayMode: DisplayMode) => {
-  const resolvedMode = getResolvedMode(displayMode);
-  const root = document.documentElement;
-
-  root.classList.toggle('dark', resolvedMode === 'dark');
-  root.classList.toggle('light', resolvedMode === 'light');
-  root.style.colorScheme = resolvedMode;
-};
-
 const AccountMenu: FC<AccountMenuProps> = ({ initialUser }) => {
   const { supabase, user } = useSession();
+  const { theme = 'system', setTheme } = useTheme();
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
-  const [displayMode, setDisplayMode] = useState<DisplayMode>(() => {
-    if (typeof window === 'undefined') {
-      return 'system';
-    }
-
-    const storedMode = window.localStorage.getItem(DISPLAY_MODE_STORAGE_KEY);
-
-    return storedMode === 'system' || storedMode === 'dark' || storedMode === 'light' ? storedMode : 'system';
-  });
-  useEffect(() => {
-    applyDisplayMode(displayMode);
-    window.localStorage.setItem(DISPLAY_MODE_STORAGE_KEY, displayMode);
-
-    if (displayMode !== 'system') {
-      return;
-    }
-
-    const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleColorSchemeChange = () => applyDisplayMode('system');
-
-    colorSchemeQuery.addEventListener('change', handleColorSchemeChange);
-
-    return () => {
-      colorSchemeQuery.removeEventListener('change', handleColorSchemeChange);
-    };
-  }, [displayMode]);
 
   const handleSignOut = async () => {
     if (isSigningOut) return;
@@ -139,7 +96,7 @@ const AccountMenu: FC<AccountMenuProps> = ({ initialUser }) => {
             Display mode
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent className='w-40'>
-            <DropdownMenuRadioGroup value={displayMode} onValueChange={value => setDisplayMode(value as DisplayMode)}>
+            <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
               {displayModeOptions.map(({ value, label, icon: Icon }) => (
                 <DropdownMenuRadioItem key={value} value={value} className='py-2 pl-2 pr-8'>
                   <Icon className='size-4' />
