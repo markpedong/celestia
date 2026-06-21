@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
-import { Avatar, AvatarFallback } from '../ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { FALLBACK_NAMES, MAX_VISIBLE } from '@/lib/constants';
 
 const supabase = createSupabaseBrowserClient();
 
@@ -27,6 +28,19 @@ export const ActiveNow = () => {
     };
   }, []);
 
+  const visibleUsers = useMemo(() => {
+    const count = Math.min(activeSessions, MAX_VISIBLE);
+
+    return Array.from({ length: count }, (_, index) => {
+      const name = FALLBACK_NAMES[index % FALLBACK_NAMES.length];
+
+      return {
+        name,
+        image: `https://api.dicebear.com/9.x/thumbs/svg?seed=celestia-${index}`,
+      };
+    });
+  }, [activeSessions]);
+
   return (
     <section className='celestia-card p-4'>
       <h3 className='mb-3 flex items-center gap-2 text-xs font-semibold text-foreground'>
@@ -34,23 +48,25 @@ export const ActiveNow = () => {
         Active Now
       </h3>
       <div className='flex items-center'>
-        {Array.from({ length: 5 }, (_, index) => {
-          return (
-            <Avatar>
-              <AvatarFallback
-                key={index}
-                className={`grid size-8 place-items-center rounded-full border-2 border-card text-xs font-semibold ${'bg-secondary/60 text-transparent'}`}
-                style={{ marginLeft: index ? -8 : 0, zIndex: 10 - index }}
-              >
-                ✦
+        <div className='flex items-center'>
+          {visibleUsers.map((user, index) => (
+            <Avatar
+              key={`${user.name}-${index}`}
+              className='size-8 border-2 border-card bg-secondary shadow-sm'
+              style={{ marginLeft: index ? -8 : 0, zIndex: 10 - index }}
+            >
+              <AvatarImage src={user.image} alt={user.name} />
+              <AvatarFallback className='bg-secondary text-[10px] font-semibold text-secondary-foreground'>
+                {user.name.slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
-          );
-        })}
-        <span className='ml-3 text-xs text-muted-foreground'>+{activeSessions} online</span>
-      </div>
+          ))}
+        </div>
 
-      {/* <p className='text-sm text-muted-foreground'>+{activeSessions} online</p> */}
+        <span className='ml-3 text-xs text-muted-foreground'>
+          {activeSessions > 0 ? `+${activeSessions} online` : 'No one online'}
+        </span>
+      </div>
     </section>
   );
 };

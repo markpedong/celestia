@@ -21,3 +21,7 @@ export const IMAGE_ACCEPT = IMAGE_MIME_TYPES.join(',');
 export const ACCEPTED_IMAGE_TYPES = new Set<string>(IMAGE_MIME_TYPES);
 export const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
 export const IMAGE_CACHE_CONTROL = '31536000';
+
+export const MAX_VISIBLE = 5;
+
+export const FALLBACK_NAMES = ['Mark', 'JP', 'Ana', 'CJ', 'Ken', 'MJ', 'Lara', 'D'];
