@@ -9,6 +9,7 @@ import type { AuthMode } from '@/lib/types';
 import { MAX_DISPLAY_NAME_LENGTH, MAX_EMAIL_LENGTH, MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '@/lib/constants';
 import { getAuthErrorMessage } from '@/lib/error-messages';
 import { useZodForm } from './use-zod-form';
+import { getAvatarUrl } from '@/lib/avatar';
 
 const supabase = createSupabaseBrowserClient();
 
@@ -44,20 +45,39 @@ export const useAuthForm = (mode: AuthMode) => {
 
     startTransition(async () => {
       const email = values.email.trim().toLowerCase();
+      const username = email.split('@')[0];
       const result = isSignUp
         ? await supabase.auth.signUp({
-            email,
-            password: values.password,
-            options: {
-              data: { full_name: values.name.trim() || email.split('@')[0] },
-              emailRedirectTo: `${window.location.origin}/auth/sign-in`,
-            },
-          })
+          email,
+          password: values.password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/sign-in`,
+          },
+        })
         : await supabase.auth.signInWithPassword({ email, password: values.password });
 
       if (result.error) {
         setError(getAuthErrorMessage(result.error.message, isSignUp ? 'sign-up' : 'sign-in'));
         return;
+      }
+
+      if (result.data.session && result.data.user) {
+        const authAvatarUrl =
+          result.data.user.user_metadata.avatar_url ??
+          getAvatarUrl(result.data.user.email ?? email);
+
+        const { error: profileError } = await supabase
+          .from('user_profiles')
+          .upsert({
+            id: result.data.user.id,
+            username,
+            avatar_url: authAvatarUrl,
+          });
+
+        if (profileError) {
+          setError(profileError.message);
+          return;
+        }
       }
 
       if (isSignUp && !result.data.session) {

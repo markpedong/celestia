@@ -28,7 +28,7 @@ export const CommentNode: FC<CommentNodeProps> = ({
     <li className='relative p-4 pt-0 pl-8'>
       <div className='flex items-start gap-2'>
         <Avatar>
-          <AvatarImage src={node.author.avatarUrl ?? ''} alt='@shadcn' className='grayscale' />
+          <AvatarImage src={node.author.avatarUrl ?? ''} alt='@shadcn' />
           <AvatarFallback>
             {node.author.username
               .split(' ')
