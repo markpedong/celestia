@@ -30,7 +30,7 @@ const VoteButtons: FC<VoteButtonsProps> = ({ target, targetID, score, userVote, 
 
     const previousVoteState = voteState;
     const nextVoteState = {
-      userVote: voteState.userVote === value ? 0 : value as VoteValue,
+      userVote: voteState.userVote === value ? 0 : (value as VoteValue),
       score: voteState.score + (voteState.userVote === value ? 0 : value) - voteState.userVote,
     };
 
@@ -52,15 +52,14 @@ const VoteButtons: FC<VoteButtonsProps> = ({ target, targetID, score, userVote, 
     });
   };
 
-  const iconClass = isPost ? 'size-4' : 'size-3.5';
   const buttonClass = isPost ? 'p-1.5' : 'p-1';
-  const scoreClass = isPost ? 'min-w-9 text-xs' : 'min-w-8 text-[11px]';
+  const scoreClass = isPost ? 'min-w-9 text-xs' : 'min-w-6';
 
   return (
     <div
       className={cn(
         'inline-flex items-center overflow-hidden text-sm',
-        isPost ? 'flex-col gap-0.5 rounded-none border-0 bg-transparent shadow-none' : 'celestia-surface-control'
+        isPost ? 'flex-col gap-0.5 rounded-none border-0 bg-transparent shadow-none' : ''
       )}
     >
       <button
@@ -74,7 +73,7 @@ const VoteButtons: FC<VoteButtonsProps> = ({ target, targetID, score, userVote, 
         aria-label={isPost ? 'Upvote' : 'Upvote comment'}
         aria-pressed={voteState.userVote === 1}
       >
-        <ChevronUp className={iconClass} />
+        <ChevronUp className="size-4" />
       </button>
       <span
         className={cn(
@@ -97,7 +96,7 @@ const VoteButtons: FC<VoteButtonsProps> = ({ target, targetID, score, userVote, 
         aria-label={isPost ? 'Downvote' : 'Downvote comment'}
         aria-pressed={voteState.userVote === -1}
       >
-        <ChevronDown className={iconClass} />
+        <ChevronDown className="size-4" />
       </button>
     </div>
   );
