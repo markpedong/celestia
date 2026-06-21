@@ -2,8 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getCurrentUserID } from "../auth";
-import type { Post, PostFormState, VoteActionValue } from "../types";
-import { PostModel } from "../generated/prisma/models";
+import type { PostFormState, VoteActionValue } from "../types";
 import { redirect } from "next/navigation";
 import { removePostImages, uploadPostImages } from "../media";
 import { prisma } from '../prisma';
@@ -17,17 +16,9 @@ export const votePostAction = async (postId: string, value: VoteActionValue) => 
     return { error: "Sign in to vote." };
   }
 
-  await votePost(userId, postId, value);
+  await toggleVote(userId, 'post', postId, value);
   revalidatePath("/");
   revalidatePath(`/post/${postId}`);
-}
-
-export const votePost = async (
-  userId: string,
-  postId: string,
-  value: VoteActionValue,
-): Promise<void> => {
-  await toggleVote(userId, 'post', postId, value);
 }
 
 export const createPostAction = async (
@@ -69,12 +60,14 @@ export const createPostAction = async (
     return { error: getUploadErrorMessage(error, 'We could not upload your images. Please try again.') };
   }
 
-  const post = await addPost({
-    authorId: userId,
-    title,
-    body,
-    communitySlug,
-    imageUrls,
+  const community = await prisma.tag.findUnique({ where: { slug: communitySlug }, select: { slug: true } });
+  if (!community) throw new Error('Community not found.');
+
+  // ponytail: creation only needs the new post id for the redirect.
+  const post = await prisma.$transaction(async tx => {
+    const post = await tx.post.create({ data: { authorId: userId, title, body, imageUrls } });
+    await tx.postTag.create({ data: { postId: post.id, tagSlug: community.slug } });
+    return post;
   });
 
   revalidatePath("/");
@@ -139,55 +132,4 @@ export const updatePostAction = async (
   revalidatePath(`/post/${postId}`);
   for (const { tagSlug } of existing.postTags) revalidatePath(`/r/${tagSlug}`);
   redirect(`/post/${postId}`);
-}
-
-export const addPost = async (input: {
-  authorId: string;
-  title: string;
-  body: string;
-  communitySlug: string;
-  imageUrls: string[];
-}): Promise<Post> => {
-  const communitySlug = input.communitySlug.trim().toLowerCase();
-  const community = await prisma.tag.findUnique({ where: { slug: communitySlug }, select: { slug: true } });
-  if (!community) throw new Error('Community not found.');
-
-  const row = await prisma.$transaction(async (tx) => {
-    const post = await tx.post.create({
-      data: {
-        authorId: input.authorId,
-        title: input.title.trim(),
-        body: input.body.trim(),
-        imageUrls: input.imageUrls,
-      },
-    });
-
-    await tx.postTag.create({
-      data: {
-        postId: post.id,
-        tagSlug: community.slug,
-      },
-    });
-
-    return post;
-  });
-
-  return mapPostRow(row, [community.slug], 0);
-}
-
-const mapPostRow = (
-  row: PostModel,
-  tagSlugs: string[],
-  commentCount: number,
-): Post => {
-  return {
-    id: row.id,
-    authorId: row.authorId,
-    title: row.title,
-    body: row.body,
-    imageUrls: row.imageUrls,
-    tagSlugs,
-    createdAt: row.createdAt.toISOString(),
-    commentCount,
-  };
 }

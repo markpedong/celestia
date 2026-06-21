@@ -1,14 +1,12 @@
 'use client';
 
-import type { FC } from 'react';
 import { cn } from '@/lib/utils';
-import type { MobileBottomNavProps } from '@/lib/types';
 import { Compass, House, PlusCircle, Radio, UserRound } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useSession } from '@/hooks/useSession';
 
-const MobileBottomNav: FC<MobileBottomNavProps> = () => {
+const MobileBottomNav = () => {
   const { session } = useSession();
   const isSignedIn = Boolean(session);
   const pathname = usePathname();

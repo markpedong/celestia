@@ -28,7 +28,7 @@ export const ProfileMediaEditMode: FC<ProfileMediaEditModeProps> = ({ children }
   );
 };
 
-export const ProfileMediaEditButton: FC<Record<never, never>> = () => {
+export const ProfileMediaEditButton = () => {
   const { isEditing, toggleEditing } = useContext(ProfileEditContext);
 
   return (

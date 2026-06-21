@@ -1,6 +1,5 @@
 'use client';
 
-import type { FC } from 'react';
 import { createCommunityAction } from '@/lib/actions/communities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,7 +10,7 @@ import { useServerActionForm } from '@/hooks/use-server-action-form';
 import { MAX_COMMUNITY_DESCRIPTION_LENGTH, MAX_COMMUNITY_NAME_LENGTH, MAX_COMMUNITY_SLUG_LENGTH } from '@/lib/constants';
 import { Plus } from 'lucide-react';
 
-export const CreateCommunityForm: FC<Record<never, never>> = () => {
+export const CreateCommunityForm = () => {
   const { form: { register, formState: { errors, isSubmitted, isValid, touchedFields } }, onFormKeyDown, onSubmit, pending, state } = useServerActionForm(
     createCommunityAction,
     null,

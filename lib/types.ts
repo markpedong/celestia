@@ -223,10 +223,6 @@ export type LeftTagsProps = {
   emptyMessage?: string;
 };
 
-export type MobileBottomNavProps = {
-  isSignedIn?: boolean;
-};
-
 export type NavbarProps = {
   trending: TrendingItem[];
   communities: SearchTagSuggestion[];

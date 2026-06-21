@@ -4,7 +4,7 @@ import { RightTrending } from '@/components/layout/right-trending';
 import { EmptyState } from '@/components/ui/empty-state';
 import { getSessionUser } from '@/lib/auth';
 import { batchAuthorsForIds, batchUserStatsForIds, listPostSorted, listTags, tagsPostCounts } from '@/lib/db/queries';
-import { getTrendingToday } from '@/lib/trending';
+import { trendingToday } from '@/lib/trending';
 import type { FeedSort, HomePageProps } from '@/lib/types';
 import { FileQuestion } from 'lucide-react';
 
@@ -24,10 +24,9 @@ const Home = async ({ searchParams }: HomePageProps) => {
   ]);
 
   const authorIds = [...new Set(rows.map(({ post }) => post.authorId))];
-  const [authorById, authorStatsById, trending] = await Promise.all([
+  const [authorById, authorStatsById] = await Promise.all([
     batchAuthorsForIds(authorIds),
     batchUserStatsForIds(authorIds),
-    getTrendingToday(),
   ]);
 
   const tagsMap = new Map(tags.map(tag => [tag.slug, tag]));
@@ -68,7 +67,7 @@ const Home = async ({ searchParams }: HomePageProps) => {
       </main>
 
       <aside className='sticky top-14 hidden h-[calc(100vh-3.5rem)] w-72 shrink-0 space-y-6 overflow-y-auto xl:block'>
-        <RightTrending items={trending} communities={communities} />
+        <RightTrending items={trendingToday} communities={communities} />
       </aside>
     </div>
   );
