@@ -21,5 +21,5 @@ export const useSession = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  return session;
-}
+  return { session, user: session?.user, supabase };
+};

@@ -8,13 +8,10 @@ import { cn } from '@/lib/utils';
 import { buttonVariants } from '../ui/button';
 import SearchBox from './search-box';
 import type { NavbarProps } from '@/lib/types';
-import { createSupabaseBrowserClient } from '@/lib/supabase/client';
-import { useEffect, useState } from 'react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
+import { useSession } from '@/hooks/useSession';
 
 const AccountMenu = dynamic(() => import('@/components/auth/account-menu'));
-
-const supabase = createSupabaseBrowserClient();
 
 const toAppUser = (user: SupabaseUser) => ({
   id: user.id,
@@ -30,21 +27,8 @@ const toAppUser = (user: SupabaseUser) => ({
 });
 
 const Navbar: FC<NavbarProps> = ({ trending, communities }: NavbarProps) => {
-  const [user, setUser] = useState<ReturnType<typeof toAppUser> | null>(null);
-
-  useEffect(() => {
-    const loadUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      setUser(data.user ? toAppUser(data.user) : null);
-    };
-
-    void loadUser();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ? toAppUser(session.user) : null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+  const { user: authUser } = useSession();
+  const user = authUser ? toAppUser(authUser) : null;
   return (
     <header className='celestia-nav-shadow sticky top-0 z-50 border-b border-border/80 bg-background/88 backdrop-blur-xl'>
       <div className='mx-auto flex h-14 w-full max-w-[1600px] items-center gap-3 px-4'>

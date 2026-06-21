@@ -21,7 +21,7 @@ const VoteButtons: FC<VoteButtonsProps> = ({ target, targetID, score, userVote, 
   const [pending, startTransition] = useTransition();
   const router = useRouter();
   const isPost = target === 'post';
-  const session = useSession();
+  const { session } = useSession();
   const hasSession = session === undefined ? isSignedIn : Boolean(session);
   const [voteState, setVoteState] = useState({ score, userVote });
 

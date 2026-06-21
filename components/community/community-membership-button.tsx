@@ -6,32 +6,18 @@ import { Button } from '@/components/ui/button';
 import type { CommunityMembershipButtonProps } from '@/lib/types';
 import { Check, LoaderCircle, Plus, UserMinus } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useOptimistic, useState, useTransition } from 'react';
+import { useOptimistic, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { createSupabaseBrowserClient } from '@/lib/supabase/client';
-
-const supabase = createSupabaseBrowserClient();
+import { useSession } from '@/hooks/useSession';
 
 export const CommunityMembershipButton: FC<CommunityMembershipButtonProps> = ({ slug, isMember, isSignedIn, isOwner = false, ownerId }: CommunityMembershipButtonProps) => {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const [sessionUserId, setSessionUserId] = useState<string | null>(null);
+  const { session, user } = useSession();
+  const sessionUserId = user?.id ?? null;
   const [optimisticMember, setOptimisticMember] = useOptimistic(isMember, (_current, next: boolean) => next);
   const resolvedIsOwner = isOwner || (Boolean(ownerId) && sessionUserId === ownerId);
-  const resolvedIsSignedIn = isSignedIn || Boolean(sessionUserId);
-
-  useEffect(() => {
-    const loadUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      setSessionUserId(data.user?.id ?? null);
-    };
-
-    void loadUser();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSessionUserId(session?.user.id ?? null);
-    });
-    return () => subscription.unsubscribe();
-  }, []);
+  const resolvedIsSignedIn = session === undefined ? isSignedIn : Boolean(session);
 
   if (!resolvedIsSignedIn) {
     return (

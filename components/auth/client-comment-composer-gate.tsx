@@ -1,12 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import type { User } from '@/lib/types';
 import CommentComposer from '@/components/post/comment-composer';
-
-const supabase = createSupabaseBrowserClient();
+import { useSession } from '@/hooks/useSession';
 
 const toAppUser = (id: string, email: string | undefined, metadata: Record<string, unknown>): User => ({
   id,
@@ -19,18 +16,8 @@ const toAppUser = (id: string, email: string | undefined, metadata: Record<strin
 });
 
 export const ClientCommentComposerGate = ({ postId }: { postId: string }) => {
-  const [user, setUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    const loadUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      setUser(data.user ? toAppUser(data.user.id, data.user.email, data.user.user_metadata) : null);
-    };
-
-    void loadUser();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => void loadUser());
-    return () => subscription.unsubscribe();
-  }, []);
+  const { user: authUser } = useSession();
+  const user = authUser ? toAppUser(authUser.id, authUser.email, authUser.user_metadata) : null;
 
   if (user) return <div className='mb-8'><CommentComposer postID={postId} user={user} /></div>;
 

@@ -2,24 +2,11 @@
 
 import Link from 'next/link';
 import { Pencil, Share2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { createSupabaseBrowserClient } from '@/lib/supabase/client';
-
-const supabase = createSupabaseBrowserClient();
+import { useSession } from '@/hooks/useSession';
 
 export const ClientPostControls = ({ postId, authorId }: { postId: string; authorId: string }) => {
-  const [isAuthor, setIsAuthor] = useState(false);
-
-  useEffect(() => {
-    const loadUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      setIsAuthor(data.user?.id === authorId);
-    };
-
-    void loadUser();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => void loadUser());
-    return () => subscription.unsubscribe();
-  }, [authorId]);
+  const { user } = useSession();
+  const isAuthor = user?.id === authorId;
 
   return (
     <div className='flex items-center gap-1'>

@@ -9,7 +9,8 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { useSession } from '@/hooks/useSession';
 
 const MobileBottomNav: FC<MobileBottomNavProps> = () => {
-  const isSignedIn = Boolean(useSession());
+  const { session } = useSession();
+  const isSignedIn = Boolean(session);
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const sort = searchParams.get('sort');

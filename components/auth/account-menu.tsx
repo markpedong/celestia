@@ -15,14 +15,12 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import type { AccountMenuProps, DisplayMode } from '@/lib/types';
 import { LaptopMinimal, LogOut, MonitorCog, Moon, Sun } from 'lucide-react';
 import Link from 'next/link';
-import type { User } from '@supabase/supabase-js';
 import { useEffect, useState } from 'react';
+import { useSession } from '@/hooks/useSession';
 
-const supabase = createSupabaseBrowserClient();
 const DISPLAY_MODE_STORAGE_KEY = 'celestia-display-mode';
 
 const displayModeOptions = [
@@ -60,7 +58,7 @@ const applyDisplayMode = (displayMode: DisplayMode) => {
 };
 
 const AccountMenu: FC<AccountMenuProps> = ({ initialUser }: AccountMenuProps) => {
-  const [authUser, setAuthUser] = useState<User | null>(null);
+  const { supabase, user } = useSession();
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [displayMode, setDisplayMode] = useState<DisplayMode>(() => {
@@ -72,8 +70,6 @@ const AccountMenu: FC<AccountMenuProps> = ({ initialUser }: AccountMenuProps) =>
 
     return storedMode === 'system' || storedMode === 'dark' || storedMode === 'light' ? storedMode : 'system';
   });
-  const user = authUser;
-
   useEffect(() => {
     applyDisplayMode(displayMode);
     window.localStorage.setItem(DISPLAY_MODE_STORAGE_KEY, displayMode);
@@ -91,14 +87,6 @@ const AccountMenu: FC<AccountMenuProps> = ({ initialUser }: AccountMenuProps) =>
       colorSchemeQuery.removeEventListener('change', handleColorSchemeChange);
     };
   }, [displayMode]);
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setAuthUser(data.user));
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, nextSession) => setAuthUser(nextSession?.user ?? null));
-    return () => subscription.unsubscribe();
-  }, []);
 
   const handleSignOut = async () => {
     if (isSigningOut) return;
