@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import type { VoteActionValue, VoteButtonsProps, VoteValue } from '@/lib/types';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useOptimistic, useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 
@@ -38,34 +38,35 @@ const VoteButtons: FC<VoteButtonsProps> = ({ target, targetID, score, userVote, 
 
     return () => subscription.unsubscribe();
   }, []);
-  const [optimisticVote, setOptimisticVote] = useOptimistic({ score, userVote }, (current, value: VoteActionValue) => {
-    const nextVote: VoteValue = current.userVote === value ? 0 : value;
-    return {
-      userVote: nextVote,
-      score: current.score + nextVote - current.userVote,
-    };
-  });
+  const [voteState, setVoteState] = useState({ score, userVote });
 
   const vote = (value: VoteActionValue) => {
     if (!hasSession) {
       showSignInToVoteToast();
       return;
     }
+    if (pending) return;
 
+    const previousVoteState = voteState;
+    const nextVoteState = {
+      userVote: voteState.userVote === value ? 0 : value as VoteValue,
+      score: voteState.score + (voteState.userVote === value ? 0 : value) - voteState.userVote,
+    };
+
+    setVoteState(nextVoteState);
     startTransition(async () => {
       const result = isPost ? await votePostAction(targetID, value) : await voteCommentAction(targetID, value);
 
       if (result?.error) {
+        setVoteState(previousVoteState);
         if (result.error.toLowerCase().includes('sign in')) {
           showSignInToVoteToast();
         } else {
           toast.error(result.error, { position: 'bottom-right' });
         }
-        router.refresh();
         return;
       }
 
-      setOptimisticVote(value);
       router.refresh();
     });
   };
@@ -87,9 +88,10 @@ const VoteButtons: FC<VoteButtonsProps> = ({ target, targetID, score, userVote, 
         className={cn(
           'flex items-center rounded-lg transition-all hover:scale-110 hover:bg-muted disabled:opacity-50',
           buttonClass,
-          optimisticVote.userVote === 1 ? 'text-upvote' : 'text-muted-foreground hover:text-upvote'
+          voteState.userVote === 1 ? 'text-upvote' : 'text-muted-foreground hover:text-upvote'
         )}
         aria-label={isPost ? 'Upvote' : 'Upvote comment'}
+        aria-pressed={voteState.userVote === 1}
       >
         <ChevronUp className={iconClass} />
       </button>
@@ -97,11 +99,11 @@ const VoteButtons: FC<VoteButtonsProps> = ({ target, targetID, score, userVote, 
         className={cn(
           'text-center font-mono font-medium tabular-nums',
           scoreClass,
-          optimisticVote.userVote === 1 && 'text-upvote',
-          optimisticVote.userVote === -1 && 'text-downvote'
+          voteState.userVote === 1 && 'text-upvote',
+          voteState.userVote === -1 && 'text-downvote'
         )}
       >
-        {formatScore(optimisticVote.score)}
+        {formatScore(voteState.score)}
       </span>
       <button
         onClick={() => vote(-1)}
@@ -109,9 +111,10 @@ const VoteButtons: FC<VoteButtonsProps> = ({ target, targetID, score, userVote, 
         className={cn(
           'flex items-center rounded-lg transition-all hover:scale-110 hover:bg-muted disabled:opacity-50',
           buttonClass,
-          optimisticVote.userVote === -1 ? 'text-downvote' : 'text-muted-foreground hover:text-downvote'
+          voteState.userVote === -1 ? 'text-downvote' : 'text-muted-foreground hover:text-downvote'
         )}
         aria-label={isPost ? 'Downvote' : 'Downvote comment'}
+        aria-pressed={voteState.userVote === -1}
       >
         <ChevronDown className={iconClass} />
       </button>
