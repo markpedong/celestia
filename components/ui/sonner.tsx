@@ -12,7 +12,7 @@ export const Toaster = () => (
         title: '!text-popover-foreground',
         description: '!text-muted-foreground',
         actionButton: '!bg-primary !text-primary-foreground hover:!bg-primary-hover',
-        closeButton: '!border-border !bg-popover !text-popover-foreground',
+        closeButton: '!hidden',
       },
     }}
   />

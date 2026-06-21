@@ -6,5 +6,9 @@ import { toast } from 'sonner';
 export const showSignInToVoteToast = () => toast('Sign in to vote', {
   description: 'Sign in to upvote or downvote posts and comments.',
   action: { label: 'Sign in', onClick: () => window.location.assign('/auth/sign-in') },
-  position: 'bottom-right',
+  position: typeof window !== "undefined" && window.innerWidth < 1024
+    ? "top-center"
+    : "bottom-right"
+  ,
+  duration: 1500
 });

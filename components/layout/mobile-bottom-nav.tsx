@@ -21,7 +21,9 @@ const MobileBottomNav: FC<MobileBottomNavProps> = () => {
     };
 
     void loadSession();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsSignedIn(Boolean(session));
     });
 
@@ -30,18 +32,34 @@ const MobileBottomNav: FC<MobileBottomNavProps> = () => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const sort = searchParams.get('sort');
-  const authPath = '/auth/sign-in';
   const items = [
     { href: '/', label: 'Home', icon: House, active: pathname === '/' && !sort },
     { href: '/?sort=hot', label: 'Explore', icon: Compass, active: pathname === '/' && sort === 'hot' },
     { href: '/?sort=new', label: 'Latest', icon: Radio, active: pathname === '/' && sort === 'new' },
-    { href: isSignedIn ? '/submit' : authPath, label: 'Create', icon: PlusCircle, active: pathname === '/submit' },
-    { href: isSignedIn ? '/profile' : authPath, label: 'Profile', icon: UserRound, active: pathname === '/profile' || pathname.startsWith('/u/') },
+    ...(isSignedIn
+      ? [
+          {
+            href: '/submit',
+            label: 'Create',
+            icon: PlusCircle,
+            active: pathname === '/submit',
+          },
+          {
+            href: '/profile',
+            label: 'Profile',
+            icon: UserRound,
+            active: pathname === '/profile' || pathname.startsWith('/u/'),
+          },
+        ]
+      : []),
   ];
 
   return (
-    <nav aria-label='Mobile navigation' className='fixed inset-x-0 bottom-0 z-40 border-t border-border/80 bg-background/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl lg:hidden'>
-      <div className='mx-auto grid max-w-lg grid-cols-5'>
+    <nav
+      aria-label='Mobile navigation'
+      className='fixed inset-x-0 bottom-0 z-40 border-t border-border/80 bg-background/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl lg:hidden'
+    >
+      <div className={cn('mx-auto grid max-w-lg', isSignedIn ? 'grid-cols-5' : 'grid-cols-3')}>
         {items.map(({ href, label, icon: Icon, active }) => (
           <Link
             key={label}
@@ -49,7 +67,7 @@ const MobileBottomNav: FC<MobileBottomNavProps> = () => {
             aria-current={active ? 'page' : undefined}
             className={cn(
               'relative flex h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-lg text-[10px] font-medium transition-colors',
-              active ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
+              active ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
             )}
           >
             <Icon className={cn('size-5', active && 'drop-shadow-[0_0_6px_var(--primary)]')} />

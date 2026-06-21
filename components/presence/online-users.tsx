@@ -5,7 +5,7 @@ import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import type { User } from '@/lib/types';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
-type OnlineUser = Pick<User, 'id' | 'username' | 'displayName'>;
+type OnlineUser = Pick<User, 'id' | 'username' | 'displayName'> & { isAnonymous?: boolean };
 
 const OnlineUsersContext = createContext<OnlineUser[]>([]);
 const supabase = createSupabaseBrowserClient();
@@ -32,8 +32,9 @@ export const OnlineUsersProvider: FC<{ children: ReactNode }> = ({ children }: {
   }, []);
 
   useEffect(() => {
+    const visitorID = crypto.randomUUID();
     const channel = supabase.channel('celestia:online', {
-      config: { presence: { key: user?.id ?? 'observer' } },
+      config: { presence: { key: user?.id ?? visitorID } },
     });
     const sync = () => {
       const users = Object.values(channel.presenceState<OnlineUser>()).flat();
@@ -41,8 +42,10 @@ export const OnlineUsersProvider: FC<{ children: ReactNode }> = ({ children }: {
     };
 
     channel.on('presence', { event: 'sync' }, sync).subscribe(status => {
-      // ponytail: live tabs only; store last_seen if historical status is needed.
-      if (status === 'SUBSCRIBED' && user) void channel.track({ id: user.id, username: user.username, displayName: user.displayName });
+      // ponytail: Presence is the online source of truth; store last_seen only for historical status.
+      if (status === 'SUBSCRIBED') {
+        void channel.track(user ?? { id: visitorID, username: 'Anonymous', isAnonymous: true });
+      }
     });
 
     return () => {
@@ -70,12 +73,12 @@ export const ActiveNow: FC<Record<never, never>> = () => {
           return (
           <span
             key={onlineUser?.id ?? index}
-            title={onlineUser ? onlineUser.displayName ?? onlineUser.username : undefined}
+            title={onlineUser ? (onlineUser.isAnonymous ? 'Anonymous visitor' : onlineUser.displayName ?? onlineUser.username) : undefined}
             aria-hidden={!onlineUser}
-            className={`grid size-8 place-items-center rounded-full border-2 border-card text-xs font-semibold ${onlineUser ? 'bg-primary/15 text-primary' : 'bg-secondary/60 text-transparent'}`}
+            className={`grid size-8 place-items-center rounded-full border-2 border-card text-xs font-semibold ${onlineUser ? (onlineUser.isAnonymous ? 'bg-[radial-gradient(circle_at_30%_25%,#fff_0_6%,transparent_7%),radial-gradient(circle_at_70%_65%,#f0abfc_0_10%,transparent_11%),linear-gradient(135deg,#312e81,#7e22ce)] text-white' : 'bg-primary/15 text-primary') : 'bg-secondary/60 text-transparent'}`}
             style={{ marginLeft: index ? -8 : 0, zIndex: 10 - index }}
           >
-            {onlineUser ? (onlineUser.displayName ?? onlineUser.username).slice(0, 1).toUpperCase() : '·'}
+            {onlineUser ? (onlineUser.isAnonymous ? '✦' : (onlineUser.displayName ?? onlineUser.username).slice(0, 1).toUpperCase()) : '·'}
           </span>
           );
         })}
