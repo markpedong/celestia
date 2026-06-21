@@ -16,6 +16,7 @@ const authSchema = z.object({
   name: z.string().trim().max(MAX_DISPLAY_NAME_LENGTH, `Display name must be ${MAX_DISPLAY_NAME_LENGTH} characters or fewer.`),
   email: z.string().trim().email('Enter a valid email address.').max(MAX_EMAIL_LENGTH, 'Email address is too long.'),
   password: z.string().min(MIN_PASSWORD_LENGTH, `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`).max(MAX_PASSWORD_LENGTH, `Password must be ${MAX_PASSWORD_LENGTH} characters or fewer.`),
+  confirmPassword: z.string().optional(),
 });
 
 type AuthValues = z.infer<typeof authSchema>;
@@ -26,7 +27,16 @@ export const useAuthForm = (mode: AuthMode) => {
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const isSignUp = mode === 'sign-up';
-  const form = useZodForm<AuthValues>(authSchema, { name: '', email: '', password: '' });
+  const schema = authSchema.superRefine((values, context) => {
+    if (!isSignUp) return;
+
+    if (!values.confirmPassword) {
+      context.addIssue({ code: 'custom', message: 'Please confirm your password.', path: ['confirmPassword'] });
+    } else if (values.password !== values.confirmPassword) {
+      context.addIssue({ code: 'custom', message: 'Passwords do not match.', path: ['confirmPassword'] });
+    }
+  });
+  const form = useZodForm<AuthValues>(schema, { name: '', email: '', password: '', confirmPassword: '' });
 
   const submit = (values: AuthValues) => {
     setError(null);

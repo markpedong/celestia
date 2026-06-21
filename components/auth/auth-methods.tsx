@@ -58,6 +58,13 @@ const AuthMethods: FC<AuthMethodsProps> = ({ mode }: AuthMethodsProps) => {
         <Input id='password' type='password' autoComplete={isSignUp ? 'new-password' : 'current-password'} placeholder='At least 6 characters' aria-invalid={Boolean(errors.password && (touchedFields.password || isSubmitted))} className='h-11 bg-background' {...register('password')} />
         {errors.password && (touchedFields.password || isSubmitted) ? <p className='text-xs text-destructive'>{errors.password.message}</p> : null}
         </div>
+        {isSignUp ? (
+          <div className='space-y-2'>
+            <label htmlFor='confirmPassword' className='text-sm font-medium text-card-foreground'>Confirm password</label>
+            <Input id='confirmPassword' type='password' autoComplete='new-password' placeholder='Re-enter your password' aria-invalid={Boolean(errors.confirmPassword && (touchedFields.confirmPassword || isSubmitted))} className='h-11 bg-background' {...register('confirmPassword')} />
+            {errors.confirmPassword && (touchedFields.confirmPassword || isSubmitted) ? <p className='text-xs text-destructive'>{errors.confirmPassword.message}</p> : null}
+          </div>
+        ) : null}
         <Button type='submit' disabled={pending || !isValid} className='celestia-primary-action h-11 w-full rounded'>
           {isSignUp ? <Mail className='size-4' /> : <KeyRound className='size-4' />}
           {pending ? 'Please wait...' : isSignUp ? 'Create account' : 'Sign in'}
