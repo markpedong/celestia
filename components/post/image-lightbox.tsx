@@ -14,7 +14,7 @@ type ImageLightboxProps = {
   altPrefix: string;
 };
 
-export const ImageLightbox: FC<ImageLightboxProps> = ({ imageUrls, open, index, onClose, altPrefix }: ImageLightboxProps) => {
+export const ImageLightbox: FC<ImageLightboxProps> = ({ imageUrls, open, index, onClose, altPrefix }) => {
   const slides = imageUrls.map((src, imageIndex) => ({ src, alt: `${altPrefix} ${imageIndex + 1}` }));
 
   return <Lightbox open={open} close={onClose} index={index} slides={slides} carousel={{ finite: true, preload: imageUrls.length - 1 }} />;

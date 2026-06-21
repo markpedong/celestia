@@ -5,12 +5,7 @@ import { ChevronLeft, ChevronRight, ImageOff, Images, ZoomIn } from 'lucide-reac
 import Image from 'next/image';
 import { useState } from 'react';
 import { ImageLightbox } from './image-lightbox';
-
-type PostImageGalleryProps = {
-  imageUrls: string[];
-  title: string;
-  variant: 'thumbnail' | 'gallery';
-};
+import { PostImageGalleryProps } from '@/lib/types';
 
 const isImageUrl = (url: string) => {
   try {
@@ -20,7 +15,7 @@ const isImageUrl = (url: string) => {
   }
 };
 
-const ImagePlaceholder: FC<{ ratio: number }> = ({ ratio }: { ratio: number }) => {
+const ImagePlaceholder: FC<{ ratio: number }> = ({ ratio }) => {
   return (
     <div className='size-full' style={{ aspectRatio: ratio }}>
       <div className='flex size-full flex-col items-center justify-center gap-1 bg-muted text-xs text-muted-foreground'>
@@ -31,7 +26,7 @@ const ImagePlaceholder: FC<{ ratio: number }> = ({ ratio }: { ratio: number }) =
   );
 };
 
-export const PostImageGallery: FC<PostImageGalleryProps> = ({ imageUrls, title, variant }: PostImageGalleryProps) => {
+export const PostImageGallery: FC<PostImageGalleryProps> = ({ imageUrls, title, variant }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [failedImageUrls, setFailedImageUrls] = useState<string[]>([]);

@@ -2,7 +2,7 @@ import type { FC } from 'react';
 import { cn } from '@/lib/utils';
 import type { EmptyStateProps } from '@/lib/types';
 
-export const EmptyState: FC<EmptyStateProps> = ({ icon: Icon, title, description, className, children }: EmptyStateProps) => {
+export const EmptyState: FC<EmptyStateProps> = ({ icon: Icon, title, description, className, children }) => {
   return (
     <div className={cn('celestia-card px-6 py-16 text-center', className)}>
       <Icon className='mx-auto mb-3 size-8 text-primary' aria-hidden />

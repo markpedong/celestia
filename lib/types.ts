@@ -378,3 +378,9 @@ export type CommentsListProps = {
   comments: UserCommentActivity[];
   title: string;
 };
+
+export type PostImageGalleryProps = {
+  imageUrls: string[];
+  title: string;
+  variant: 'thumbnail' | 'gallery';
+};

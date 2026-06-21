@@ -11,7 +11,7 @@ const tabs: { id: ProfileActivityTab; label: string }[] = [
   { id: 'comments', label: 'Comments' },
 ];
 
-export const ProfileActivityTabs: FC<ProfileActivityTabsProps> = ({ overview, posts, comments }: ProfileActivityTabsProps) => {
+export const ProfileActivityTabs: FC<ProfileActivityTabsProps> = ({ overview, posts, comments }) => {
   const [activeTab, setActiveTab] = useState<ProfileActivityTab>('overview');
   const content = { overview, posts, comments };
 

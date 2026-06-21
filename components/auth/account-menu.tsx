@@ -57,7 +57,7 @@ const applyDisplayMode = (displayMode: DisplayMode) => {
   root.style.colorScheme = resolvedMode;
 };
 
-const AccountMenu: FC<AccountMenuProps> = ({ initialUser }: AccountMenuProps) => {
+const AccountMenu: FC<AccountMenuProps> = ({ initialUser }) => {
   const { supabase, user } = useSession();
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);

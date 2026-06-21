@@ -19,7 +19,7 @@ const formatJoinDate = (iso: string) => {
   return `${month} ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
 };
 
-export const AuthorHoverCard: FC<AuthorHoverCardProps> = ({ author, authorStats }: AuthorHoverCardProps) => {
+export const AuthorHoverCard: FC<AuthorHoverCardProps> = ({ author, authorStats }) => {
   const authorName = author.displayName ?? author.username;
 
   return (

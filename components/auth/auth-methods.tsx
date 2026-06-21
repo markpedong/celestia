@@ -9,7 +9,7 @@ import type { AuthMethodsProps } from '@/lib/types';
 import { Apple, Globe, KeyRound, Mail } from 'lucide-react';
 import Link from 'next/link';
 
-const AuthMethods: FC<AuthMethodsProps> = ({ mode }: AuthMethodsProps) => {
+const AuthMethods: FC<AuthMethodsProps> = ({ mode }) => {
   const {
     register,
     handleSubmit,

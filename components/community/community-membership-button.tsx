@@ -10,7 +10,7 @@ import { useOptimistic, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/hooks/useSession';
 
-export const CommunityMembershipButton: FC<CommunityMembershipButtonProps> = ({ slug, isMember, isSignedIn, isOwner = false, ownerId }: CommunityMembershipButtonProps) => {
+export const CommunityMembershipButton: FC<CommunityMembershipButtonProps> = ({ slug, isMember, isSignedIn, isOwner = false, ownerId }) => {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const { session, user } = useSession();

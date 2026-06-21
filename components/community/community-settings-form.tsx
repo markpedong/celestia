@@ -12,7 +12,7 @@ import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Save } from 'lucide-react';
 
-export const CommunitySettingsForm: FC<CommunitySettingsFormProps> = ({ community }: CommunitySettingsFormProps) => {
+export const CommunitySettingsForm: FC<CommunitySettingsFormProps> = ({ community }) => {
   const { form: { register, formState: { errors, isSubmitted, isValid, touchedFields } }, onFormKeyDown, onSubmit, pending, state } = useServerActionForm(
     updateCommunityAction,
     null,

@@ -3,7 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { UserAvatarProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
-export const UserAvatar: FC<UserAvatarProps> = ({ user, size = 'default', className }: UserAvatarProps) => {
+export const UserAvatar: FC<UserAvatarProps> = ({ user, size = 'default', className }) => {
   const label = user.displayName ?? user.username;
 
   return (

@@ -18,7 +18,7 @@ const ProfileEditContext = createContext<ProfileEditContextValue>({
   toggleEditing: () => {},
 });
 
-export const ProfileMediaEditMode: FC<ProfileMediaEditModeProps> = ({ children }: ProfileMediaEditModeProps) => {
+export const ProfileMediaEditMode: FC<ProfileMediaEditModeProps> = ({ children }) => {
   const [isEditing, setIsEditing] = useState(false);
 
   return (
@@ -39,7 +39,7 @@ export const ProfileMediaEditButton: FC<Record<never, never>> = () => {
   );
 };
 
-export const ProfileMediaEditor: FC<ProfileMediaEditorProps> = ({ field, className }: ProfileMediaEditorProps) => {
+export const ProfileMediaEditor: FC<ProfileMediaEditorProps> = ({ field, className }) => {
   const [state, action, pending] = useActionState(updateProfileMediaAction, null);
   const { isEditing } = useContext(ProfileEditContext);
   const inputId = `profile-${field}-upload`;

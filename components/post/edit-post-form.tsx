@@ -13,7 +13,7 @@ import { ImageUploadField } from './image-upload-field';
 import { Save } from 'lucide-react';
 import { MAX_POST_BODY_LENGTH, MAX_POST_TITLE_LENGTH } from '@/lib/constants';
 
-export const EditPostForm: FC<EditPostFormProps> = ({ post }: EditPostFormProps) => {
+export const EditPostForm: FC<EditPostFormProps> = ({ post }) => {
   const { form: { register, formState: { errors, isSubmitted, isValid, touchedFields } }, onFormKeyDown, onSubmit, pending, state } = useServerActionForm(
     updatePostAction,
     null,

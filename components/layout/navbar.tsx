@@ -26,7 +26,7 @@ const toAppUser = (user: SupabaseUser) => ({
   avatarUrl: typeof user.user_metadata.avatar_url === 'string' ? user.user_metadata.avatar_url : undefined,
 });
 
-const Navbar: FC<NavbarProps> = ({ trending, communities }: NavbarProps) => {
+const Navbar: FC<NavbarProps> = ({ trending, communities }) => {
   const { user: authUser } = useSession();
   const user = authUser ? toAppUser(authUser) : null;
   return (

@@ -15,7 +15,7 @@ export const CommentNode: FC<CommentNodeProps> = ({
   sessionUser,
   activeReplyId,
   onReplyChange,
-}: CommentNodeProps) => {
+}) => {
   const isOp = node.authorId === postAuthorId;
   const isReplying = activeReplyId === node.id;
 

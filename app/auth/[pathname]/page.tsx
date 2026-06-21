@@ -12,7 +12,9 @@ const AuthPage = async ({ params }: AuthPageProps) => {
         <span className='celestia-brand-mark mb-3 size-11 rounded'>
           <Zap className='size-5 fill-current' />
         </span>
-        <span className='text-xl font-bold text-foreground'>{pathname === 'sign-up' ? 'Join Celestia' : 'Welcome back'}</span>
+        <span className='text-xl font-bold text-foreground'>
+          {pathname === 'sign-up' ? 'Join Celestia' : 'Welcome back'}
+        </span>
         <span className='mt-1 text-sm text-muted-foreground'>
           {pathname === 'sign-up' ? 'Create your account to participate' : 'Sign in to continue the conversation'}
         </span>
@@ -24,9 +26,6 @@ const AuthPage = async ({ params }: AuthPageProps) => {
   );
 };
 
-export const generateStaticParams = () => [
-  { pathname: 'sign-in' },
-  { pathname: 'sign-up' },
-];
+export const generateStaticParams = () => [{ pathname: 'sign-in' }, { pathname: 'sign-up' }];
 
 export default AuthPage;

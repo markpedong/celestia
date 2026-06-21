@@ -31,7 +31,7 @@ const getSnippet = (body: string) => {
   return clean.length > 82 ? `${clean.slice(0, 82)}...` : clean;
 };
 
-const SearchBox: FC<SearchBoxProps> = ({ trending, communities }: SearchBoxProps) => {
+const SearchBox: FC<SearchBoxProps> = ({ trending, communities }) => {
   const router = useRouter();
   const pathname = usePathname();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -345,7 +345,7 @@ const SearchBox: FC<SearchBoxProps> = ({ trending, communities }: SearchBoxProps
   );
 };
 
-const SearchSection: FC<SearchSectionProps> = ({ title, children }: SearchSectionProps) => (
+const SearchSection: FC<SearchSectionProps> = ({ title, children }) => (
   <section className='py-1'>
     <h2 className='px-5 py-2 text-xs font-semibold text-muted-foreground'>{title}</h2>
     {children}

@@ -12,7 +12,7 @@ const snippet = (body: string, max = 160) => {
   return `${t.slice(0, max)}…`;
 };
 
-const PostCard: FC<PostCardProps> = ({ post, author, authorStats, tagsBySlug, score, userVote, isSignedIn }: PostCardProps) => {
+const PostCard: FC<PostCardProps> = ({ post, author, authorStats, tagsBySlug, score, userVote, isSignedIn }) => {
   return (
     <article className='celestia-card celestia-card-hover flex w-full overflow-hidden last:mb-7'>
       <div className='celestia-vote-rail flex min-w-[52px] flex-col items-center justify-center border-r border-border/60 px-3 py-4'>

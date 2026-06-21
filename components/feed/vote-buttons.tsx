@@ -17,7 +17,7 @@ const formatScore = (value: number): string => {
   return String(value);
 };
 
-const VoteButtons: FC<VoteButtonsProps> = ({ target, targetID, score, userVote, isSignedIn = false }: VoteButtonsProps) => {
+const VoteButtons: FC<VoteButtonsProps> = ({ target, targetID, score, userVote, isSignedIn = false }) => {
   const [pending, startTransition] = useTransition();
   const router = useRouter();
   const isPost = target === 'post';

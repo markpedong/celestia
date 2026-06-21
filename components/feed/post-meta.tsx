@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import { Clock } from 'lucide-react';
 import Link from 'next/link';
 
-export const PostMeta: FC<PostMetaProps> = ({ author, authorStats, post, tagsBySlug, className, compact = false }: PostMetaProps) => {
+export const PostMeta: FC<PostMetaProps> = ({ author, authorStats, post, tagsBySlug, className, compact = false }) => {
   const primarySlug = post.tagSlugs[0];
   const primaryTag = primarySlug ? tagsBySlug.get(primarySlug) : undefined;
 

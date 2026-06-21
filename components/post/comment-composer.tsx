@@ -14,7 +14,7 @@ import { commentSchema } from '@/lib/form-schemas';
 import { useZodForm } from '@/hooks/use-zod-form';
 import { MAX_COMMENT_LENGTH } from '@/lib/constants';
 
-const CommentComposer: FC<CommentComposerProps> = ({ postID, user, compact, parentId, placeholder }: CommentComposerProps) => {
+const CommentComposer: FC<CommentComposerProps> = ({ postID, user, compact, parentId, placeholder }) => {
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const router = useRouter();

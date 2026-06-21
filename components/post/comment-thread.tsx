@@ -12,7 +12,7 @@ const CommentThread: FC<CommentThreadProps> = ({
   postAuthorId,
   sessionUser,
   children,
-}: CommentThreadProps) => {
+}) => {
   const [pending, startTransition] = useTransition();
   const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
   const [optimisticTree, addOptimisticComment] = useOptimistic(

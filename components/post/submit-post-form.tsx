@@ -12,7 +12,7 @@ import type { SubmitPostFormProps } from '@/lib/types';
 import { ImageUploadField } from './image-upload-field';
 import { MAX_POST_BODY_LENGTH, MAX_POST_TITLE_LENGTH } from '@/lib/constants';
 
-export const SubmitPostForm: FC<SubmitPostFormProps> = ({ communities, defaultCommunitySlug }: SubmitPostFormProps) => {
+export const SubmitPostForm: FC<SubmitPostFormProps> = ({ communities, defaultCommunitySlug }) => {
   const selectedCommunity = defaultCommunitySlug && communities.some(community => community.slug === defaultCommunitySlug)
     ? defaultCommunitySlug
     : '';

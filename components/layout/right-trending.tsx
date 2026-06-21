@@ -4,7 +4,7 @@ import { ActiveNow } from '@/components/presence/online-users';
 import type { RightTrendingProps } from '@/lib/types';
 import { Flame, Minus, Sparkles, TrendingUp, Users } from 'lucide-react';
 
-export const RightTrending: FC<RightTrendingProps> = ({ items, communities }: RightTrendingProps) => {
+export const RightTrending: FC<RightTrendingProps> = ({ items, communities }) => {
   return (
     <div className='space-y-4'>
     <section className='celestia-card p-4'>

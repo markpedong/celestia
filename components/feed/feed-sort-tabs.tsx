@@ -13,7 +13,7 @@ const hrefFor = (sort: FeedSort, tag?: string, query?: string, basePath = '/') =
   return q ? `${basePath}?${q}` : basePath;
 }
 
-const FeedSortTabs: FC<FeedSortTabsProps> = ({ current, tag, query, basePath = '/' }: FeedSortTabsProps) => {
+const FeedSortTabs: FC<FeedSortTabsProps> = ({ current, tag, query, basePath = '/' }) => {
   const activeSort = current ?? 'hot';
   const tabs: { id: FeedSort; label: string; icon: LucideIcon }[] = [
     { id: 'hot', label: 'Hot', icon: Flame },

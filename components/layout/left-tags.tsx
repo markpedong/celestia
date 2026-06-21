@@ -3,7 +3,7 @@ import { formatCount } from '@/lib/format';
 import type { LeftTagsProps } from '@/lib/types';
 import Link from 'next/link';
 
-const LeftTags: FC<LeftTagsProps> = ({ tags, emptyMessage }: LeftTagsProps) => {
+const LeftTags: FC<LeftTagsProps> = ({ tags, emptyMessage }) => {
   const sorted = [...tags].sort((a, b) => b.count - a.count).slice(0, 8);
 
   return (
