@@ -8,36 +8,21 @@ import { cn } from '@/lib/utils';
 import type { VoteActionValue, VoteButtonsProps, VoteValue } from '@/lib/types';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
-import { createSupabaseBrowserClient } from '@/lib/supabase/client';
+import { useSession } from '@/hooks/useSession';
 
 const formatScore = (value: number): string => {
   if (Math.abs(value) >= 1000) return `${(value / 1000).toFixed(1)}k`;
   return String(value);
 };
 
-const supabase = createSupabaseBrowserClient();
-
 const VoteButtons: FC<VoteButtonsProps> = ({ target, targetID, score, userVote, isSignedIn = false }: VoteButtonsProps) => {
   const [pending, startTransition] = useTransition();
   const router = useRouter();
   const isPost = target === 'post';
-  const [hasSession, setHasSession] = useState(isSignedIn);
-
-  useEffect(() => {
-    const loadSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      setHasSession(Boolean(data.session));
-    };
-
-    void loadSession();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setHasSession(Boolean(session));
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+  const session = useSession();
+  const hasSession = session === undefined ? isSignedIn : Boolean(session);
   const [voteState, setVoteState] = useState({ score, userVote });
 
   const vote = (value: VoteActionValue) => {
