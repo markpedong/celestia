@@ -1,6 +1,12 @@
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 
+export type __TRootResponse<TResponse = null> = {
+  code: number;
+  msg: string;
+  data: TResponse | null;
+};
+
 export type WithChildren<T extends object = Record<never, never>> = T & {
   children: ReactNode;
 };
@@ -379,4 +385,9 @@ export type PostImageGalleryProps = {
   imageUrls: string[];
   title: string;
   variant: 'thumbnail' | 'gallery';
+};
+
+export type ProfileResponse = {
+  success: true;
+  data: User
 };

@@ -29,6 +29,7 @@ const toAppUser = (user: SupabaseUser) => ({
 const Navbar: FC<NavbarProps> = ({ trending, communities }) => {
   const { user: authUser } = useSession();
   const user = authUser ? toAppUser(authUser) : null;
+
   return (
     <header className='celestia-nav-shadow sticky top-0 z-50 border-b border-border/80 bg-background/88 backdrop-blur-xl'>
       <div className='mx-auto flex h-14 w-full max-w-[1600px] items-center gap-3 px-4'>

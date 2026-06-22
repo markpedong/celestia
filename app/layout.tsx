@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { ThemeProvider } from '@/components/theme-provider';
 import './globals.css';
 import './design.scss';
+import { QueryProvider } from '@/components/providers/query-provider';
 
 const inter = Inter({
   variable: '--font-inter',
@@ -69,19 +70,15 @@ export const metadata: Metadata = {
   },
 };
 
-const RootLayout = ({
-  children,
-}: RootLayoutProps) => {
+const RootLayout = ({ children }: RootLayoutProps) => {
   return (
-    <html
-      lang='en'
-      className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
-      suppressHydrationWarning
-    >
+    <html lang='en' className={`${inter.variable} ${geistMono.variable} h-full antialiased`} suppressHydrationWarning>
       <body className='celestia-app-shell min-h-full flex flex-col bg-background text-foreground'>
         <ThemeProvider>
-          {children}
-          <Toaster />
+          <QueryProvider>
+            {children}
+            <Toaster />
+          </QueryProvider>
         </ThemeProvider>
       </body>
     </html>

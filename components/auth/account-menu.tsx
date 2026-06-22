@@ -21,6 +21,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useTheme } from 'next-themes';
 import { useSession } from '@/hooks/useSession';
+import { useGetProfile } from '@/hooks/useQueries';
 
 const displayModeOptions = [
   { value: 'system', label: 'System', icon: LaptopMinimal },
@@ -41,6 +42,7 @@ const getInitials = (name?: string | null, email?: string | null) => {
 
 const AccountMenu: FC<AccountMenuProps> = ({ initialUser }) => {
   const { supabase, user } = useSession();
+  const { data } = useGetProfile(initialUser.username);
   const { theme = 'system', setTheme } = useTheme();
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
