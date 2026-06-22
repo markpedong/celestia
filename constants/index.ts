@@ -34,4 +34,4 @@ export const DEFAULT_ERROR = {
   msg: 'Internal Server Error',
 } satisfies __TRootResponse<null>;
 
-export const STALE_TIME = 10_000;
+export const STALE_TIME = 1_000 * 60 * 60 // 1 hour;
