@@ -1,6 +1,6 @@
 import { DEFAULT_ERROR } from '@/constants';
 import { API_ENDPOINT, REQUEST_METHOD } from '@/constants/enums';
-import { __TRootResponse } from '@/lib/types';
+import { ApiResponse } from '@/lib/types';
 import { generateParameters, generateRequestInit } from '@/services/utils';
 import { NextResponse } from 'next/server';
 
@@ -10,7 +10,7 @@ declare function fetch<ResponseType = any>(
 ): Promise<IResponse<ResponseType>>;
 
 interface IResponse<ResponseType> extends Response {
-  json(): Promise<__TRootResponse<ResponseType>>;
+  json(): Promise<ApiResponse<ResponseType>>;
 }
 
 export type TRequestInit = {

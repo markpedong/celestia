@@ -10,7 +10,5 @@ export const getProfileByUserName = async ({ username }: { username: string }) =
     endpoint: API_ENDPOINT.USER,
   });
 
-  console.log("@@@ getProfileByUserName", response);
-
   return response;
 };

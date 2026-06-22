@@ -1,7 +1,7 @@
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 
-export type __TRootResponse<TResponse = null> = {
+export type ApiResponse<TResponse = null> = {
   message: string;
   success: boolean;
   data: TResponse | null;
@@ -27,7 +27,7 @@ export type User = {
   id: string;
   username: string;
   displayName?: string;
-  email?: string
+  email?: string;
   avatarUrl?: string;
   coverUrl?: string;
   createdAt?: string;
@@ -382,9 +382,4 @@ export type PostImageGalleryProps = {
   imageUrls: string[];
   title: string;
   variant: 'thumbnail' | 'gallery';
-};
-
-export type ProfileResponse = {
-  success: true;
-  data: User
 };

@@ -1,10 +1,7 @@
 'use server';
 
-import { revalidateTag } from 'next/cache';
 import { TRequestInit } from '@/services/request';
 import { REQUEST_METHOD } from '@/constants/enums';
-
-export const refetch = async (tag: string) => revalidateTag(tag, '');
 
 export const generateRequestInit = async (init?: TRequestInit): Promise<TRequestInit> => {
   const body = (() => {
@@ -38,14 +35,4 @@ export const generateParameters = async (params?: {}) => {
   if (!params) return '';
   if (Object.keys(params).length === 0) return '';
   return '?' + new URLSearchParams(params).toString();
-};
-
-export const generateHeaders = async (isFormData?: boolean, isPhpToken?: boolean) => {
-  const headers = new Headers();
-
-  if (!isFormData) {
-    headers.set('Content-Type', 'application/json;charset=UTF-8');
-  }
-
-  return headers;
 };
