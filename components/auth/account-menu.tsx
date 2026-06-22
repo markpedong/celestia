@@ -21,7 +21,6 @@ import { useState } from 'react';
 import { useTheme } from 'next-themes';
 import { useSession } from '@/hooks/useSession';
 import { useGetProfile } from '@/hooks/useQueries';
-import { usePathname } from 'next/navigation';
 
 const displayModeOptions = [
   { value: 'system', label: 'System', icon: LaptopMinimal },
@@ -41,16 +40,15 @@ const getInitials = (name?: string | null, email?: string | null) => {
 };
 
 const AccountMenu: FC = () => {
-  const username = usePathname().split('/')[2];
   const { supabase } = useSession();
-  const { data: user } = useGetProfile(username);
+  const { data: userData } = useGetProfile();
   const { theme = 'system', setTheme } = useTheme();
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
 
-  const name = user?.username;
-  const email = user?.email;
-  const avatarUrl = user?.avatarUrl;
+  const name = userData?.data?.username;
+  const email = userData?.data?.email;
+  const avatarUrl = userData?.data?.avatarUrl;
 
   const handleSignOut = async () => {
     if (isSigningOut) return;

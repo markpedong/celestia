@@ -29,9 +29,9 @@ export const FALLBACK_NAMES = ['Mark', 'JP', 'Ana', 'CJ', 'Ken', 'MJ', 'Lara', '
 import { __TRootResponse } from "@/lib/types";
 
 export const DEFAULT_ERROR = {
-  code: 500,
   data: null,
-  msg: 'Internal Server Error',
+  message: 'Internal Server Error',
+  success: false
 } satisfies __TRootResponse<null>;
 
 export const STALE_TIME = 1_000 * 60 * 60 // 1 hour;

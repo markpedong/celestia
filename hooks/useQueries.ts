@@ -3,8 +3,13 @@
 import { STALE_TIME } from '@/constants';
 import { getProfileByUserName } from '@/services';
 import { useQuery } from '@tanstack/react-query';
+import { useSession } from './useSession';
+import { getUserNameByAuth } from '@/constants/helpers';
 
-export const useGetProfile = (username: string) => {
+export const useGetProfile = () => {
+  const { user: authUser } = useSession();
+  const username = getUserNameByAuth(authUser);
+
   return useQuery({
     queryKey: ['profile', username],
     queryFn: () => getProfileByUserName(({ username })),

@@ -2,8 +2,8 @@ import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 export type __TRootResponse<TResponse = null> = {
-  code: number;
-  msg: string;
+  message: string;
+  success: boolean;
   data: TResponse | null;
 };
 
