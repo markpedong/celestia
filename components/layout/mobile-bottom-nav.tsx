@@ -4,11 +4,11 @@ import { cn } from '@/lib/utils';
 import { Compass, House, PlusCircle, Radio, UserRound } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useSession } from '@/hooks/useSession';
+import { useGetProfile } from '@/hooks/useQueries';
 
 const MobileBottomNav = () => {
-  const { session } = useSession();
-  const isSignedIn = Boolean(session);
+  const user = useGetProfile().data?.data;
+  const isSignedIn = Boolean(user?.id);
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const sort = searchParams.get('sort');

@@ -40,7 +40,7 @@ const getInitials = (name?: string | null, email?: string | null) => {
 };
 
 const AccountMenu: FC = () => {
-  const { supabase } = useSession();
+  const supabase = useSession().supabase;
   const { data: userData } = useGetProfile();
   const { theme = 'system', setTheme } = useTheme();
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);

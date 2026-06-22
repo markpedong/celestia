@@ -14,12 +14,14 @@ import { toast } from 'sonner';
 import { useSession } from '@/hooks/useSession';
 
 const VoteButtons: FC<VoteButtonsProps> = ({ target, targetID, score, userVote, isSignedIn = false }) => {
-  const [pending, startTransition] = useTransition();
   const router = useRouter();
-  const isPost = target === 'post';
-  const { session } = useSession();
-  const hasSession = session === undefined ? isSignedIn : Boolean(session);
+  const session = useSession().session;
+
+  const [pending, startTransition] = useTransition();
   const [voteState, setVoteState] = useState({ score, userVote });
+
+  const isPost = target === 'post';
+  const hasSession = session === undefined ? isSignedIn : Boolean(session);
 
   const vote = (value: VoteActionValue) => {
     if (!hasSession) {
@@ -73,7 +75,7 @@ const VoteButtons: FC<VoteButtonsProps> = ({ target, targetID, score, userVote, 
         aria-label={isPost ? 'Upvote' : 'Upvote comment'}
         aria-pressed={voteState.userVote === 1}
       >
-        <ChevronUp className="size-4" />
+        <ChevronUp className='size-4' />
       </button>
       <span
         className={cn(
@@ -96,7 +98,7 @@ const VoteButtons: FC<VoteButtonsProps> = ({ target, targetID, score, userVote, 
         aria-label={isPost ? 'Downvote' : 'Downvote comment'}
         aria-pressed={voteState.userVote === -1}
       >
-        <ChevronDown className="size-4" />
+        <ChevronDown className='size-4' />
       </button>
     </div>
   );

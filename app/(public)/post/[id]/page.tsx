@@ -6,14 +6,7 @@ import { ContentWithSidebar } from '@/components/layout/content-with-sidebar';
 import CommentThread from '@/components/post/comment-thread';
 import { PostImageGallery } from '@/components/post/post-image-gallery';
 import { Separator } from '@/components/ui/separator';
-import {
-  getAuthorByID,
-  getCommentTree,
-  getPostByID,
-  getPostScore,
-  listPostIds,
-  listTags,
-} from '@/lib/db/queries';
+import { getAuthorByID, getCommentTree, getPostByID, getPostScore, listPostIds, listTags } from '@/lib/db/queries';
 import { getSessionUser } from '@/lib/auth';
 import type { PostPageProps } from '@/lib/types';
 import { MessageSquare, Radio, Users } from 'lucide-react';
@@ -33,11 +26,7 @@ const Page = async ({ params }: PostPageProps) => {
   const [post, sessionUser] = await Promise.all([getPostByID(id), getSessionUser()]);
   if (!post) return notFound();
 
-  const [author, score, tags] = await Promise.all([
-    getAuthorByID(post.authorId),
-    getPostScore(post.id),
-    listTags(),
-  ]);
+  const [author, score, tags] = await Promise.all([getAuthorByID(post.authorId), getPostScore(post.id), listTags()]);
   if (!author) return notFound();
 
   const commentTree = await getCommentTree(post.id, sessionUser?.id);
@@ -77,7 +66,7 @@ const Page = async ({ params }: PostPageProps) => {
       <article className='celestia-card overflow-hidden'>
         <div className='flex'>
           <div className='celestia-vote-rail flex min-w-14.5 flex-col items-center justify-start border-r border-border/70 px-3 py-6'>
-            <VoteButtons target='post' targetID={post.id} score={score} userVote={0} isSignedIn={false} />
+            <VoteButtons target='post' targetID={post.id} score={score} userVote={0} isSignedIn={!!sessionUser?.id} />
           </div>
           <div className='min-w-0 flex-1 p-5 md:p-6'>
             <PostMeta author={author} post={post} tagsBySlug={tagsBySlug} className='mb-4' />

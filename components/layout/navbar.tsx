@@ -8,27 +8,12 @@ import { cn } from '@/lib/utils';
 import { buttonVariants } from '../ui/button';
 import SearchBox from './search-box';
 import type { NavbarProps } from '@/lib/types';
-import type { User as SupabaseUser } from '@supabase/supabase-js';
-import { useSession } from '@/hooks/useSession';
+import { useGetProfile } from '@/hooks/useQueries';
 
 const AccountMenu = dynamic(() => import('@/components/auth/account-menu'));
 
-const toAppUser = (user: SupabaseUser) => ({
-  id: user.id,
-  username:
-    (typeof user.user_metadata.username === 'string' && user.user_metadata.username) ||
-    user.email?.split('@')[0] ||
-    'user',
-  displayName:
-    (typeof user.user_metadata.full_name === 'string' && user.user_metadata.full_name) ||
-    (typeof user.user_metadata.name === 'string' && user.user_metadata.name) ||
-    undefined,
-  avatarUrl: typeof user.user_metadata.avatar_url === 'string' ? user.user_metadata.avatar_url : undefined,
-});
-
 const Navbar: FC<NavbarProps> = ({ trending, communities }) => {
-  const { user: authUser } = useSession();
-  const user = authUser ? toAppUser(authUser) : null;
+  const user = useGetProfile().data?.data;
 
   return (
     <header className='celestia-nav-shadow sticky top-0 z-50 border-b border-border/80 bg-background/88 backdrop-blur-xl'>
