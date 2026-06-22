@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 import { removePostImages, uploadPostImages } from "../media";
 import { prisma } from '../prisma';
 import { toggleVote } from '../db/votes';
-import { MAX_POST_BODY_LENGTH, MAX_POST_TITLE_LENGTH, MIN_POST_TITLE_LENGTH } from '../constants';
+import { MAX_POST_BODY_LENGTH, MAX_POST_TITLE_LENGTH, MIN_POST_TITLE_LENGTH } from '../../constants';
 import { getUploadErrorMessage } from '../error-messages';
 
 export const votePostAction = async (postId: string, value: VoteActionValue) => {

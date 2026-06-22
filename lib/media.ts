@@ -1,5 +1,5 @@
 import { createSupabaseServerClient } from './supabase/server';
-import { ACCEPTED_IMAGE_TYPES, IMAGE_CACHE_CONTROL, MAX_IMAGE_BYTES, MAX_POST_IMAGES } from './constants';
+import { ACCEPTED_IMAGE_TYPES, IMAGE_CACHE_CONTROL, MAX_IMAGE_BYTES, MAX_POST_IMAGES } from '../constants';
 import type { ImageBucket } from './types';
 
 const extensionFor = (mimeType: string) => ({

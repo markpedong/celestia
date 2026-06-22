@@ -6,7 +6,7 @@ import { useState, useTransition } from 'react';
 import { z } from 'zod';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import type { AuthMode } from '@/lib/types';
-import { MAX_DISPLAY_NAME_LENGTH, MAX_EMAIL_LENGTH, MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '@/lib/constants';
+import { MAX_DISPLAY_NAME_LENGTH, MAX_EMAIL_LENGTH, MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '@/constants';
 import { getAuthErrorMessage } from '@/lib/error-messages';
 import { useZodForm } from './use-zod-form';
 import { getAvatarUrl } from '@/lib/avatar';
@@ -62,16 +62,13 @@ export const useAuthForm = (mode: AuthMode) => {
       }
 
       if (result.data.session && result.data.user) {
-        const authAvatarUrl =
-          result.data.user.user_metadata.avatar_url ??
-          getAvatarUrl(result.data.user.email ?? email);
-
         const { error: profileError } = await supabase
           .from('user_profiles')
           .upsert({
             id: result.data.user.id,
             username,
-            avatar_url: authAvatarUrl,
+            email: result.data.user.email,
+            avatar_url: getAvatarUrl(result.data.user.email ?? email),
           });
 
         if (profileError) {

@@ -4,7 +4,7 @@ import type { FC } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuthForm } from '@/hooks/use-auth-form';
-import { MAX_DISPLAY_NAME_LENGTH } from '@/lib/constants';
+import { MAX_DISPLAY_NAME_LENGTH } from '@/constants';
 import type { AuthMethodsProps } from '@/lib/types';
 import { Apple, Globe, KeyRound, Mail } from 'lucide-react';
 import Link from 'next/link';

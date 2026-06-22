@@ -15,13 +15,13 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { AccountMenuProps } from '@/lib/types';
 import { LaptopMinimal, LogOut, MonitorCog, Moon, Sun } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useTheme } from 'next-themes';
 import { useSession } from '@/hooks/useSession';
 import { useGetProfile } from '@/hooks/useQueries';
+import { usePathname } from 'next/navigation';
 
 const displayModeOptions = [
   { value: 'system', label: 'System', icon: LaptopMinimal },
@@ -40,12 +40,17 @@ const getInitials = (name?: string | null, email?: string | null) => {
   return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
 };
 
-const AccountMenu: FC<AccountMenuProps> = ({ initialUser }) => {
-  const { supabase, user } = useSession();
-  const { data } = useGetProfile(initialUser.username);
+const AccountMenu: FC = () => {
+  const username = usePathname().split('/')[2];
+  const { supabase } = useSession();
+  const { data: user } = useGetProfile(username);
   const { theme = 'system', setTheme } = useTheme();
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
+
+  const name = user?.username;
+  const email = user?.email;
+  const avatarUrl = user?.avatarUrl;
 
   const handleSignOut = async () => {
     if (isSigningOut) return;
@@ -54,15 +59,6 @@ const AccountMenu: FC<AccountMenuProps> = ({ initialUser }) => {
     await supabase.auth.signOut();
     window.location.replace('/');
   };
-
-  const name =
-    (typeof user?.user_metadata.full_name === 'string' && user.user_metadata.full_name) ||
-    initialUser.displayName ||
-    initialUser.username;
-  const email = user?.email;
-  const avatarUrl =
-    initialUser.avatarUrl ??
-    (typeof user?.user_metadata.avatar_url === 'string' ? user.user_metadata.avatar_url : undefined);
 
   return (
     <DropdownMenu open={isAccountMenuOpen} onOpenChange={setIsAccountMenuOpen}>
@@ -87,7 +83,7 @@ const AccountMenu: FC<AccountMenuProps> = ({ initialUser }) => {
             </Avatar>
             <span className='min-w-0 space-y-1.5'>
               <span className='block truncate text-sm font-medium text-foreground'>View Profile</span>
-              <span className='block truncate text-xs font-normal text-muted-foreground'>u/{initialUser.username}</span>
+              <span className='block truncate text-xs font-normal text-muted-foreground'>u/{name}</span>
             </span>
           </Link>
         </DropdownMenuLabel>

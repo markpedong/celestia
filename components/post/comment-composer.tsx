@@ -12,7 +12,7 @@ import { UserAvatar } from '../ui/user-avatar';
 import { useCommentSubmission } from './comment-submission-context';
 import { commentSchema } from '@/lib/form-schemas';
 import { useZodForm } from '@/hooks/use-zod-form';
-import { MAX_COMMENT_LENGTH } from '@/lib/constants';
+import { MAX_COMMENT_LENGTH } from '@/constants';
 
 const CommentComposer: FC<CommentComposerProps> = ({ postID, user, compact, parentId, placeholder }) => {
   const [error, setError] = useState<string | null>(null);

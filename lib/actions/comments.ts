@@ -5,7 +5,7 @@ import { getCurrentUserID } from "../auth";
 import { prisma } from "../prisma";
 import type { Comment, CommentFormState, VoteActionValue } from "../types";
 import { toggleVote } from '../db/votes';
-import { MAX_COMMENT_LENGTH } from '../constants';
+import { MAX_COMMENT_LENGTH } from '../../constants';
 
 export const createCommentAction = async (_prev: CommentFormState, formData: FormData): Promise<CommentFormState> => {
   const userId = await getCurrentUserID();

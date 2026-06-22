@@ -6,11 +6,11 @@ import { cn } from '@/lib/utils';
 import { Camera, Check, LoaderCircle, Pencil } from 'lucide-react';
 import { createContext, useActionState, useContext, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { IMAGE_ACCEPT } from '@/lib/constants';
+import { IMAGE_ACCEPT } from '@/constants';
 import type {
-  ProfileEditContextValue,
-  ProfileMediaEditorProps,
-  ProfileMediaEditModeProps,
+    ProfileEditContextValue,
+    ProfileMediaEditorProps,
+    ProfileMediaEditModeProps,
 } from '@/lib/types';
 
 const ProfileEditContext = createContext<ProfileEditContextValue>({

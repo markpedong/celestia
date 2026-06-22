@@ -32,7 +32,7 @@ const Navbar: FC<NavbarProps> = ({ trending, communities }) => {
 
   return (
     <header className='celestia-nav-shadow sticky top-0 z-50 border-b border-border/80 bg-background/88 backdrop-blur-xl'>
-      <div className='mx-auto flex h-14 w-full max-w-[1600px] items-center gap-3 px-4'>
+      <div className='mx-auto flex h-14 w-full max-w-400 items-center gap-3 px-4'>
         <Link href='/' className='group flex shrink-0 items-center gap-2 font-semibold tracking-tight text-foreground'>
           <span className='celestia-brand-mark size-8'>
             <Zap className='size-4 fill-current' aria-hidden />
@@ -54,7 +54,7 @@ const Navbar: FC<NavbarProps> = ({ trending, communities }) => {
               <Plus className='size-3.5' />
               New Post
             </Link>
-            <AccountMenu initialUser={user} />
+            <AccountMenu />
           </div>
         ) : null}
 

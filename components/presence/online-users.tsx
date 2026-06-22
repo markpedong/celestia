@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { FALLBACK_NAMES, MAX_VISIBLE } from '@/lib/constants';
+import { FALLBACK_NAMES, MAX_VISIBLE } from '@/constants';
 
 const supabase = createSupabaseBrowserClient();
 

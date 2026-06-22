@@ -3,7 +3,7 @@
 import type { FC } from 'react';
 import { ImagePlus, X, ZoomIn } from 'lucide-react';
 import Image from 'next/image';
-import { ACCEPTED_IMAGE_TYPES, IMAGE_ACCEPT, MAX_IMAGE_BYTES, MAX_POST_IMAGES } from '@/lib/constants';
+import { ACCEPTED_IMAGE_TYPES, IMAGE_ACCEPT, MAX_IMAGE_BYTES, MAX_POST_IMAGES } from '@/constants';
 import type { ImageUploadFieldProps } from '@/lib/types';
 import { useEffect, useRef, useState } from 'react';
 import { ImageLightbox } from './image-lightbox';
