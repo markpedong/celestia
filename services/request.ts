@@ -3,7 +3,7 @@ import { ApiResponse } from '@/lib/types';
 import { generateParameters, generateRequestInit } from '@/services/utils';
 import { NextResponse } from 'next/server';
 
-declare function fetch<ResponseType = any>(
+declare function fetch<ResponseType = unknown>(
   input: RequestInfo | URL,
   init?: TRequestInit,
 ): Promise<IResponse<ResponseType>>;
@@ -13,7 +13,7 @@ interface IResponse<ResponseType> extends Response {
 }
 
 export type TRequestInit = {
-  body?: string | {};
+  body?: string | Record<string, unknown>;
   cache?: RequestCache;
   headers?: HeadersInit;
   method?: REQUEST_METHOD;
@@ -23,7 +23,7 @@ export type TRequestInit = {
 export type TApiArgs = {
   endpoint: API_ENDPOINT;
   init?: TRequestInit;
-  params?: {};
+  params?: Record<string, string>;
 };
 
 export const __api = async <TApiResponse = null>({ endpoint, params, init }: TApiArgs) => {
@@ -42,4 +42,3 @@ export const generateSuccessResponse = <T>(data: T, status = 200, message = "Dat
 export const generateErrorResponse = (message: string, status = 400) => {
   return NextResponse.json({ success: false, data: null, message }, { status });
 }
-

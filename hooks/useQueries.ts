@@ -6,7 +6,10 @@ import { useQuery } from '@tanstack/react-query';
 import type { Session } from '@supabase/supabase-js';
 import { useSession } from './useSession';
 
-const getUserNameByAuth = (user?: Session['user']) => user?.email?.split('@')[0] ?? '';
+const getUserNameByAuth = (user?: Session['user']) => {
+  const username = user?.user_metadata.username;
+  return typeof username === 'string' ? username : user?.email?.split('@')[0] ?? '';
+};
 
 export const useGetProfile = () => {
   const { user: authUser } = useSession();

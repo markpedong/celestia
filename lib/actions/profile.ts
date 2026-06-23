@@ -6,6 +6,8 @@ import { uploadImage } from '../media';
 import { prisma } from '../prisma';
 import type { ProfileMediaFormState } from '../types';
 import { getUploadErrorMessage } from '../error-messages';
+import { profileSettingsSchema } from '../form-schemas';
+import { createSupabaseServerClient } from '../supabase/server';
 
 export const updateProfileMediaAction = async (
   _prev: ProfileMediaFormState,
@@ -40,4 +42,38 @@ export const updateProfileMediaAction = async (
   revalidatePath('/profile');
   revalidatePath(`/u/${profile.username}`);
   return { success: 'Profile media updated.' };
+};
+
+export const updateProfileSettingsAction = async (
+  _prev: ProfileMediaFormState,
+  formData: FormData,
+): Promise<ProfileMediaFormState> => {
+  const profile = await getSessionUser();
+  if (!profile) return { error: 'You must be signed in to update your profile.' };
+
+  const parsed = profileSettingsSchema.safeParse({
+    username: formData.get('username'),
+  });
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'Check your profile details.' };
+
+  const username = parsed.data.username;
+  const existing = await prisma.userProfile.findUnique({ where: { username }, select: { id: true } });
+  if (existing && existing.id !== profile.id) return { error: 'That username is already taken.' };
+
+  const supabase = await createSupabaseServerClient();
+  const { error: authError } = await supabase.auth.updateUser({ data: { username } });
+  if (authError) return { error: 'We could not update your username. Please try again.' };
+
+  await prisma.userProfile.update({
+    where: { id: profile.id },
+    data: {
+      username,
+    },
+  });
+
+  revalidatePath('/profile/settings');
+  revalidatePath('/profile');
+  revalidatePath(`/u/${profile.username}`);
+  revalidatePath(`/u/${username}`);
+  return { success: 'Profile details updated.' };
 };

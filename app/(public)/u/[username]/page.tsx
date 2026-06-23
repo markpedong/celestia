@@ -19,7 +19,6 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { UserAvatar } from '@/components/ui/user-avatar';
-import { ProfileMediaEditor, ProfileMediaEditMode } from '@/components/profile/profile-media-editor';
 import type { CommentsListProps, UserPageProps } from '@/lib/types';
 
 export const revalidate = 300;
@@ -67,8 +66,7 @@ const UserPage = async ({ params }: UserPageProps) => {
         </section>
       }
     >
-      <ProfileMediaEditMode>
-        <section className='celestia-card mb-4 overflow-hidden'>
+      <section className='celestia-card mb-4 overflow-hidden'>
           <div className='relative h-28 overflow-hidden border-b border-border/70 bg-[linear-gradient(135deg,var(--primary),var(--accent))]'>
             {profile.coverUrl ? (
               <Image
@@ -81,14 +79,12 @@ const UserPage = async ({ params }: UserPageProps) => {
                 loading='eager'
               />
             ) : null}
-            <ProfileMediaEditor field='cover' className='right-3 bottom-3 group' />
           </div>
           <div className='px-5 py-5'>
             <div className='flex flex-wrap items-start justify-between gap-5'>
               <div className='flex min-w-0 items-center gap-5'>
                 <div className='group relative shrink-0'>
                   <UserAvatar user={author} size='lg' className='size-32 border-4 border-card shadow-lg' />
-                  <ProfileMediaEditor field='avatar' className='inset-0' />
                 </div>
                 <div className='min-w-0'>
                   <h1 className='truncate text-2xl font-bold tracking-tight text-foreground'>u/{profile.username}</h1>
@@ -107,8 +103,7 @@ const UserPage = async ({ params }: UserPageProps) => {
               ]}
             />
           </div>
-        </section>
-      </ProfileMediaEditMode>
+      </section>
 
       <ProfileActivityTabs
         overview={

@@ -31,7 +31,7 @@ export const generateRequestInit = async (init?: TRequestInit): Promise<TRequest
   };
 };
 
-export const generateParameters = async (params?: {}) => {
+export const generateParameters = async (params?: Record<string, string>) => {
   if (!params) return '';
   if (Object.keys(params).length === 0) return '';
   return '?' + new URLSearchParams(params).toString();

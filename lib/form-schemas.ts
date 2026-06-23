@@ -35,3 +35,12 @@ export const createCommunitySchema = z.object({
 });
 
 export const communitySettingsSchema = z.object(communityFields);
+
+export const profileSettingsSchema = z.object({
+  username: z
+    .string()
+    .trim()
+    .min(3, 'Username must be at least 3 characters.')
+    .max(28, 'Username must be 28 characters or fewer.')
+    .regex(/^[a-z0-9_]+$/, 'Use lowercase letters, numbers, or underscores.'),
+});
