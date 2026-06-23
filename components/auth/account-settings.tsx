@@ -12,6 +12,8 @@ import type { UserAttributes } from '@supabase/supabase-js';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FormField } from '@/components/ui/form-field';
+import { DialogClose, DialogFooter, SettingsDialog } from '@/components/ui/dialog';
+import { SettingsOptionRow } from '@/components/ui/settings-option-row';
 import { deleteAccountAction, generateBackupCodesAction } from '@/lib/actions/security';
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
@@ -29,6 +31,7 @@ export const AccountSettings = () => {
   const [enrollment, setEnrollment] = useState<{ id: string; qr: string } | null>(null);
   const [mfaCode, setMfaCode] = useState('');
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [activeEditor, setActiveEditor] = useState<'email' | 'phone' | 'password' | 'gender' | 'location' | null>(null);
   const [backupState, generateBackupCodes, generatingCodes] = useActionState(generateBackupCodesAction, null);
   const [deleteState, deleteAccount, deletingAccount] = useActionState(deleteAccountAction, null);
   const identities = user?.identities ?? [];
@@ -74,6 +77,7 @@ export const AccountSettings = () => {
     }
     setPending(null);
     toast.success(field === 'email' ? 'Check your inbox to confirm your new email.' : 'Account details updated.');
+    setActiveEditor(null);
   };
 
   const changeProvider = async (provider: 'google' | 'apple') => {
@@ -145,39 +149,51 @@ export const AccountSettings = () => {
     }
     setPending(null);
     toast.success('Account preferences updated.');
+    setActiveEditor(null);
   };
 
   return (
     <div className='space-y-5'>
       <Section title='General'>
-        <form onSubmit={event => void submitUpdate(event, 'email')} className='flex flex-col gap-3 sm:flex-row sm:items-end'>
-          <FormField htmlFor='email' label='Change email' className='flex-1'>
-            <Input id='email' name='email' type='email' defaultValue={user?.email ?? ''} required />
-          </FormField>
-          <Button type='submit' variant='outline' isLoading={pending === 'email'}>Update email</Button>
-        </form>
-        <form onSubmit={event => void submitUpdate(event, 'phone')} className='flex flex-col gap-3 sm:flex-row sm:items-end'>
-          <FormField htmlFor='phone' label='Phone number' className='flex-1'>
-            <Input id='phone' name='phone' type='tel' defaultValue={user?.phone ?? ''} placeholder='+63 900 000 0000' />
-          </FormField>
-          <Button type='submit' variant='outline' isLoading={pending === 'phone'}>Update phone</Button>
-        </form>
-        <form onSubmit={event => void submitUpdate(event, 'password')} className='flex flex-col gap-3 sm:flex-row sm:items-end'>
-          <FormField htmlFor='password' label='Change password' className='flex-1'>
-            <Input id='password' name='password' type='password' minLength={6} required autoComplete='new-password' />
-          </FormField>
-          <Button type='submit' variant='outline' isLoading={pending === 'password'}>Update password</Button>
-        </form>
+        <div className='divide-y divide-border rounded-lg border border-border'>
+          <SettingsOptionRow title='Change email' value={user?.email} onClick={() => setActiveEditor('email')} />
+          <SettingsOptionRow title='Phone Number' value={user?.phone || 'Not set'} onClick={() => setActiveEditor('phone')} />
+          <SettingsOptionRow title='Change Password' description='Update your account password.' onClick={() => setActiveEditor('password')} />
+          <SettingsOptionRow title='Location' value={typeof user?.user_metadata.location === 'string' ? user.user_metadata.location || 'Not set' : 'Not set'} onClick={() => setActiveEditor('location')} />
+          <SettingsOptionRow title='Gender' value={typeof user?.user_metadata.gender === 'string' ? user.user_metadata.gender || 'Not set' : 'Not set'} onClick={() => setActiveEditor('gender')} />
+        </div>
         <div className='space-y-2 rounded-md border border-border p-3'>
           <div className='flex items-center justify-between gap-3'><span className='flex items-center gap-2 text-sm'><KeyRound className='size-4 text-muted-foreground' /> Passkeys</span><Button size='sm' variant='outline' onClick={() => void registerPasskey()} isLoading={pending === 'passkey'}>Add passkey</Button></div>
           {passkeys.map(passkey => <div key={passkey.id} className='flex items-center justify-between gap-3 text-xs text-muted-foreground'><span>{passkey.friendly_name ?? 'Passkey'} · added {new Date(passkey.created_at).toLocaleDateString()}</span><Button size='xs' variant='ghost' onClick={() => void removePasskey(passkey.id)} isLoading={pending === passkey.id}>Remove</Button></div>)}
         </div>
-        <form onSubmit={event => void savePreferences(event)} className='grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end'>
-          <FormField htmlFor='gender' label='Gender'><Input id='gender' name='gender' defaultValue={typeof user?.user_metadata.gender === 'string' ? user.user_metadata.gender : ''} /></FormField>
-          <FormField htmlFor='location' label='Location'><Input id='location' name='location' defaultValue={typeof user?.user_metadata.location === 'string' ? user.user_metadata.location : ''} /></FormField>
-          <Button type='submit' variant='outline' isLoading={pending === 'preferences'}>Save</Button>
-        </form>
       </Section>
+
+      <SettingsDialog open={activeEditor === 'email'} onOpenChange={open => !open && setActiveEditor(null)} title='Change email' description='We’ll send a confirmation email to your new address.'>
+          <form onSubmit={event => void submitUpdate(event, 'email')} className='space-y-4'>
+            <FormField htmlFor='email' label='Email address'><Input id='email' name='email' type='email' defaultValue={user?.email ?? ''} required autoComplete='email' /></FormField>
+            <DialogFooter><DialogClose asChild><Button type='button' variant='outline'>Cancel</Button></DialogClose><Button type='submit' isLoading={pending === 'email'}>Save email</Button></DialogFooter>
+          </form>
+      </SettingsDialog>
+      <SettingsDialog open={activeEditor === 'phone'} onOpenChange={open => !open && setActiveEditor(null)} title='Phone Number' description='Keep your phone number current for account recovery.'>
+          <form onSubmit={event => void submitUpdate(event, 'phone')} className='space-y-4'>
+            <FormField htmlFor='phone' label='Phone number'><Input id='phone' name='phone' type='tel' defaultValue={user?.phone ?? ''} placeholder='+63 900 000 0000' autoComplete='tel' /></FormField>
+            <DialogFooter><DialogClose asChild><Button type='button' variant='outline'>Cancel</Button></DialogClose><Button type='submit' isLoading={pending === 'phone'}>Save phone</Button></DialogFooter>
+          </form>
+      </SettingsDialog>
+      <SettingsDialog open={activeEditor === 'password'} onOpenChange={open => !open && setActiveEditor(null)} title='Change Password' description='Use at least six characters for your new password.'>
+          <form onSubmit={event => void submitUpdate(event, 'password')} className='space-y-4'>
+            <FormField htmlFor='password' label='New password'><Input id='password' name='password' type='password' minLength={6} required autoComplete='new-password' /></FormField>
+            <DialogFooter><DialogClose asChild><Button type='button' variant='outline'>Cancel</Button></DialogClose><Button type='submit' isLoading={pending === 'password'}>Save password</Button></DialogFooter>
+          </form>
+      </SettingsDialog>
+      {(['location', 'gender'] as const).map(field => (
+        <SettingsDialog key={field} open={activeEditor === field} onOpenChange={open => !open && setActiveEditor(null)} title={field === 'location' ? 'Location' : 'Gender'} description='Update this account preference.'>
+            <form onSubmit={event => void savePreferences(event)} className='space-y-4'>
+              <FormField htmlFor={`profile-${field}`} label={field === 'location' ? 'Location' : 'Gender'}><Input id={`profile-${field}`} name={field} defaultValue={typeof user?.user_metadata[field] === 'string' ? user.user_metadata[field] : ''} /></FormField>
+              <DialogFooter><DialogClose asChild><Button type='button' variant='outline'>Cancel</Button></DialogClose><Button type='submit' isLoading={pending === 'preferences'}>Save {field}</Button></DialogFooter>
+            </form>
+        </SettingsDialog>
+      ))}
 
       <Section title='Account Authorization'>
         {(['google', 'apple'] as const).map(provider => {
@@ -219,7 +235,12 @@ export const AccountSettings = () => {
           <Button variant='destructive' size='sm' onClick={() => setIsDeleteDialogOpen(true)}><Trash2 className='size-3.5' /> Delete account</Button>
         </div>
       </Section>
-      {isDeleteDialogOpen ? <div role='dialog' aria-modal='true' aria-labelledby='delete-account-title' className='fixed inset-0 z-100 grid place-items-center bg-foreground/30 p-4'><form action={deleteAccount} className='w-full max-w-md space-y-4 rounded-xl border border-border bg-card p-5 shadow-xl'><div><h2 id='delete-account-title' className='text-lg font-semibold'>Delete account?</h2><p className='mt-1 text-sm text-muted-foreground'>This permanently deletes your account, profile, posts, comments, votes, memberships, and backup codes.</p></div><FormField htmlFor='delete-confirmation' label='Type DELETE to confirm'><Input id='delete-confirmation' name='confirmation' autoComplete='off' required /></FormField><div className='flex justify-end gap-2'><Button type='button' variant='outline' onClick={() => setIsDeleteDialogOpen(false)}>Cancel</Button><Button type='submit' variant='destructive' isLoading={deletingAccount}>Delete account</Button></div></form></div> : null}
+      <SettingsDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen} title='Delete account?' description='This permanently deletes your account, profile, posts, comments, votes, memberships, and backup codes.'>
+          <form action={deleteAccount} className='space-y-4'>
+            <FormField htmlFor='delete-confirmation' label='Type DELETE to confirm'><Input id='delete-confirmation' name='confirmation' autoComplete='off' required /></FormField>
+            <DialogFooter><DialogClose asChild><Button type='button' variant='outline'>Cancel</Button></DialogClose><Button type='submit' variant='destructive' isLoading={deletingAccount}>Delete account</Button></DialogFooter>
+          </form>
+      </SettingsDialog>
     </div>
   );
 };
