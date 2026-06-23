@@ -310,19 +310,6 @@ export type ProfileActivityTabsProps = WithChildren<{
   username: string;
 }>;
 
-export type ProfileMediaField = 'avatar' | 'cover';
-
-export type ProfileMediaEditorProps = WithClassName<{
-  field: ProfileMediaField;
-}>;
-
-export type ProfileMediaEditModeProps = WithChildren;
-
-export type ProfileEditContextValue = {
-  isEditing: boolean;
-  toggleEditing: () => void;
-};
-
 export type EmptyStateProps = WithOptionalChildren<WithClassName<{
   icon: LucideIcon;
   title: string;

@@ -53,6 +53,9 @@ export const AccountSettings = () => {
     if (backupState?.success) toast.success(backupState.success);
   }, [backupState]);
   useEffect(() => {
+    if (securityQuery.error) toast.error(securityQuery.error.message);
+  }, [securityQuery.error]);
+  useEffect(() => {
     if (deleteState?.error) toast.error(deleteState.error);
     if (deleteState?.success) void supabase.auth.signOut().then(() => window.location.assign('/'));
   }, [deleteState, supabase]);

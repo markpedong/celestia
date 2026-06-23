@@ -24,14 +24,6 @@ export const generateBackupCodesAction = async (): Promise<SecurityActionState> 
   return { success: 'New backup codes generated. Save them now; they will not be shown again.', codes };
 };
 
-export const consumeBackupCodeAction = async (userId: string, code: string): Promise<boolean> => {
-  const result = await prisma.backupCode.updateMany({
-    where: { userId, codeHash: hashCode(code.trim().toUpperCase()), usedAt: null },
-    data: { usedAt: new Date() },
-  });
-  return result.count === 1;
-};
-
 export const deleteAccountAction = async (_prev: SecurityActionState, formData: FormData): Promise<SecurityActionState> => {
   if (formData.get('confirmation') !== 'DELETE') return { error: 'Type DELETE to confirm account deletion.' };
   const user = await getSessionUser();
