@@ -6,6 +6,7 @@ import type { EditPostFormProps } from '@/lib/types';
 import { editPostSchema } from '@/lib/form-schemas';
 import { useServerActionForm } from '@/hooks/use-server-action-form';
 import { Button } from '../ui/button';
+import { FormField } from '../ui/form-field';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
@@ -14,18 +15,25 @@ import { Save } from 'lucide-react';
 import { MAX_POST_BODY_LENGTH, MAX_POST_TITLE_LENGTH } from '@/constants';
 
 export const EditPostForm: FC<EditPostFormProps> = ({ post }) => {
-  const { form: { register, formState: { errors, isSubmitted, isValid, touchedFields } }, onFormKeyDown, onSubmit, pending, state } = useServerActionForm(
-    updatePostAction,
-    null,
-    editPostSchema,
-    { title: post.title, body: post.body },
-  );
+  const {
+    form: {
+      register,
+      formState: { errors, isSubmitted, isValid, touchedFields },
+    },
+    onFormKeyDown,
+    onSubmit,
+    pending,
+    state,
+  } = useServerActionForm(updatePostAction, null, editPostSchema, { title: post.title, body: post.body });
 
   return (
     <form onSubmit={onSubmit} onKeyDown={onFormKeyDown} className='celestia-card space-y-5 p-5 md:p-6' noValidate>
       <input type='hidden' name='postId' value={post.id} />
-      <div className='space-y-2'>
-        <Label htmlFor='title'>Post title</Label>
+      <FormField
+        htmlFor='title'
+        label='Post title'
+        error={errors.title && (touchedFields.title || isSubmitted) ? errors.title.message : undefined}
+      >
         <Input
           id='title'
           maxLength={MAX_POST_TITLE_LENGTH}
@@ -33,10 +41,12 @@ export const EditPostForm: FC<EditPostFormProps> = ({ post }) => {
           aria-invalid={Boolean(errors.title && (touchedFields.title || isSubmitted))}
           {...register('title')}
         />
-        {errors.title && (touchedFields.title || isSubmitted) ? <p className='text-xs text-destructive'>{errors.title.message}</p> : null}
-      </div>
-      <div className='space-y-2'>
-        <Label htmlFor='body'>Body</Label>
+      </FormField>
+      <FormField
+        htmlFor='body'
+        label='Body'
+        error={errors.body && (touchedFields.body || isSubmitted) ? errors.body.message : undefined}
+      >
         <Textarea
           id='body'
           rows={8}
@@ -45,8 +55,7 @@ export const EditPostForm: FC<EditPostFormProps> = ({ post }) => {
           aria-invalid={Boolean(errors.body && (touchedFields.body || isSubmitted))}
           {...register('body')}
         />
-        {errors.body && (touchedFields.body || isSubmitted) ? <p className='text-xs text-destructive'>{errors.body.message}</p> : null}
-      </div>
+      </FormField>
       <div className='space-y-2'>
         <Label>
           Images <span className='text-muted-foreground'>(optional, up to 4)</span>

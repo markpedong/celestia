@@ -4,6 +4,7 @@ import { createPostAction } from '@/lib/actions/posts';
 import { postSchema } from '@/lib/form-schemas';
 import { useServerActionForm } from '@/hooks/use-server-action-form';
 import { Label } from '../ui/label';
+import { FormField } from '../ui/form-field';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
@@ -13,21 +14,32 @@ import { ImageUploadField } from './image-upload-field';
 import { MAX_POST_BODY_LENGTH, MAX_POST_TITLE_LENGTH } from '@/constants';
 
 export const SubmitPostForm: FC<SubmitPostFormProps> = ({ communities, defaultCommunitySlug }) => {
-  const selectedCommunity = defaultCommunitySlug && communities.some(community => community.slug === defaultCommunitySlug)
-    ? defaultCommunitySlug
-    : '';
-  const { form: { register, formState: { errors, isSubmitted, isValid, touchedFields } }, onFormKeyDown, onSubmit, pending, state } = useServerActionForm(
-    createPostAction,
-    null,
-    postSchema,
-    { title: '', body: '', communitySlug: selectedCommunity },
-  );
+  const selectedCommunity =
+    defaultCommunitySlug && communities.some(community => community.slug === defaultCommunitySlug)
+      ? defaultCommunitySlug
+      : '';
+  const {
+    form: {
+      register,
+      formState: { errors, isSubmitted, isValid, touchedFields },
+    },
+    onFormKeyDown,
+    onSubmit,
+    pending,
+    state,
+  } = useServerActionForm(createPostAction, null, postSchema, {
+    title: '',
+    body: '',
+    communitySlug: selectedCommunity,
+  });
   return (
     <form onSubmit={onSubmit} onKeyDown={onFormKeyDown} className='celestia-card space-y-4 p-4 md:p-5' noValidate>
-      <div className='space-y-2'>
-        <Label htmlFor='title' className='text-sm text-card-foreground'>
-          Post title
-        </Label>
+      <FormField
+        htmlFor='title'
+        label='Post title'
+        labelClassName='text-card-foreground'
+        error={errors.title && (touchedFields.title || isSubmitted) ? errors.title.message : undefined}
+      >
         <Input
           id='title'
           maxLength={MAX_POST_TITLE_LENGTH}
@@ -36,12 +48,13 @@ export const SubmitPostForm: FC<SubmitPostFormProps> = ({ communities, defaultCo
           aria-invalid={Boolean(errors.title && (touchedFields.title || isSubmitted))}
           {...register('title')}
         />
-        {errors.title && (touchedFields.title || isSubmitted) ? <p className='text-xs text-destructive'>{errors.title.message}</p> : null}
-      </div>
-      <div className='space-y-2'>
-        <Label htmlFor='body' className='text-sm text-card-foreground'>
-          Body
-        </Label>
+      </FormField>
+      <FormField
+        htmlFor='body'
+        label='Body'
+        labelClassName='text-card-foreground'
+        error={errors.body && (touchedFields.body || isSubmitted) ? errors.body.message : undefined}
+      >
         <Textarea
           id='body'
           rows={5}
@@ -51,12 +64,18 @@ export const SubmitPostForm: FC<SubmitPostFormProps> = ({ communities, defaultCo
           aria-invalid={Boolean(errors.body && (touchedFields.body || isSubmitted))}
           {...register('body')}
         />
-        {errors.body && (touchedFields.body || isSubmitted) ? <p className='text-xs text-destructive'>{errors.body.message}</p> : null}
-      </div>
-      <div className='space-y-2'>
-        <Label htmlFor='communitySlug' className='text-sm text-card-foreground'>
-          Community
-        </Label>
+      </FormField>
+      <FormField
+        htmlFor='communitySlug'
+        label='Community'
+        labelClassName='text-card-foreground'
+        hint='You can post in communities you have joined. Communities are no longer created from post text.'
+        error={
+          errors.communitySlug && (touchedFields.communitySlug || isSubmitted)
+            ? errors.communitySlug.message
+            : undefined
+        }
+      >
         <select
           id='communitySlug'
           disabled={communities.length === 0 || pending}
@@ -73,11 +92,7 @@ export const SubmitPostForm: FC<SubmitPostFormProps> = ({ communities, defaultCo
             </option>
           ))}
         </select>
-        {errors.communitySlug && (touchedFields.communitySlug || isSubmitted) ? <p className='text-xs text-destructive'>{errors.communitySlug.message}</p> : null}
-        <p className='text-xs text-muted-foreground'>
-          You can post in communities you have joined. Communities are no longer created from post text.
-        </p>
-      </div>
+      </FormField>
 
       <div className='space-y-2'>
         <Label>

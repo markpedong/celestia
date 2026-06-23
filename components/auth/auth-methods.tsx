@@ -3,6 +3,7 @@
 import type { FC } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { FormField, PasswordField } from '@/components/ui/form-field';
 import { useAuthForm } from '@/hooks/use-auth-form';
 import { MAX_DISPLAY_NAME_LENGTH } from '@/constants';
 import type { AuthMethodsProps } from '@/lib/types';
@@ -42,28 +43,16 @@ const AuthMethods: FC<AuthMethodsProps> = ({ mode }) => {
       </div>
       <form onSubmit={handleSubmit(submit)} onKeyDown={onFormKeyDown} className='space-y-4' noValidate>
         {isSignUp ? (
-        <div className='space-y-2'>
-          <label htmlFor='name' className='text-sm font-medium text-card-foreground'>Display name</label>
+        <FormField htmlFor='name' label='Display name' labelClassName='text-card-foreground' error={errors.name && (touchedFields.name || isSubmitted) ? errors.name.message : undefined}>
           <Input id='name' placeholder='Your name' maxLength={MAX_DISPLAY_NAME_LENGTH} aria-invalid={Boolean(errors.name && (touchedFields.name || isSubmitted))} className='h-11 bg-background' {...register('name')} />
-          {errors.name && (touchedFields.name || isSubmitted) ? <p className='text-xs text-destructive'>{errors.name.message}</p> : null}
-        </div>
+        </FormField>
         ) : null}
-        <div className='space-y-2'>
-        <label htmlFor='email' className='text-sm font-medium text-card-foreground'>{isSignUp ? 'Email' : 'Email or username'}</label>
+        <FormField htmlFor='email' label={isSignUp ? 'Email' : 'Email or username'} labelClassName='text-card-foreground' error={errors.email && (touchedFields.email || isSubmitted) ? errors.email.message : undefined}>
         <Input id='email' type={isSignUp ? 'email' : 'text'} autoComplete={isSignUp ? 'email' : 'username'} placeholder={isSignUp ? 'you@example.com' : 'you@example.com or username'} aria-invalid={Boolean(errors.email && (touchedFields.email || isSubmitted))} className='h-11 bg-background' {...register('email')} />
-        {errors.email && (touchedFields.email || isSubmitted) ? <p className='text-xs text-destructive'>{errors.email.message}</p> : null}
-        </div>
-        <div className='space-y-2'>
-        <label htmlFor='password' className='text-sm font-medium text-card-foreground'>Password</label>
-        <Input id='password' type='password' autoComplete={isSignUp ? 'new-password' : 'current-password'} placeholder='At least 6 characters' aria-invalid={Boolean(errors.password && (touchedFields.password || isSubmitted))} className='h-11 bg-background' {...register('password')} />
-        {errors.password && (touchedFields.password || isSubmitted) ? <p className='text-xs text-destructive'>{errors.password.message}</p> : null}
-        </div>
+        </FormField>
+        <PasswordField id='password' label='Password' labelClassName='text-card-foreground' autoComplete={isSignUp ? 'new-password' : 'current-password'} placeholder='At least 6 characters' aria-invalid={Boolean(errors.password && (touchedFields.password || isSubmitted))} className='h-11 bg-background' error={errors.password && (touchedFields.password || isSubmitted) ? errors.password.message : undefined} {...register('password')} />
         {isSignUp ? (
-          <div className='space-y-2'>
-            <label htmlFor='confirmPassword' className='text-sm font-medium text-card-foreground'>Confirm password</label>
-            <Input id='confirmPassword' type='password' autoComplete='new-password' placeholder='Re-enter your password' aria-invalid={Boolean(errors.confirmPassword && (touchedFields.confirmPassword || isSubmitted))} className='h-11 bg-background' {...register('confirmPassword')} />
-            {errors.confirmPassword && (touchedFields.confirmPassword || isSubmitted) ? <p className='text-xs text-destructive'>{errors.confirmPassword.message}</p> : null}
-          </div>
+          <PasswordField id='confirmPassword' label='Confirm password' labelClassName='text-card-foreground' autoComplete='new-password' placeholder='Re-enter your password' aria-invalid={Boolean(errors.confirmPassword && (touchedFields.confirmPassword || isSubmitted))} className='h-11 bg-background' error={errors.confirmPassword && (touchedFields.confirmPassword || isSubmitted) ? errors.confirmPassword.message : undefined} {...register('confirmPassword')} />
         ) : null}
         <Button type='submit' disabled={pending || !isValid} className='celestia-primary-action h-11 w-full rounded'>
           {pending ? <LoaderCircle className='size-4 animate-spin' /> : isSignUp ? <Mail className='size-4' /> : <KeyRound className='size-4' />}
