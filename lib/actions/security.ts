@@ -9,11 +9,11 @@ import type { ErrorFormState } from '../types';
 
 type SecurityActionState = ErrorFormState<{ success?: string; codes?: string[] }>;
 type SensitiveSetting = 'email' | 'phone' | 'gender' | 'location';
-type PasswordVerificationSetting = SensitiveSetting | 'passkey';
+type PasswordVerificationSetting = SensitiveSetting | 'passkey' | 'mfa' | 'backupCodes';
 type PasswordVerificationState = ErrorFormState<{ success?: string; setting?: PasswordVerificationSetting; token?: string }>;
 
 const sensitiveSettings = new Set<SensitiveSetting>(['email', 'phone', 'gender', 'location']);
-const passwordProtectedSettings = new Set<PasswordVerificationSetting>(['email', 'phone', 'gender', 'location', 'passkey']);
+const passwordProtectedSettings = new Set<PasswordVerificationSetting>(['email', 'phone', 'gender', 'location', 'passkey', 'mfa', 'backupCodes']);
 const verificationLifetime = 5 * 60 * 1000;
 
 const hashCode = (code: string) => createHash('sha256').update(code).digest('hex');
