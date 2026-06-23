@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect, useState, type FormEvent } from 'react';
+import { useActionState, useEffect, useState, useTransition, type FormEvent } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
 import { KeyRound, Link2, Moon, ShieldCheck, Smartphone, Trash2 } from 'lucide-react';
@@ -8,13 +8,14 @@ import { toast } from 'sonner';
 import { useTheme } from 'next-themes';
 import { useSession } from '@/hooks/useSession';
 import { useUpdateAuthUser } from '@/hooks/useQueries';
-import type { UserAttributes } from '@supabase/supabase-js';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FormField } from '@/components/ui/form-field';
 import { DialogClose, DialogFooter, SettingsDialog } from '@/components/ui/dialog';
 import { SettingsOptionRow } from '@/components/ui/settings-option-row';
-import { deleteAccountAction, generateBackupCodesAction } from '@/lib/actions/security';
+import { changePasswordAction, deleteAccountAction, generateBackupCodesAction, updateSensitiveAccountAction, verifyAccountPasswordAction } from '@/lib/actions/security';
+
+type SensitiveSetting = 'email' | 'phone' | 'gender' | 'location';
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <section className='celestia-card space-y-5 p-5 md:p-6'>
@@ -32,6 +33,11 @@ export const AccountSettings = () => {
   const [mfaCode, setMfaCode] = useState('');
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [activeEditor, setActiveEditor] = useState<'email' | 'phone' | 'password' | 'gender' | 'location' | null>(null);
+  const [passwordGate, setPasswordGate] = useState<SensitiveSetting | null>(null);
+  const [verificationToken, setVerificationToken] = useState('');
+  const [isVerifying, startVerifying] = useTransition();
+  const [isSavingSensitive, startSavingSensitive] = useTransition();
+  const [isChangingPassword, startChangingPassword] = useTransition();
   const [backupState, generateBackupCodes, generatingCodes] = useActionState(generateBackupCodesAction, null);
   const [deleteState, deleteAccount, deletingAccount] = useActionState(deleteAccountAction, null);
   const identities = user?.identities ?? [];
@@ -63,21 +69,49 @@ export const AccountSettings = () => {
     if (deleteState?.success) void supabase.auth.signOut().then(() => window.location.assign('/'));
   }, [deleteState, supabase]);
 
-  const submitUpdate = async (event: FormEvent<HTMLFormElement>, field: 'email' | 'phone' | 'password') => {
+  const verifySensitiveSetting = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const value = new FormData(event.currentTarget).get(field);
-    if (typeof value !== 'string' || !value) return;
-    setPending(field);
-    try {
-      await updateAuthUser.mutateAsync({ [field]: value } as UserAttributes);
-    } catch (error) {
-      setPending(null);
-      toast.error(error instanceof Error ? error.message : 'Unable to update your account.');
-      return;
-    }
-    setPending(null);
-    toast.success(field === 'email' ? 'Check your inbox to confirm your new email.' : 'Account details updated.');
-    setActiveEditor(null);
+    const formData = new FormData(event.currentTarget);
+    startVerifying(async () => {
+      const result = await verifyAccountPasswordAction(formData);
+      if (result?.error || !result?.setting || !result.token) {
+        toast.error(result?.error ?? 'Unable to verify your password.');
+        return;
+      }
+      setVerificationToken(result.token);
+      setPasswordGate(null);
+      setActiveEditor(result.setting);
+      toast.success(result.success);
+    });
+  };
+
+  const saveSensitiveSetting = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    startSavingSensitive(async () => {
+      const result = await updateSensitiveAccountAction(formData);
+      if (result?.error) {
+        toast.error(result.error);
+        return;
+      }
+      setActiveEditor(null);
+      setVerificationToken('');
+      toast.success(result?.success ?? 'Account details updated.');
+    });
+  };
+
+  const submitPasswordChange = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    startChangingPassword(async () => {
+      const result = await changePasswordAction(formData);
+      if (result?.error) {
+        toast.error(result.error);
+        return;
+      }
+      setActiveEditor(null);
+      toast.success(result?.success ?? 'Password updated.');
+    });
   };
 
   const changeProvider = async (provider: 'google' | 'apple') => {
@@ -149,18 +183,17 @@ export const AccountSettings = () => {
     }
     setPending(null);
     toast.success('Account preferences updated.');
-    setActiveEditor(null);
   };
 
   return (
     <div className='space-y-5'>
       <Section title='General'>
         <div className='divide-y divide-border rounded-lg border border-border'>
-          <SettingsOptionRow title='Change email' value={user?.email} onClick={() => setActiveEditor('email')} />
-          <SettingsOptionRow title='Phone Number' value={user?.phone || 'Not set'} onClick={() => setActiveEditor('phone')} />
+          <SettingsOptionRow title='Change email' value={user?.email} onClick={() => setPasswordGate('email')} />
+          <SettingsOptionRow title='Phone Number' value={user?.phone || 'Not set'} onClick={() => setPasswordGate('phone')} />
           <SettingsOptionRow title='Change Password' description='Update your account password.' onClick={() => setActiveEditor('password')} />
-          <SettingsOptionRow title='Location' value={typeof user?.user_metadata.location === 'string' ? user.user_metadata.location || 'Not set' : 'Not set'} onClick={() => setActiveEditor('location')} />
-          <SettingsOptionRow title='Gender' value={typeof user?.user_metadata.gender === 'string' ? user.user_metadata.gender || 'Not set' : 'Not set'} onClick={() => setActiveEditor('gender')} />
+          <SettingsOptionRow title='Location' value={typeof user?.user_metadata.location === 'string' ? user.user_metadata.location || 'Not set' : 'Not set'} onClick={() => setPasswordGate('location')} />
+          <SettingsOptionRow title='Gender' value={typeof user?.user_metadata.gender === 'string' ? user.user_metadata.gender || 'Not set' : 'Not set'} onClick={() => setPasswordGate('gender')} />
         </div>
         <div className='space-y-2 rounded-md border border-border p-3'>
           <div className='flex items-center justify-between gap-3'><span className='flex items-center gap-2 text-sm'><KeyRound className='size-4 text-muted-foreground' /> Passkeys</span><Button size='sm' variant='outline' onClick={() => void registerPasskey()} isLoading={pending === 'passkey'}>Add passkey</Button></div>
@@ -168,29 +201,42 @@ export const AccountSettings = () => {
         </div>
       </Section>
 
+      <SettingsDialog open={passwordGate !== null} onOpenChange={open => !open && setPasswordGate(null)} title='Verify your password' description='Enter your password to continue editing this setting.'>
+        <form onSubmit={verifySensitiveSetting} className='space-y-4'>
+          <input type='hidden' name='setting' value={passwordGate ?? ''} />
+          <FormField htmlFor='verification-password' label='Current password'><Input id='verification-password' name='password' type='password' required autoComplete='current-password' /></FormField>
+          <DialogFooter><DialogClose asChild><Button type='button' variant='outline'>Cancel</Button></DialogClose><Button type='submit' isLoading={isVerifying}>Verify password</Button></DialogFooter>
+        </form>
+      </SettingsDialog>
+
       <SettingsDialog open={activeEditor === 'email'} onOpenChange={open => !open && setActiveEditor(null)} title='Change email' description='We’ll send a confirmation email to your new address.'>
-          <form onSubmit={event => void submitUpdate(event, 'email')} className='space-y-4'>
-            <FormField htmlFor='email' label='Email address'><Input id='email' name='email' type='email' defaultValue={user?.email ?? ''} required autoComplete='email' /></FormField>
-            <DialogFooter><DialogClose asChild><Button type='button' variant='outline'>Cancel</Button></DialogClose><Button type='submit' isLoading={pending === 'email'}>Save email</Button></DialogFooter>
+          <form onSubmit={saveSensitiveSetting} className='space-y-4'>
+            <input type='hidden' name='setting' value='email' /><input type='hidden' name='verificationToken' value={verificationToken} />
+            <FormField htmlFor='email' label='Email address'><Input id='email' name='value' type='email' defaultValue={user?.email ?? ''} required autoComplete='email' /></FormField>
+            <DialogFooter><DialogClose asChild><Button type='button' variant='outline'>Cancel</Button></DialogClose><Button type='submit' isLoading={isSavingSensitive}>Save email</Button></DialogFooter>
           </form>
       </SettingsDialog>
       <SettingsDialog open={activeEditor === 'phone'} onOpenChange={open => !open && setActiveEditor(null)} title='Phone Number' description='Keep your phone number current for account recovery.'>
-          <form onSubmit={event => void submitUpdate(event, 'phone')} className='space-y-4'>
-            <FormField htmlFor='phone' label='Phone number'><Input id='phone' name='phone' type='tel' defaultValue={user?.phone ?? ''} placeholder='+63 900 000 0000' autoComplete='tel' /></FormField>
-            <DialogFooter><DialogClose asChild><Button type='button' variant='outline'>Cancel</Button></DialogClose><Button type='submit' isLoading={pending === 'phone'}>Save phone</Button></DialogFooter>
+          <form onSubmit={saveSensitiveSetting} className='space-y-4'>
+            <input type='hidden' name='setting' value='phone' /><input type='hidden' name='verificationToken' value={verificationToken} />
+            <FormField htmlFor='phone' label='Phone number'><Input id='phone' name='value' type='tel' defaultValue={user?.phone ?? ''} placeholder='+63 900 000 0000' autoComplete='tel' /></FormField>
+            <DialogFooter><DialogClose asChild><Button type='button' variant='outline'>Cancel</Button></DialogClose><Button type='submit' isLoading={isSavingSensitive}>Save phone</Button></DialogFooter>
           </form>
       </SettingsDialog>
       <SettingsDialog open={activeEditor === 'password'} onOpenChange={open => !open && setActiveEditor(null)} title='Change Password' description='Use at least six characters for your new password.'>
-          <form onSubmit={event => void submitUpdate(event, 'password')} className='space-y-4'>
-            <FormField htmlFor='password' label='New password'><Input id='password' name='password' type='password' minLength={6} required autoComplete='new-password' /></FormField>
-            <DialogFooter><DialogClose asChild><Button type='button' variant='outline'>Cancel</Button></DialogClose><Button type='submit' isLoading={pending === 'password'}>Save password</Button></DialogFooter>
+          <form onSubmit={submitPasswordChange} className='space-y-4'>
+            <FormField htmlFor='current-password' label='Current password'><Input id='current-password' name='currentPassword' type='password' required autoComplete='current-password' /></FormField>
+            <FormField htmlFor='new-password' label='New password'><Input id='new-password' name='newPassword' type='password' minLength={6} required autoComplete='new-password' /></FormField>
+            <FormField htmlFor='confirm-password' label='Confirm new password'><Input id='confirm-password' name='confirmPassword' type='password' minLength={6} required autoComplete='new-password' /></FormField>
+            <DialogFooter><DialogClose asChild><Button type='button' variant='outline'>Cancel</Button></DialogClose><Button type='submit' isLoading={isChangingPassword}>Save password</Button></DialogFooter>
           </form>
       </SettingsDialog>
       {(['location', 'gender'] as const).map(field => (
         <SettingsDialog key={field} open={activeEditor === field} onOpenChange={open => !open && setActiveEditor(null)} title={field === 'location' ? 'Location' : 'Gender'} description='Update this account preference.'>
-            <form onSubmit={event => void savePreferences(event)} className='space-y-4'>
-              <FormField htmlFor={`profile-${field}`} label={field === 'location' ? 'Location' : 'Gender'}><Input id={`profile-${field}`} name={field} defaultValue={typeof user?.user_metadata[field] === 'string' ? user.user_metadata[field] : ''} /></FormField>
-              <DialogFooter><DialogClose asChild><Button type='button' variant='outline'>Cancel</Button></DialogClose><Button type='submit' isLoading={pending === 'preferences'}>Save {field}</Button></DialogFooter>
+            <form onSubmit={saveSensitiveSetting} className='space-y-4'>
+              <input type='hidden' name='setting' value={field} /><input type='hidden' name='verificationToken' value={verificationToken} />
+              <FormField htmlFor={`profile-${field}`} label={field === 'location' ? 'Location' : 'Gender'}><Input id={`profile-${field}`} name='value' defaultValue={typeof user?.user_metadata[field] === 'string' ? user.user_metadata[field] : ''} /></FormField>
+              <DialogFooter><DialogClose asChild><Button type='button' variant='outline'>Cancel</Button></DialogClose><Button type='submit' isLoading={isSavingSensitive}>Save {field}</Button></DialogFooter>
             </form>
         </SettingsDialog>
       ))}
