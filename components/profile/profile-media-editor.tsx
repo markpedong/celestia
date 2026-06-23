@@ -4,7 +4,8 @@ import type { FC } from 'react';
 import { updateProfileMediaAction } from '@/lib/actions/profile';
 import { cn } from '@/lib/utils';
 import { Camera, Check, LoaderCircle, Pencil } from 'lucide-react';
-import { createContext, useActionState, useContext, useState } from 'react';
+import { createContext, useActionState, useContext, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { IMAGE_ACCEPT } from '@/constants';
 import type {
@@ -45,6 +46,10 @@ export const ProfileMediaEditor: FC<ProfileMediaEditorProps> = ({ field, classNa
   const inputId = `profile-${field}-upload`;
   const label = field === 'avatar' ? 'Change profile image' : 'Change banner image';
 
+  useEffect(() => {
+    if (state?.error) toast.error(state.error);
+  }, [state]);
+
   return (
     <form action={action} className={cn('absolute z-10', className)}>
       <input
@@ -73,7 +78,6 @@ export const ProfileMediaEditor: FC<ProfileMediaEditorProps> = ({ field, classNa
       >
         {pending ? <LoaderCircle className='size-3.5 animate-spin' /> : <Camera className='size-3.5' />}
       </label>
-      {state?.error ? <p className='absolute right-0 top-full mt-2 w-max rounded-md bg-destructive px-2 py-1 text-[11px] text-destructive-foreground shadow-md' role='alert'>{state.error}</p> : null}
     </form>
   );
 };

@@ -5,7 +5,8 @@ import { createCommentAction } from '@/lib/actions/comments';
 import type { CommentComposerProps } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 import type { FormEventHandler } from 'react';
-import { useState, useTransition } from 'react';
+import { useTransition } from 'react';
+import { toast } from 'sonner';
 import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
 import { UserAvatar } from '../ui/user-avatar';
@@ -15,14 +16,12 @@ import { useZodForm } from '@/hooks/use-zod-form';
 import { MAX_COMMENT_LENGTH } from '@/constants';
 
 const CommentComposer: FC<CommentComposerProps> = ({ postID, user, compact, parentId, placeholder }) => {
-  const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const router = useRouter();
   const commentSubmission = useCommentSubmission();
   const { register, handleSubmit, onFormKeyDown, reset, formState: { errors, isSubmitted, isValid, touchedFields } } = useZodForm(commentSchema, { body: '' });
 
   const submitValid = async (fd: FormData) => {
-    setError(null);
     const body = String(fd.get('body') ?? '').trim();
 
     if (commentSubmission) {
@@ -32,7 +31,7 @@ const CommentComposer: FC<CommentComposerProps> = ({ postID, user, compact, pare
         body,
         author: user,
       });
-      if (res?.error) setError(res.error);
+      if (res?.error) toast.error(res.error);
       else reset();
       return;
     }
@@ -40,7 +39,7 @@ const CommentComposer: FC<CommentComposerProps> = ({ postID, user, compact, pare
     startTransition(async () => {
       const res = await createCommentAction(null, fd);
       if (res?.error) {
-        setError(res.error);
+        toast.error(res.error);
         return;
       }
       reset();
@@ -68,11 +67,6 @@ const CommentComposer: FC<CommentComposerProps> = ({ postID, user, compact, pare
           {...register('body')}
         />
         {errors.body && (touchedFields.body || isSubmitted) ? <p className='text-xs text-destructive'>{errors.body.message}</p> : null}
-        {error ? (
-          <p className='text-xs text-destructive' role='alert'>
-            {error}
-          </p>
-        ) : null}
         <Button type='submit' size='sm' disabled={pending || commentSubmission?.pending || !isValid} className='celestia-primary-action rounded'>
           {pending || commentSubmission?.pending ? 'Posting...' : parentId ? 'Reply' : 'Comment'}
         </Button>

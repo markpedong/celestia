@@ -26,7 +26,6 @@ export const SubmitPostForm: FC<SubmitPostFormProps> = ({ communities, defaultCo
     onFormKeyDown,
     onSubmit,
     pending,
-    state,
   } = useServerActionForm(createPostAction, null, postSchema, {
     title: '',
     body: '',
@@ -100,12 +99,6 @@ export const SubmitPostForm: FC<SubmitPostFormProps> = ({ communities, defaultCo
         </Label>
         <ImageUploadField name='images' multiple />
       </div>
-
-      {state?.error ? (
-        <p className='text-sm text-destructive' role='alert'>
-          {state.error}
-        </p>
-      ) : null}
 
       <Button
         type='submit'

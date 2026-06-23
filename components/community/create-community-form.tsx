@@ -19,7 +19,6 @@ export const CreateCommunityForm = () => {
     onFormKeyDown,
     onSubmit,
     pending,
-    state,
   } = useServerActionForm(createCommunityAction, null, createCommunitySchema, {
     label: '',
     slug: '',
@@ -95,14 +94,6 @@ export const CreateCommunityForm = () => {
           {...register('hashColor')}
         />
       </FormField>
-      {state?.error ? (
-        <p
-          className='rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive'
-          role='alert'
-        >
-          {state.error}
-        </p>
-      ) : null}
       <Button type='submit' disabled={pending || !isValid} className='celestia-primary-action h-11 w-full rounded'>
         <Plus className='size-4' />
         {pending ? 'Creating community…' : 'Create community'}

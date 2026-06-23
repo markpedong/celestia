@@ -23,7 +23,6 @@ export const EditPostForm: FC<EditPostFormProps> = ({ post }) => {
     onFormKeyDown,
     onSubmit,
     pending,
-    state,
   } = useServerActionForm(updatePostAction, null, editPostSchema, { title: post.title, body: post.body });
 
   return (
@@ -62,14 +61,6 @@ export const EditPostForm: FC<EditPostFormProps> = ({ post }) => {
         </Label>
         <ImageUploadField initialImageUrls={post.imageUrls} name='images' multiple />
       </div>
-      {state?.error ? (
-        <p
-          className='rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive'
-          role='alert'
-        >
-          {state.error}
-        </p>
-      ) : null}
       <Button type='submit' disabled={pending || !isValid} className='celestia-primary-action h-11 w-full rounded'>
         <Save className='size-4' /> {pending ? 'Saving…' : 'Save changes'}
       </Button>

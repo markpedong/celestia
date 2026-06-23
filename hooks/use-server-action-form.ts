@@ -4,6 +4,7 @@ import type { FormEventHandler } from 'react';
 import { useState, useTransition } from 'react';
 import type { DefaultValues, FieldValues } from 'react-hook-form';
 import type { z } from 'zod';
+import { toast } from 'sonner';
 import { useZodForm } from './use-zod-form';
 
 type ServerFormAction<TState> = (previousState: TState, formData: FormData) => TState | Promise<TState>;
@@ -21,7 +22,14 @@ export const useServerActionForm = <TValues extends FieldValues, TState>(
   const onSubmit: FormEventHandler<HTMLFormElement> = event => {
     const formData = new FormData(event.currentTarget);
     void form.handleSubmit(() => {
-      startTransition(async () => setState(await action(state, formData)));
+      startTransition(async () => {
+        const nextState = await action(state, formData);
+        const error = typeof nextState === 'object' && nextState && 'error' in nextState
+          ? (nextState as { error?: unknown }).error
+          : undefined;
+        if (typeof error === 'string') toast.error(error);
+        setState(nextState);
+      });
     })(event);
   };
 

@@ -21,7 +21,6 @@ export const CommunitySettingsForm: FC<CommunitySettingsFormProps> = ({ communit
     onFormKeyDown,
     onSubmit,
     pending,
-    state,
   } = useServerActionForm(updateCommunityAction, null, communitySettingsSchema, {
     label: community.label,
     description: community.description,
@@ -83,14 +82,6 @@ export const CommunitySettingsForm: FC<CommunitySettingsFormProps> = ({ communit
           />
         </div>
       </FormField>
-      {state?.error ? (
-        <p
-          className='rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive'
-          role='alert'
-        >
-          {state.error}
-        </p>
-      ) : null}
       <Button type='submit' disabled={pending || !isValid} className='celestia-primary-action h-11 w-full rounded'>
         <Save className='size-4' /> {pending ? 'Saving…' : 'Save community settings'}
       </Button>

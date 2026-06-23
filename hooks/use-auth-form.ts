@@ -3,6 +3,7 @@
 import type { Provider } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
+import { toast } from 'sonner';
 import { z } from 'zod';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { getEmailByUsername } from '@/services';
@@ -52,7 +53,6 @@ const getAuthErrorMessage = (message: string, intent: AuthIntent): string => {
 export const useAuthForm = (mode: AuthMode) => {
   const router = useRouter();
   const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const isSignUp = mode === 'sign-up';
   const schema = authSchema.superRefine((values, context) => {
@@ -71,7 +71,6 @@ export const useAuthForm = (mode: AuthMode) => {
   const form = useZodForm<AuthValues>(schema, { name: '', email: '', password: '', confirmPassword: '' });
 
   const submit = (values: AuthValues) => {
-    setError(null);
     setMessage(null);
 
     startTransition(async () => {
@@ -80,7 +79,7 @@ export const useAuthForm = (mode: AuthMode) => {
         console.log('email', email);
         const usernameEmail = await getEmailByUsername(email);
         if (!usernameEmail) {
-          setError('That email, username, or password is incorrect. Check your details and try again.');
+          toast.error('That email, username, or password is incorrect. Check your details and try again.');
           return;
         }
         email = usernameEmail;
@@ -97,7 +96,7 @@ export const useAuthForm = (mode: AuthMode) => {
         : await supabase.auth.signInWithPassword({ email, password: values.password });
 
       if (result.error) {
-        setError(getAuthErrorMessage(result.error.message, isSignUp ? 'sign-up' : 'sign-in'));
+        toast.error(getAuthErrorMessage(result.error.message, isSignUp ? 'sign-up' : 'sign-in'));
         return;
       }
 
@@ -112,7 +111,7 @@ export const useAuthForm = (mode: AuthMode) => {
           }, { ignoreDuplicates: true });
 
         if (profileError) {
-          setError(profileError.message);
+          toast.error(profileError.message);
           return;
         }
       }
@@ -128,7 +127,6 @@ export const useAuthForm = (mode: AuthMode) => {
   };
 
   const continueWithProvider = (provider: Extract<Provider, 'google' | 'apple'>) => {
-    setError(null);
     setMessage(null);
 
     startTransition(async () => {
@@ -136,9 +134,9 @@ export const useAuthForm = (mode: AuthMode) => {
         provider,
         options: { redirectTo: `${window.location.origin}/auth/callback` },
       });
-      if (oauthError) setError(getAuthErrorMessage(oauthError.message, 'oauth'));
+      if (oauthError) toast.error(getAuthErrorMessage(oauthError.message, 'oauth'));
     });
   };
 
-  return { ...form, continueWithProvider, error, isSignUp, message, pending, submit };
+  return { ...form, continueWithProvider, isSignUp, message, pending, submit };
 };
