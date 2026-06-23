@@ -5,6 +5,8 @@ import { KeyRound, Link2, Moon, ShieldCheck, Smartphone, Trash2 } from 'lucide-r
 import { toast } from 'sonner';
 import { useTheme } from 'next-themes';
 import { useSession } from '@/hooks/useSession';
+import { useUpdateAuthUser } from '@/hooks/useQueries';
+import type { UserAttributes } from '@supabase/supabase-js';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FormField } from '@/components/ui/form-field';
@@ -18,6 +20,7 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
 
 export const AccountSettings = () => {
   const { supabase, user } = useSession();
+  const updateAuthUser = useUpdateAuthUser();
   const { theme, setTheme } = useTheme();
   const [pending, setPending] = useState<string | null>(null);
   const identities = user?.identities ?? [];
@@ -28,10 +31,15 @@ export const AccountSettings = () => {
     const value = new FormData(event.currentTarget).get(field);
     if (typeof value !== 'string' || !value) return;
     setPending(field);
-    const { error } = await supabase.auth.updateUser({ [field]: value });
+    try {
+      await updateAuthUser.mutateAsync({ [field]: value } as UserAttributes);
+    } catch (error) {
+      setPending(null);
+      toast.error(error instanceof Error ? error.message : 'Unable to update your account.');
+      return;
+    }
     setPending(null);
-    if (error) toast.error(error.message);
-    else toast.success(field === 'email' ? 'Check your inbox to confirm your new email.' : 'Account details updated.');
+    toast.success(field === 'email' ? 'Check your inbox to confirm your new email.' : 'Account details updated.');
   };
 
   const changeProvider = async (provider: 'google' | 'apple') => {
@@ -50,10 +58,15 @@ export const AccountSettings = () => {
     const formData = new FormData(event.currentTarget);
     const data = Object.fromEntries(formData) as Record<string, string>;
     setPending('preferences');
-    const { error } = await supabase.auth.updateUser({ data });
+    try {
+      await updateAuthUser.mutateAsync({ data });
+    } catch (error) {
+      setPending(null);
+      toast.error(error instanceof Error ? error.message : 'Unable to update your preferences.');
+      return;
+    }
     setPending(null);
-    if (error) toast.error(error.message);
-    else toast.success('Account preferences updated.');
+    toast.success('Account preferences updated.');
   };
 
   return (

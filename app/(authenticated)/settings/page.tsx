@@ -1,7 +1,7 @@
 import { AccountSettings } from '@/components/auth/account-settings';
 import { ProfileSettingsForm } from '@/components/profile/profile-settings-form';
 import { getSessionUser } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { getProfileSettingsByUserId } from '@/lib/db/queries';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
@@ -16,10 +16,7 @@ const SettingsPage = async ({ searchParams }: SettingsPageProps) => {
   const requestedTab = Array.isArray(query.tab) ? query.tab[0] : query.tab;
   const activeTab = requestedTab === 'profile' ? 'profile' : 'account';
   const profile = activeTab === 'profile'
-    ? await prisma.userProfile.findUnique({
-        where: { id: user.id },
-        select: { username: true, displayName: true, bio: true, avatarUrl: true, coverUrl: true },
-      })
+    ? await getProfileSettingsByUserId(user.id)
     : null;
   if (activeTab === 'profile' && !profile) redirect('/');
 

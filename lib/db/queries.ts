@@ -438,6 +438,11 @@ export const getAuthorByID = async (authorID: string): Promise<User> => {
   return row ? mapUserProfile(row) : fallbackUserForId(authorID);
 }
 
+export const getProfileSettingsByUserId = cache(async (userId: string) => prisma.userProfile.findUnique({
+  where: { id: userId },
+  select: { username: true, displayName: true, bio: true, avatarUrl: true, coverUrl: true },
+}));
+
 export const getUserByUsername = cache(async (username: string): Promise<User | undefined> => {
   const row = await prisma.userProfile.findUnique({ where: { username } });
   if (row) return mapUserProfile(row);

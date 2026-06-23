@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
 import { Camera, Save } from 'lucide-react';
 import { toast } from 'sonner';
@@ -22,13 +23,15 @@ type ProfileSettingsFormProps = {
 };
 
 export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
+  const queryClient = useQueryClient();
   const [detailsState, saveDetails, savingDetails] = useActionState(updateProfileSettingsAction, null);
   const [mediaState, saveMedia, savingMedia] = useActionState(updateProfileMediaAction, null);
 
   useEffect(() => {
     const message = detailsState?.error ?? detailsState?.success ?? mediaState?.error ?? mediaState?.success;
     if (message) (detailsState?.error || mediaState?.error ? toast.error : toast.success)(message);
-  }, [detailsState, mediaState]);
+    if (detailsState?.success || mediaState?.success) void queryClient.invalidateQueries({ queryKey: ['profile'] });
+  }, [detailsState, mediaState, queryClient]);
 
   return (
     <div className='space-y-5'>

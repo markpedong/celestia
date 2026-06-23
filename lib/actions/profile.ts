@@ -9,6 +9,13 @@ import { getUploadErrorMessage } from '../error-messages';
 import { profileSettingsSchema } from '../form-schemas';
 import { createSupabaseServerClient } from '../supabase/server';
 
+const revalidateProfilePaths = (...usernames: string[]) => {
+  revalidatePath('/');
+  revalidatePath('/profile');
+  revalidatePath('/settings');
+  for (const username of new Set(usernames)) revalidatePath(`/u/${username}`);
+};
+
 export const updateProfileMediaAction = async (
   _prev: ProfileMediaFormState,
   formData: FormData,
@@ -38,10 +45,7 @@ export const updateProfileMediaAction = async (
     },
   });
 
-  revalidatePath('/');
-  revalidatePath('/profile');
-  revalidatePath('/settings');
-  revalidatePath(`/u/${profile.username}`);
+  revalidateProfilePaths(profile.username);
   return { success: 'Profile media updated.' };
 };
 
@@ -76,9 +80,6 @@ export const updateProfileSettingsAction = async (
     },
   });
 
-  revalidatePath('/settings');
-  revalidatePath('/profile');
-  revalidatePath(`/u/${profile.username}`);
-  revalidatePath(`/u/${username}`);
+  revalidateProfilePaths(profile.username, username);
   return { success: 'Profile details updated.' };
 };
