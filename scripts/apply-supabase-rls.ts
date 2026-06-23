@@ -42,6 +42,23 @@ async function main() {
   with check (
     id = auth.uid()::text
   );
+
+  create or replace function public.prevent_username_change()
+  returns trigger
+  language plpgsql
+  as $$
+  begin
+    if new.username is distinct from old.username then
+      raise exception 'Username cannot be changed after account creation';
+    end if;
+    return new;
+  end;
+  $$;
+
+  drop trigger if exists user_profiles_username_immutable on public.user_profiles;
+  create trigger user_profiles_username_immutable
+  before update of username on public.user_profiles
+  for each row execute function public.prevent_username_change();
   `;
 
   const connectionString = normalizeDatabaseUrl(process.env.DATABASE_URL);

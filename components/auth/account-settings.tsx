@@ -195,10 +195,6 @@ export const AccountSettings = () => {
           <SettingsOptionRow title='Location' value={typeof user?.user_metadata.location === 'string' ? user.user_metadata.location || 'Not set' : 'Not set'} onClick={() => setPasswordGate('location')} />
           <SettingsOptionRow title='Gender' value={typeof user?.user_metadata.gender === 'string' ? user.user_metadata.gender || 'Not set' : 'Not set'} onClick={() => setPasswordGate('gender')} />
         </div>
-        <div className='space-y-2 rounded-md border border-border p-3'>
-          <div className='flex items-center justify-between gap-3'><span className='flex items-center gap-2 text-sm'><KeyRound className='size-4 text-muted-foreground' /> Passkeys</span><Button size='sm' variant='outline' onClick={() => void registerPasskey()} isLoading={pending === 'passkey'}>Add passkey</Button></div>
-          {passkeys.map(passkey => <div key={passkey.id} className='flex items-center justify-between gap-3 text-xs text-muted-foreground'><span>{passkey.friendly_name ?? 'Passkey'} · added {new Date(passkey.created_at).toLocaleDateString()}</span><Button size='xs' variant='ghost' onClick={() => void removePasskey(passkey.id)} isLoading={pending === passkey.id}>Remove</Button></div>)}
-        </div>
       </Section>
 
       <SettingsDialog open={passwordGate !== null} onOpenChange={open => !open && setPasswordGate(null)} title='Verify your password' description='Enter your password to continue editing this setting.'>
@@ -250,6 +246,10 @@ export const AccountSettings = () => {
             <Button size='sm' variant='outline' onClick={() => void changeProvider(provider)} isLoading={pending === provider}>{connected ? 'Disconnect' : 'Connect'}</Button>
           </div>;
         })}
+        <div className='space-y-2 rounded-md border border-border p-3'>
+          <div className='flex items-center justify-between gap-3'><span className='flex items-center gap-2 text-sm'><KeyRound className='size-4 text-muted-foreground' /> Passkeys</span><Button size='sm' variant='outline' onClick={() => void registerPasskey()} isLoading={pending === 'passkey'}>Add passkey</Button></div>
+          {passkeys.map(passkey => <div key={passkey.id} className='flex items-center justify-between gap-3 text-xs text-muted-foreground'><span>{passkey.friendly_name ?? 'Passkey'} · added {new Date(passkey.created_at).toLocaleDateString()}</span><Button size='xs' variant='ghost' onClick={() => void removePasskey(passkey.id)} isLoading={pending === passkey.id}>Remove</Button></div>)}
+        </div>
         <div className='space-y-3 rounded-md border border-border p-3'>
           <div className='flex items-center justify-between gap-3'><span className='flex items-center gap-2 text-sm'><ShieldCheck className='size-4 text-muted-foreground' /> Two-Factor Authentication</span>{factors.length ? null : <Button size='sm' variant='outline' onClick={() => void enrollMfa()} isLoading={pending === 'mfa-enroll'}>Set up</Button>}</div>
           {enrollment ? <div className='space-y-3 rounded bg-muted/50 p-3'><Image src={`data:image/svg+xml;utf8,${encodeURIComponent(enrollment.qr)}`} alt='Authenticator setup QR code' width={176} height={176} unoptimized className='size-44 bg-background p-2' /><Input value={mfaCode} onChange={event => setMfaCode(event.target.value)} inputMode='numeric' placeholder='6-digit code' /><Button size='sm' onClick={() => void verifyMfa()} isLoading={pending === 'mfa-verify'}>Verify and enable</Button></div> : null}
@@ -261,7 +261,7 @@ export const AccountSettings = () => {
       <Section title='Apps'>
         <div className='flex items-center justify-between gap-3'>
           <span className='flex items-center gap-2 text-sm'><Moon className='size-4 text-muted-foreground' /> Dark Mode</span>
-          <Button variant='outline' size='sm' onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>{theme === 'dark' ? 'On' : 'Off'}</Button>
+          <Button variant='outline' size='sm' onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>Toggle</Button>
         </div>
         <form onSubmit={event => void savePreferences(event)} className='flex flex-col gap-3 sm:flex-row sm:items-end'>
           <FormField htmlFor='defaultFeedSort' label='Application Preferences' className='flex-1'>
