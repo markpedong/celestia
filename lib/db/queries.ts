@@ -18,6 +18,24 @@ const fallbackUserForId = (id: string): User => ({
   username: fallbackUsernameForId(id),
 });
 
+const mapUserProfile = (row: {
+  id: string;
+  username: string;
+  displayName: string | null;
+  bio: string | null;
+  avatarUrl: string | null;
+  coverUrl: string | null;
+  createdAt: Date;
+}): User => ({
+  id: row.id,
+  username: row.username,
+  displayName: row.displayName ?? undefined,
+  bio: row.bio ?? undefined,
+  avatarUrl: row.avatarUrl ?? undefined,
+  coverUrl: row.coverUrl ?? undefined,
+  createdAt: row.createdAt.toISOString(),
+});
+
 export const batchAuthorsForIds = async (authorIds: string[]): Promise<Map<string, User>> => {
   const unique = [...new Set(authorIds)];
   if (unique.length === 0) return new Map();
@@ -29,15 +47,7 @@ export const batchAuthorsForIds = async (authorIds: string[]): Promise<Map<strin
   const result = new Map<string, User>();
 
   for (const row of rows) {
-    result.set(row.id, {
-      id: row.id,
-      username: row.username,
-      displayName: row.displayName ?? undefined,
-      bio: row.bio ?? undefined,
-      avatarUrl: row.avatarUrl ?? undefined,
-      coverUrl: row.coverUrl ?? undefined,
-      createdAt: row.createdAt.toISOString(),
-    });
+    result.set(row.id, mapUserProfile(row));
   }
 
   for (const id of unique) {
@@ -178,16 +188,20 @@ export const listPostsByAuthor = async (authorId: string, sort: FeedSort, userId
   return listEnrichedPosts(sort, { authorId }, userId);
 }
 
+const listVotedTargetIds = async (userId: string, targetType: VoteTarget, value: -1 | 1): Promise<string[]> => {
+  const votes = await prisma.vote.findMany({
+    where: { userId, targetType, value },
+    select: { targetId: true },
+  });
+  return votes.map(vote => vote.targetId);
+};
+
 export const listVotedPostsByUser = async (
   userId: string,
   value: -1 | 1,
   viewerId: string | undefined,
 ): Promise<FeedPostRow[]> => {
-  const votes = await prisma.vote.findMany({
-    where: { userId, targetType: 'post', value },
-    select: { targetId: true },
-  });
-  const postIds = votes.map(vote => vote.targetId);
+  const postIds = await listVotedTargetIds(userId, 'post', value);
   return postIds.length ? listEnrichedPosts('new', { id: { in: postIds } }, viewerId) : [];
 };
 
@@ -421,32 +435,12 @@ export const listUsernames = cache(async () => {
 
 export const getAuthorByID = async (authorID: string): Promise<User> => {
   const row = await prisma.userProfile.findUnique({ where: { id: authorID } });
-  return row
-    ? {
-      id: row.id,
-      username: row.username,
-      displayName: row.displayName ?? undefined,
-      bio: row.bio ?? undefined,
-      avatarUrl: row.avatarUrl ?? undefined,
-      coverUrl: row.coverUrl ?? undefined,
-      createdAt: row.createdAt.toISOString(),
-    }
-    : fallbackUserForId(authorID);
+  return row ? mapUserProfile(row) : fallbackUserForId(authorID);
 }
 
-export const getUserByUsername = async (username: string): Promise<User | undefined> => {
+export const getUserByUsername = cache(async (username: string): Promise<User | undefined> => {
   const row = await prisma.userProfile.findUnique({ where: { username } });
-  if (row) {
-    return {
-      id: row.id,
-      username: row.username,
-      displayName: row.displayName ?? undefined,
-      bio: row.bio ?? undefined,
-      avatarUrl: row.avatarUrl ?? undefined,
-      coverUrl: row.coverUrl ?? undefined,
-      createdAt: row.createdAt.toISOString(),
-    };
-  }
+  if (row) return mapUserProfile(row);
 
   const [postAuthors, commentAuthors] = await Promise.all([
     prisma.post.findMany({ distinct: ['authorId'], select: { authorId: true } }),
@@ -456,7 +450,7 @@ export const getUserByUsername = async (username: string): Promise<User | undefi
   const fallbackId = authorIds.find(authorId => fallbackUsernameForId(authorId) === username);
 
   return fallbackId ? fallbackUserForId(fallbackId) : undefined;
-}
+});
 
 export const getUserStats = async (userId: string): Promise<UserStats> => {
   const posts = await prisma.post.findMany({
@@ -507,11 +501,7 @@ const listComments = async (where: Prisma.CommentWhereInput): Promise<UserCommen
 export const listCommentsByAuthor = async (authorId: string): Promise<UserCommentActivity[]> => listComments({ authorId });
 
 export const listVotedCommentsByUser = async (userId: string, value: -1 | 1): Promise<UserCommentActivity[]> => {
-  const votes = await prisma.vote.findMany({
-    where: { userId, targetType: 'comment', value },
-    select: { targetId: true },
-  });
-  const commentIds = votes.map(vote => vote.targetId);
+  const commentIds = await listVotedTargetIds(userId, 'comment', value);
   return commentIds.length ? listComments({ id: { in: commentIds } }) : [];
 };
 
