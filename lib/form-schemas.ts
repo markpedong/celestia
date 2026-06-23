@@ -43,4 +43,6 @@ export const profileSettingsSchema = z.object({
     .min(3, 'Username must be at least 3 characters.')
     .max(28, 'Username must be 28 characters or fewer.')
     .regex(/^[a-z0-9_]+$/, 'Use lowercase letters, numbers, or underscores.'),
+  displayName: z.string().trim().max(80, 'Display name must be 80 characters or fewer.'),
+  bio: z.string().trim().max(500, 'About must be 500 characters or fewer.'),
 });

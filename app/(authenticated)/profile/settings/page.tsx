@@ -8,7 +8,7 @@ const ProfileSettingsPage = async () => {
   if (!user) redirect('/auth/sign-in');
   const profile = await prisma.userProfile.findUnique({
     where: { id: user.id },
-    select: { username: true, avatarUrl: true, coverUrl: true },
+    select: { username: true, displayName: true, bio: true, avatarUrl: true, coverUrl: true },
   });
   if (!profile) redirect('/');
 

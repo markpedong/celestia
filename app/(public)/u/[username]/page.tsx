@@ -87,7 +87,9 @@ const UserPage = async ({ params }: UserPageProps) => {
                   <UserAvatar user={author} size='lg' className='size-32 border-4 border-card shadow-lg' />
                 </div>
                 <div className='min-w-0'>
-                  <h1 className='truncate text-2xl font-bold tracking-tight text-foreground'>u/{profile.username}</h1>
+                  <h1 className='truncate text-2xl font-bold tracking-tight text-foreground'>{profile.displayName || `u/${profile.username}`}</h1>
+                  <p className='mt-1 text-sm text-muted-foreground'>u/{profile.username}</p>
+                  {profile.bio ? <p className='mt-3 max-w-2xl whitespace-pre-wrap text-sm leading-6 text-card-foreground'>{profile.bio}</p> : null}
                 </div>
               </div>
               <div className='flex items-center gap-2'>

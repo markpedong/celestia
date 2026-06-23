@@ -13,12 +13,14 @@ datasource db {
 }
 
 model UserProfile {
-  id        String   @id
-  username  String   @unique
-  avatarUrl String?  @map("avatar_url")
-  coverUrl  String?  @map("cover_url")
-  email     String?  @map("email")
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  id          String   @id
+  username    String   @unique
+  displayName String?  @map("display_name")
+  bio         String?  @map("bio")
+  avatarUrl   String?  @map("avatar_url")
+  coverUrl    String?  @map("cover_url")
+  email       String?  @map("email")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   @@map("user_profiles")
 }

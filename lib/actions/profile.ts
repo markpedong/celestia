@@ -40,6 +40,7 @@ export const updateProfileMediaAction = async (
 
   revalidatePath('/');
   revalidatePath('/profile');
+  revalidatePath('/profile/settings');
   revalidatePath(`/u/${profile.username}`);
   return { success: 'Profile media updated.' };
 };
@@ -53,6 +54,8 @@ export const updateProfileSettingsAction = async (
 
   const parsed = profileSettingsSchema.safeParse({
     username: formData.get('username'),
+    displayName: formData.get('displayName'),
+    bio: formData.get('bio'),
   });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'Check your profile details.' };
 
@@ -68,6 +71,8 @@ export const updateProfileSettingsAction = async (
     where: { id: profile.id },
     data: {
       username,
+      displayName: parsed.data.displayName || null,
+      bio: parsed.data.bio || null,
     },
   });
 

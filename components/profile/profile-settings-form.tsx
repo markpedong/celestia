@@ -8,11 +8,14 @@ import { updateProfileMediaAction, updateProfileSettingsAction } from '@/lib/act
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FormField } from '@/components/ui/form-field';
+import { Textarea } from '@/components/ui/textarea';
 import { IMAGE_ACCEPT } from '@/constants';
 
 type ProfileSettingsFormProps = {
   profile: {
     username: string;
+    displayName: string | null;
+    bio: string | null;
     avatarUrl: string | null;
     coverUrl: string | null;
   };
@@ -76,6 +79,12 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
         </div>
         <FormField htmlFor='username' label='Username' hint='Lowercase letters, numbers, and underscores only.'>
           <Input id='username' name='username' defaultValue={profile.username} maxLength={28} required className='bg-secondary/80' />
+        </FormField>
+        <FormField htmlFor='displayName' label='Display Name'>
+          <Input id='displayName' name='displayName' defaultValue={profile.displayName ?? ''} maxLength={80} className='bg-secondary/80' />
+        </FormField>
+        <FormField htmlFor='bio' label='About / Bio' hint='Tell people a little about yourself.'>
+          <Textarea id='bio' name='bio' defaultValue={profile.bio ?? ''} maxLength={500} rows={5} className='resize-y bg-secondary/80' />
         </FormField>
         <Button type='submit' isLoading={savingDetails} loadingText='Saving…' className='celestia-primary-action'>
           <Save className='size-4' /> Save profile

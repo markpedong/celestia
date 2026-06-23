@@ -32,6 +32,8 @@ export const batchAuthorsForIds = async (authorIds: string[]): Promise<Map<strin
     result.set(row.id, {
       id: row.id,
       username: row.username,
+      displayName: row.displayName ?? undefined,
+      bio: row.bio ?? undefined,
       avatarUrl: row.avatarUrl ?? undefined,
       coverUrl: row.coverUrl ?? undefined,
       createdAt: row.createdAt.toISOString(),
@@ -410,6 +412,8 @@ export const getAuthorByID = async (authorID: string): Promise<User> => {
     ? {
       id: row.id,
       username: row.username,
+      displayName: row.displayName ?? undefined,
+      bio: row.bio ?? undefined,
       avatarUrl: row.avatarUrl ?? undefined,
       coverUrl: row.coverUrl ?? undefined,
       createdAt: row.createdAt.toISOString(),
@@ -423,6 +427,8 @@ export const getUserByUsername = async (username: string): Promise<User | undefi
     return {
       id: row.id,
       username: row.username,
+      displayName: row.displayName ?? undefined,
+      bio: row.bio ?? undefined,
       avatarUrl: row.avatarUrl ?? undefined,
       coverUrl: row.coverUrl ?? undefined,
       createdAt: row.createdAt.toISOString(),
