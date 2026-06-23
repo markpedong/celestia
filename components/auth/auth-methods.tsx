@@ -64,8 +64,8 @@ const AuthMethods: FC<AuthMethodsProps> = ({ mode }) => {
               {isSignUp ? 'Already have an account?' : 'Create an account'}
             </Link>
           </Button>
-          <Button type='button' variant='link' size='sm' disabled className='px-0 text-muted-foreground' title='Coming soon'>
-            Forgot password?
+          <Button asChild variant='link' size='sm' className='px-0'>
+            <Link href='/auth/forgot-password'>Forgot password?</Link>
           </Button>
         </div>
       </form>
