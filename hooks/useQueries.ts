@@ -14,7 +14,7 @@ export const useGetProfile = () => {
 
   return useQuery({
     queryKey: ['profile', username],
-    queryFn: () => getProfileByUserName(({ username })),
+    queryFn: () => getProfileByUserName({ username }),
     enabled: Boolean(username),
     staleTime: STALE_TIME
   });

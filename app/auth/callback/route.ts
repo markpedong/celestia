@@ -9,9 +9,18 @@ export const GET = async (request: Request) => {
 
   if (code) {
     const supabase = await createSupabaseServerClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
-    if (!error) return NextResponse.redirect(new URL(nextPath, origin));
+    if (!error && data.user?.email) {
+      const { error: profileError } = await supabase.from('user_profiles').upsert({
+        id: data.user.id,
+        username: data.user.email.split('@')[0],
+        email: data.user.email,
+        avatar_url: data.user.user_metadata.avatar_url ?? null,
+      });
+
+      if (!profileError) return NextResponse.redirect(new URL(nextPath, origin));
+    }
   }
 
   return NextResponse.redirect(new URL('/auth/sign-in?error=oauth', origin));
