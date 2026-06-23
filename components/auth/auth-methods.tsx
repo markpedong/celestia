@@ -7,7 +7,7 @@ import { FormField, PasswordField } from '@/components/ui/form-field';
 import { useAuthForm } from '@/hooks/use-auth-form';
 import { MAX_DISPLAY_NAME_LENGTH } from '@/constants';
 import type { AuthMethodsProps } from '@/lib/types';
-import { KeyRound, LoaderCircle, Mail } from 'lucide-react';
+import { KeyRound, Mail } from 'lucide-react';
 import Link from 'next/link';
 
 const AuthMethods: FC<AuthMethodsProps> = ({ mode }) => {
@@ -131,15 +131,15 @@ const AuthMethods: FC<AuthMethodsProps> = ({ mode }) => {
             {...register('confirmPassword')}
           />
         ) : null}
-        <Button type='submit' disabled={pending || !isValid} className='celestia-primary-action h-11 w-full rounded'>
-          {pending ? (
-            <LoaderCircle className='size-4 animate-spin' />
-          ) : isSignUp ? (
-            <Mail className='size-4' />
-          ) : (
-            <KeyRound className='size-4' />
-          )}
-          {pending ? (isSignUp ? 'Creating account...' : 'Signing in...') : isSignUp ? 'Create account' : 'Sign in'}
+        <Button
+          type='submit'
+          disabled={!isValid}
+          isLoading={pending}
+          loadingText={isSignUp ? 'Creating account...' : 'Signing in...'}
+          className='celestia-primary-action h-11 w-full rounded'
+        >
+          {isSignUp ? <Mail className='size-4' /> : <KeyRound className='size-4' />}
+          {isSignUp ? 'Create account' : 'Sign in'}
         </Button>
         <div className='flex items-center justify-between gap-3 text-sm'>
           <Button asChild variant='link' size='sm' className='px-0'>

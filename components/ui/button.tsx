@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
+import { LoaderCircle } from 'lucide-react';
 import { Slot } from "radix-ui"
 
 import { cn } from "@/lib/utils"
@@ -44,16 +45,25 @@ const buttonVariants = cva(
 
 const Button: FC<React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
-    asChild?: boolean
+    asChild?: boolean;
+    isLoading?: boolean;
+    loadingText?: React.ReactNode;
   }> = ({
+  'aria-busy': ariaBusy,
   className,
+  children,
+  disabled,
   variant = "default",
   size = "default",
   asChild = false,
+  isLoading = false,
+  loadingText,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
-    asChild?: boolean
+    asChild?: boolean;
+    isLoading?: boolean;
+    loadingText?: React.ReactNode;
   }) => {
   const Comp = asChild ? Slot.Root : "button"
 
@@ -63,8 +73,13 @@ const Button: FC<React.ComponentProps<"button"> &
       data-variant={variant}
       data-size={size}
       className={cn(buttonVariants({ variant, size, className }))}
+      disabled={disabled || isLoading}
+      aria-busy={isLoading || ariaBusy || undefined}
       {...props}
-    />
+    >
+      {isLoading ? <LoaderCircle className='size-4 animate-spin' /> : null}
+      {isLoading && loadingText ? loadingText : children}
+    </Comp>
   )
 };
 

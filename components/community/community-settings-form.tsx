@@ -82,8 +82,8 @@ export const CommunitySettingsForm: FC<CommunitySettingsFormProps> = ({ communit
           />
         </div>
       </FormField>
-      <Button type='submit' disabled={pending || !isValid} className='celestia-primary-action h-11 w-full rounded'>
-        <Save className='size-4' /> {pending ? 'Saving…' : 'Save community settings'}
+      <Button type='submit' disabled={!isValid} isLoading={pending} loadingText='Saving…' className='celestia-primary-action h-11 w-full rounded'>
+        <Save className='size-4' /> Save community settings
       </Button>
     </form>
   );

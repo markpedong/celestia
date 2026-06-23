@@ -67,8 +67,15 @@ const CommentComposer: FC<CommentComposerProps> = ({ postID, user, compact, pare
           {...register('body')}
         />
         {errors.body && (touchedFields.body || isSubmitted) ? <p className='text-xs text-destructive'>{errors.body.message}</p> : null}
-        <Button type='submit' size='sm' disabled={pending || commentSubmission?.pending || !isValid} className='celestia-primary-action rounded'>
-          {pending || commentSubmission?.pending ? 'Posting...' : parentId ? 'Reply' : 'Comment'}
+        <Button
+          type='submit'
+          size='sm'
+          disabled={!isValid}
+          isLoading={pending || Boolean(commentSubmission?.pending)}
+          loadingText='Posting...'
+          className='celestia-primary-action rounded'
+        >
+          {parentId ? 'Reply' : 'Comment'}
         </Button>
       </div>
     </form>

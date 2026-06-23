@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
-import { KeyRound, LoaderCircle, Mail } from 'lucide-react';
+import { KeyRound, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { FormField, PasswordField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
@@ -125,15 +125,14 @@ export const PasswordRecoveryForm = ({ mode }: PasswordRecoveryFormProps) => {
           />
         </>
       )}
-      <Button type='submit' disabled={pending} className='celestia-primary-action h-11 w-full rounded'>
-        {pending ? (
-          <LoaderCircle className='size-4 animate-spin' />
-        ) : isRequest ? (
-          <Mail className='size-4' />
-        ) : (
-          <KeyRound className='size-4' />
-        )}
-        {pending ? 'Please wait...' : isRequest ? 'Send reset link' : 'Update password'}
+      <Button
+        type='submit'
+        isLoading={pending}
+        loadingText={isRequest ? 'Sending reset link...' : 'Updating password...'}
+        className='celestia-primary-action h-11 w-full rounded'
+      >
+        {isRequest ? <Mail className='size-4' /> : <KeyRound className='size-4' />}
+        {isRequest ? 'Send reset link' : 'Update password'}
       </Button>
       <Button asChild variant='link' size='sm' className='w-full'>
         <Link href='/auth/sign-in'>Back to sign in</Link>

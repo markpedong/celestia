@@ -4,7 +4,7 @@ import type { FC } from 'react';
 import { setCommunityMembershipAction } from '@/lib/actions/communities';
 import { Button } from '@/components/ui/button';
 import type { CommunityMembershipButtonProps } from '@/lib/types';
-import { Check, LoaderCircle, Plus, UserMinus } from 'lucide-react';
+import { Check, Plus, UserMinus } from 'lucide-react';
 import Link from 'next/link';
 import { useOptimistic, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
@@ -60,18 +60,17 @@ export const CommunityMembershipButton: FC<CommunityMembershipButtonProps> = ({
       variant={optimisticMember ? 'outline' : 'default'}
       size='sm'
       onClick={toggleMembership}
-      disabled={pending}
+      isLoading={pending}
+      loadingText='Saving…'
       className={optimisticMember ? 'rounded-full' : 'celestia-primary-action rounded-full'}
     >
-      {pending ? (
-        <LoaderCircle className='size-3.5 animate-spin' />
-      ) : optimisticMember ? (
+      {optimisticMember ? (
         <Check className='size-3.5' />
       ) : (
         <Plus className='size-3.5' />
       )}
-      {pending ? 'Saving…' : optimisticMember ? 'Joined' : 'Join'}
-      {optimisticMember && !pending ? <UserMinus className='size-3.5' /> : null}
+      {optimisticMember ? 'Joined' : 'Join'}
+      {optimisticMember ? <UserMinus className='size-3.5' /> : null}
     </Button>
   );
 };

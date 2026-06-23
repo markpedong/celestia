@@ -102,11 +102,13 @@ export const SubmitPostForm: FC<SubmitPostFormProps> = ({ communities, defaultCo
 
       <Button
         type='submit'
-        disabled={pending || communities.length === 0 || !isValid}
+        disabled={communities.length === 0 || !isValid}
+        isLoading={pending}
+        loadingText='Posting...'
         className='celestia-primary-action h-10 w-full rounded'
       >
         <Send className='size-4' />
-        {pending ? 'Posting...' : 'Create Post'}
+        Create Post
       </Button>
     </form>
   );

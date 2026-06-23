@@ -94,9 +94,9 @@ export const CreateCommunityForm = () => {
           {...register('hashColor')}
         />
       </FormField>
-      <Button type='submit' disabled={pending || !isValid} className='celestia-primary-action h-11 w-full rounded'>
+      <Button type='submit' disabled={!isValid} isLoading={pending} loadingText='Creating community…' className='celestia-primary-action h-11 w-full rounded'>
         <Plus className='size-4' />
-        {pending ? 'Creating community…' : 'Create community'}
+        Create community
       </Button>
     </form>
   );

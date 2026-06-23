@@ -61,8 +61,8 @@ export const EditPostForm: FC<EditPostFormProps> = ({ post }) => {
         </Label>
         <ImageUploadField initialImageUrls={post.imageUrls} name='images' multiple />
       </div>
-      <Button type='submit' disabled={pending || !isValid} className='celestia-primary-action h-11 w-full rounded'>
-        <Save className='size-4' /> {pending ? 'Saving…' : 'Save changes'}
+      <Button type='submit' disabled={!isValid} isLoading={pending} loadingText='Saving…' className='celestia-primary-action h-11 w-full rounded'>
+        <Save className='size-4' /> Save changes
       </Button>
     </form>
   );
