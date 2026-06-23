@@ -42,7 +42,10 @@ export const ensureUserProfile = async (identity: {
   return {
     id: row.id,
     username: row.username,
-    displayName: identity.name,
+    displayName: row.displayName ?? identity.name,
+    bio: row.bio,
+    gender: row.gender ?? undefined,
+    location: row.location ?? undefined,
     avatarUrl: row.avatarUrl ?? identity.image ?? undefined,
     coverUrl: row.coverUrl ?? undefined,
   };

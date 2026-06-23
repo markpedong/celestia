@@ -28,6 +28,9 @@ export type User = {
   id: string;
   username: string;
   displayName?: string;
+  bio?: string;
+  gender?: string;
+  location?: string;
   email?: string;
   avatarUrl?: string;
   coverUrl?: string;
