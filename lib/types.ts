@@ -1,5 +1,6 @@
 import type { LucideIcon } from 'lucide-react';
-import type { ReactNode } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
+import { Input } from '@/components/ui/input';
 
 export type ApiResponse<TResponse = null> = {
   message: string;
@@ -381,3 +382,15 @@ export type PostImageGalleryProps = {
   title: string;
   variant: 'thumbnail' | 'gallery';
 };
+
+export type FormFieldProps = {
+  children: ReactNode;
+  error?: string;
+  hint?: ReactNode;
+  htmlFor?: string;
+  label: ReactNode;
+  className?: string;
+  labelClassName?: string;
+};
+
+export type PasswordFieldProps = Omit<ComponentProps<typeof Input>, 'type'> & Pick<FormFieldProps, 'error' | 'label' | 'labelClassName'>;
