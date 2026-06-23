@@ -2,9 +2,12 @@ import AuthMethods from '@/components/auth/auth-methods';
 import type { AuthPageProps } from '@/lib/types';
 import { Zap } from 'lucide-react';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 
 const AuthPage = async ({ params }: AuthPageProps) => {
   const { pathname } = await params;
+
+  if (pathname !== 'sign-in' && pathname !== 'sign-up') redirect('/');
 
   return (
     <div className='flex min-h-dvh w-full flex-col items-center justify-center px-4 py-8'>

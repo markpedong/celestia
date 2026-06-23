@@ -77,8 +77,12 @@ const Button: FC<React.ComponentProps<"button"> &
       aria-busy={isLoading || ariaBusy || undefined}
       {...props}
     >
-      {isLoading ? <LoaderCircle className='size-4 animate-spin' /> : null}
-      {isLoading && loadingText ? loadingText : children}
+      {isLoading ? (
+        <>
+          <LoaderCircle className='size-4 animate-spin' />
+          {loadingText ?? children}
+        </>
+      ) : children}
     </Comp>
   )
 };
