@@ -1,4 +1,5 @@
 import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { getInitialDisplayName } from '@/lib/initial-display-name';
 import { NextResponse } from 'next/server';
 
 export const GET = async (request: Request) => {
@@ -12,11 +13,18 @@ export const GET = async (request: Request) => {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error && data.user?.email) {
+      const fallbackDisplayName = data.user.email.split('@')[0];
+      const { data: existingProfile } = await supabase
+        .from('user_profiles')
+        .select('display_name')
+        .eq('id', data.user.id)
+        .maybeSingle();
+      const shouldGenerateDisplayName = !existingProfile?.display_name || existingProfile.display_name === fallbackDisplayName;
       const { error: profileError } = await supabase.from('user_profiles').upsert({
         id: data.user.id,
         username: data.user.email.split('@')[0],
         email: data.user.email,
-        display_name: data.user.user_metadata.display_name ?? data.user.user_metadata.full_name ?? data.user.user_metadata.name ?? null,
+        ...(shouldGenerateDisplayName ? { display_name: await getInitialDisplayName(fallbackDisplayName) } : {}),
         avatar_url: data.user.user_metadata.avatar_url ?? null,
       });
 

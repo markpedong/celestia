@@ -40,6 +40,13 @@ export const ensureUserProfile = async (identity: {
     });
   }
 
+  if (!row.displayName && identity.name) {
+    row = await prisma.userProfile.update({
+      where: { id: identity.id },
+      data: { displayName: identity.name },
+    });
+  }
+
   return {
     id: row.id,
     username: row.username,

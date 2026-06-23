@@ -6,6 +6,7 @@ import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
+import { getInitialDisplayName } from '@/lib/initial-display-name';
 import { getEmailByUsername } from '@/services';
 import type { AuthMode } from '@/lib/types';
 import { MAX_EMAIL_LENGTH, MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '@/constants';
@@ -51,17 +52,6 @@ const getAuthErrorMessage = (message: string, intent: AuthIntent): string => {
   if (intent === 'passkey') return 'We could not sign you in with a passkey. Try another sign-in method.';
   if (intent === 'sign-up') return 'We could not create your account. Please try again.';
   return 'We could not sign you in. Please try again.';
-};
-
-const getInitialDisplayName = async (fallback: string) => {
-  try {
-    const response = await fetch('https://random-word-api.herokuapp.com/word?number=2');
-    const words = await response.json();
-    if (Array.isArray(words) && words.length === 2 && words.every(word => typeof word === 'string')) {
-      return words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-    }
-  } catch { }
-  return fallback.trim() || 'New User';
 };
 
 export const useAuthForm = (mode: AuthMode) => {
@@ -129,6 +119,7 @@ export const useAuthForm = (mode: AuthMode) => {
             id: result.data.user.id,
             username,
             email: result.data.user.email,
+            ...(typeof result.data.user.user_metadata.display_name === 'string' ? { display_name: result.data.user.user_metadata.display_name } : {}),
             avatar_url: `https://api.dicebear.com/9.x/thumbs/svg?seed=${result.data.user.email ?? email}`,
           }, { ignoreDuplicates: true });
 
