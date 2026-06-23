@@ -35,10 +35,3 @@ export const createCommunitySchema = z.object({
 });
 
 export const communitySettingsSchema = z.object(communityFields);
-
-export const profileSettingsSchema = z.object({
-  displayName: z.string().trim().min(1, 'Display name is required.').max(80, 'Display name must be 80 characters or fewer.'),
-  bio: z.string().trim().max(500, 'Bio must be 500 characters or fewer.'),
-  gender: z.string().trim().max(32, 'Gender must be 32 characters or fewer.'),
-  location: z.string().trim().max(120, 'Location must be 120 characters or fewer.'),
-});

@@ -15,10 +15,6 @@ datasource db {
 model UserProfile {
   id        String   @id
   username  String   @unique
-  displayName String? @map("display_name")
-  bio       String   @default("")
-  gender    String?  @db.VarChar(32)
-  location  String?  @db.VarChar(120)
   avatarUrl String?  @map("avatar_url")
   coverUrl  String?  @map("cover_url")
   email     String?  @map("email")
