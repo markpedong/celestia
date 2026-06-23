@@ -7,7 +7,7 @@ import { FormField, PasswordField } from '@/components/ui/form-field';
 import { useAuthForm } from '@/hooks/use-auth-form';
 import { MAX_DISPLAY_NAME_LENGTH } from '@/constants';
 import type { AuthMethodsProps } from '@/lib/types';
-import { KeyRound, Mail } from 'lucide-react';
+import { Fingerprint, KeyRound, Mail } from 'lucide-react';
 import Link from 'next/link';
 
 const AuthMethods: FC<AuthMethodsProps> = ({ mode }) => {
@@ -15,6 +15,7 @@ const AuthMethods: FC<AuthMethodsProps> = ({ mode }) => {
     register,
     handleSubmit,
     formState: { errors, isSubmitted, isValid, touchedFields },
+    continueWithPasskey,
     continueWithProvider,
     isSignUp,
     message,
@@ -64,6 +65,7 @@ const AuthMethods: FC<AuthMethodsProps> = ({ mode }) => {
           Apple
         </button>
       </div>
+      {!isSignUp ? <button type='button' onClick={continueWithPasskey} disabled={pending} className='flex h-11 w-full items-center justify-center gap-2 rounded border border-border bg-background text-sm font-medium text-card-foreground transition-colors hover:bg-muted disabled:opacity-60'><Fingerprint className='size-4' /> Continue with passkey</button> : null}
       <div className='flex items-center gap-3'>
         <span className='h-px flex-1 bg-border' />
         <span className='text-xs font-medium text-muted-foreground'>or continue with email</span>

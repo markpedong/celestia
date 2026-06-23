@@ -21,7 +21,7 @@ const authSchema = z.object({
 });
 
 type AuthValues = z.infer<typeof authSchema>;
-type AuthIntent = 'sign-in' | 'sign-up' | 'oauth';
+type AuthIntent = 'sign-in' | 'sign-up' | 'oauth' | 'passkey';
 
 const getAuthErrorMessage = (message: string, intent: AuthIntent): string => {
   const normalized = message.toLowerCase();
@@ -46,6 +46,7 @@ const getAuthErrorMessage = (message: string, intent: AuthIntent): string => {
   }
 
   if (intent === 'oauth') return 'We could not start that sign-in provider. Please try again.';
+  if (intent === 'passkey') return 'We could not sign you in with a passkey. Try another sign-in method.';
   if (intent === 'sign-up') return 'We could not create your account. Please try again.';
   return 'We could not sign you in. Please try again.';
 };
@@ -138,5 +139,19 @@ export const useAuthForm = (mode: AuthMode) => {
     });
   };
 
-  return { ...form, continueWithProvider, isSignUp, message, pending, submit };
+  const continueWithPasskey = () => {
+    setMessage(null);
+
+    startTransition(async () => {
+      const { data, error } = await supabase.auth.signInWithPasskey();
+      if (error || !data.session || !data.user) {
+        toast.error(getAuthErrorMessage(error?.message ?? 'Passkey sign-in did not complete.', 'passkey'));
+        return;
+      }
+      router.replace('/');
+      router.refresh();
+    });
+  };
+
+  return { ...form, continueWithPasskey, continueWithProvider, isSignUp, message, pending, submit };
 };
