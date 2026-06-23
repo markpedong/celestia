@@ -22,9 +22,12 @@ export const ACCEPTED_IMAGE_TYPES = new Set<string>(IMAGE_MIME_TYPES);
 export const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
 export const IMAGE_CACHE_CONTROL = '31536000';
 
-export const MAX_VISIBLE = 5;
-
-export const FALLBACK_NAMES = ['Mark', 'JP', 'Ana', 'CJ', 'Ken', 'MJ', 'Lara', 'D'];
-
-
 export const STALE_TIME = 1_000 * 60 * 60 // 1 hour;
+
+export const REDIRECT_FORGOT = `${window.location.origin}/auth/callback?next=/auth/update-password`;
+
+export const PASSWORD_RECOVERY = {
+  email: '',
+  password: '',
+  confirmPassword: '',
+}

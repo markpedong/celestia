@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { FALLBACK_NAMES, MAX_VISIBLE } from '@/constants';
 
 const supabase = createSupabaseBrowserClient();
 
@@ -29,13 +28,10 @@ export const ActiveNow = () => {
   }, []);
 
   const visibleUsers = useMemo(() => {
-    const count = Math.min(activeSessions, MAX_VISIBLE);
+    const count = Math.min(activeSessions, 5);
 
     return Array.from({ length: count }, (_, index) => {
-      const name = FALLBACK_NAMES[index % FALLBACK_NAMES.length];
-
       return {
-        name,
         image: `https://api.dicebear.com/9.x/thumbs/svg?seed=celestia-${index}`,
       };
     });
@@ -51,13 +47,13 @@ export const ActiveNow = () => {
         <div className='flex items-center'>
           {visibleUsers.map((user, index) => (
             <Avatar
-              key={`${user.name}-${index}`}
+              key={`${user.image}-${index}`}
               className='size-8 border-2 border-card bg-secondary shadow-sm'
               style={{ marginLeft: index ? -8 : 0, zIndex: 10 - index }}
             >
-              <AvatarImage src={user.image} alt={user.name} />
+              <AvatarImage src={user.image} alt={user.image} />
               <AvatarFallback className='bg-secondary text-[10px] font-semibold text-secondary-foreground'>
-                {user.name.slice(0, 2).toUpperCase()}
+                {user.image.slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
           ))}

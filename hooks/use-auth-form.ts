@@ -10,6 +10,7 @@ import { getEmailByUsername, getInitialDisplayName } from '@/services';
 import type { AuthMode } from '@/lib/types';
 import { MAX_EMAIL_LENGTH, MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '@/constants';
 import { useZodForm } from './use-zod-form';
+import { ENTER_VALID_EMAIL } from '@/constants/messages';
 
 const supabase = createSupabaseBrowserClient();
 
@@ -41,7 +42,7 @@ export const useAuthForm = (mode: AuthMode) => {
     }
 
     if (!z.string().email().safeParse(values.email).success) {
-      context.addIssue({ code: 'custom', message: 'Enter a valid email address.', path: ['email'] });
+      context.addIssue({ code: 'custom', message: ENTER_VALID_EMAIL, path: ['email'] });
     }
 
     if (!values.confirmPassword) {

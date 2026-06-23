@@ -370,14 +370,20 @@ export type PostImageGalleryProps = {
   variant: 'thumbnail' | 'gallery';
 };
 
-export type FormFieldProps = {
-  children: ReactNode;
-  error?: string;
-  hint?: ReactNode;
-  htmlFor?: string;
-  label: ReactNode;
-  className?: string;
+export type FormFieldProps = Omit<React.ComponentProps<'input'>, 'id' | 'name'> & {
+  name: string;
+  id?: string;
+  label: string;
+  wrapperClassName?: string;
   labelClassName?: string;
+  error?: string;
+  hint?: React.ReactNode;
 };
 
 export type PasswordFieldProps = Omit<ComponentProps<typeof Input>, 'type'> & Pick<FormFieldProps, 'error' | 'label' | 'labelClassName'>;
+
+export type PasswordRecoveryValues = {
+  email: string;
+  password: string;
+  confirmPassword: string;
+};

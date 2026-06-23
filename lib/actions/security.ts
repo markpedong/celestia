@@ -50,13 +50,28 @@ const verifyCurrentPassword = async (password: string) => {
 };
 
 export const verifyAccountPasswordAction = async (formData: FormData): Promise<PasswordVerificationState> => {
-  const setting = formData.get('setting');
-  const password = formData.get('password');
-  if (typeof setting !== 'string' || !passwordProtectedSettings.has(setting as PasswordVerificationSetting)) return { error: 'Choose a valid account setting.' };
-  if (typeof password !== 'string' || !password) return { error: 'Enter your password.' };
+  const setting = formData.get('setting') as PasswordVerificationSetting;
+  const password = formData.get('password')?.toString().trim();
+
+  if (!passwordProtectedSettings.has(setting)) {
+    return { error: 'Choose a valid account setting.' };
+  }
+
+  if (!password) {
+    return { error: 'Enter your password.' };
+  }
+
   const verification = await verifyCurrentPassword(password);
-  if ('error' in verification) return verification;
-  return { success: 'Password verified.', setting: setting as PasswordVerificationSetting, token: createVerificationToken(verification.user.id, setting as PasswordVerificationSetting) };
+
+  if ('error' in verification) {
+    return verification;
+  }
+
+  return {
+    success: 'Password verified.',
+    setting,
+    token: createVerificationToken(verification.user.id, setting),
+  };
 };
 
 export const updateSensitiveAccountAction = async (formData: FormData): Promise<ErrorFormState<{ success?: string }>> => {

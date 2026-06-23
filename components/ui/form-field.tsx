@@ -1,44 +1,56 @@
 'use client';
 
-import { FC, useState } from 'react';
+import { forwardRef, useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from './input';
 import { Label } from './label';
-import { FormFieldProps, PasswordFieldProps } from '@/lib/types';
+import type { FormFieldProps } from '@/lib/types';
 
-export const FormField: FC<FormFieldProps> = ({ children, className, error, hint, htmlFor, label, labelClassName }) => (
-  <div className={cn('space-y-2', className)}>
-    <Label htmlFor={htmlFor} className={labelClassName}>
-      {label}
-    </Label>
-    {children}
-    {hint ? <p className='text-xs text-muted-foreground'>{hint}</p> : null}
-    {error ? <p className='text-xs text-destructive'>{error}</p> : null}
-  </div>
+const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
+  ({ wrapperClassName, error, hint, label, labelClassName, type, id, name, className, ...inputProps }, ref) => {
+    const [isVisible, setIsVisible] = useState(false);
+
+    const inputId = id ?? name;
+    const isPassword = type === 'password';
+
+    return (
+      <div className={cn('space-y-2', wrapperClassName)}>
+        <Label htmlFor={inputId} className={labelClassName}>
+          {label}
+        </Label>
+
+        <div className={cn(isPassword && 'relative')}>
+          <Input
+            ref={ref}
+            id={inputId}
+            name={name}
+            type={isPassword && isVisible ? 'text' : type}
+            aria-invalid={inputProps['aria-invalid'] ?? Boolean(error)}
+            className={cn(className, isPassword && 'pr-10')}
+            autoComplete='off'
+            {...inputProps}
+          />
+
+          {isPassword ? (
+            <button
+              type='button'
+              onClick={() => setIsVisible(visible => !visible)}
+              className='absolute inset-y-0 right-0 grid w-10 place-items-center text-muted-foreground hover:text-foreground'
+              aria-label={isVisible ? 'Hide password' : 'Show password'}
+            >
+              {isVisible ? <Eye className='size-4' /> : <EyeOff className='size-4' />}
+            </button>
+          ) : null}
+        </div>
+
+        {hint ? <p className='text-xs text-muted-foreground'>{hint}</p> : null}
+        {error ? <p className='text-xs text-destructive'>{error}</p> : null}
+      </div>
+    );
+  }
 );
 
-export const PasswordField: FC<PasswordFieldProps> = ({ error, label, labelClassName, ...inputProps }) => {
-  const [isVisible, setIsVisible] = useState(false);
+FormField.displayName = 'FormField';
 
-  return (
-    <FormField htmlFor={inputProps.id} label={label} labelClassName={labelClassName} error={error}>
-      <div className='relative'>
-        <Input
-          {...inputProps}
-          type={isVisible ? 'text' : 'password'}
-          aria-invalid={inputProps['aria-invalid'] ?? Boolean(error)}
-          className={cn(inputProps.className, 'pr-10')}
-        />
-        <button
-          type='button'
-          onClick={() => setIsVisible(visible => !visible)}
-          className='absolute inset-y-0 right-0 grid w-10 place-items-center text-muted-foreground hover:text-foreground'
-          aria-label={isVisible ? 'Hide password' : 'Show password'}
-        >
-          {isVisible ? <Eye className='size-4' /> : <EyeOff className='size-4' />}
-        </button>
-      </div>
-    </FormField>
-  );
-};
+export default FormField;

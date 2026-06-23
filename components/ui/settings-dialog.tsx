@@ -9,16 +9,17 @@ type SettingsDialogProps = ComponentProps<typeof Dialog> & {
   children: ReactNode;
 };
 
-export const SettingsDialog = ({ children, description, title, ...props }: SettingsDialogProps) => (
+const SettingsDialog = ({ children, description, title, ...props }: SettingsDialogProps) => (
   <Dialog {...props}>
     <DialogContent>
       <DialogHeader>
         <DialogTitle>{title}</DialogTitle>
         {description ? <DialogDescription>{description}</DialogDescription> : null}
       </DialogHeader>
-      <div className='[&_input]:h-11 [&_input]:bg-background'>
-        {children}
-      </div>
+
+      <div className='[&_input]:h-11 [&_input]:bg-background'>{children}</div>
     </DialogContent>
   </Dialog>
 );
+
+export default SettingsDialog;

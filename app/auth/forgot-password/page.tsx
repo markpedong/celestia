@@ -1,4 +1,4 @@
-import { PasswordRecoveryForm } from '@/components/auth/password-recovery-form';
+import PasswordRecoveryForm from '@/components/auth/password-recovery-form';
 import { Zap } from 'lucide-react';
 import Link from 'next/link';
 

@@ -1,28 +1,34 @@
 'use client';
 
-import { useActionState, useEffect, useState, useTransition, type FormEvent } from 'react';
+import { useActionState, useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import Image from 'next/image';
 import { KeyRound, Link2, Moon, ShieldCheck, Smartphone, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTheme } from 'next-themes';
 import { useSession } from '@/hooks/useSession';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { FormField } from '@/components/ui/form-field';
-import { DialogClose, DialogFooter } from '@/components/ui/dialog';
-import { SettingsDialog } from '@/components/ui/settings-dialog';
 import { SettingsOptionRow } from '@/components/ui/settings-option-row';
-import {
-  changePasswordAction,
-  deleteAccountAction,
-  generateBackupCodesAction,
-  setPasswordAction,
-  updateSensitiveAccountAction,
-  verifyAccountPasswordAction,
-} from '@/lib/actions/security';
+import { deleteAccountAction } from '@/lib/actions/security';
+import { VerifyPasswordDialog } from '../dialogs/verify-password';
+import { SensitiveSettingDialog } from '../dialogs/sensitive-setting';
+import { ChangePasswordDialog } from '../dialogs/change-password';
+import { SetPasswordDialog } from '../dialogs/set-password';
+import { MfaDialog } from '../dialogs/mfa-dialog';
+import { BackupCodesDialog } from '../dialogs/backup-codes';
+import { DeleteAccountDialog } from '../dialogs/delete-account';
 
 type SensitiveSetting = 'email' | 'phone' | 'gender' | 'location' | 'passkey' | 'mfa' | 'backupCodes';
+type EditableSetting = 'email' | 'phone' | 'gender' | 'location';
+
+type AccountDialog =
+  | { type: 'verify'; setting: SensitiveSetting }
+  | { type: 'edit'; setting: EditableSetting; token: string }
+  | { type: 'changePassword' }
+  | { type: 'setPassword' }
+  | { type: 'mfa' }
+  | { type: 'backupCodes' }
+  | { type: 'deleteAccount' }
+  | null;
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <section className='celestia-card space-y-5 p-5 md:p-6'>
@@ -34,27 +40,24 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
 export const AccountSettings = () => {
   const { supabase, user } = useSession();
   const { theme, setTheme } = useTheme();
+  const queryClient = useQueryClient();
+
+  const [dialog, setDialog] = useState<AccountDialog>(null);
   const [pending, setPending] = useState<string | null>(null);
   const [enrollment, setEnrollment] = useState<{ id: string; qr: string; secret: string } | null>(null);
   const [mfaCode, setMfaCode] = useState('');
-  const [isMfaDialogOpen, setIsMfaDialogOpen] = useState(false);
-  const [isBackupCodesDialogOpen, setIsBackupCodesDialogOpen] = useState(false);
-  const [isPasswordSetupDialogOpen, setIsPasswordSetupDialogOpen] = useState(false);
   const [hasPasswordOverride, setHasPasswordOverride] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [activeEditor, setActiveEditor] = useState<'email' | 'phone' | 'password' | 'gender' | 'location' | null>(null);
-  const [passwordGate, setPasswordGate] = useState<SensitiveSetting | null>(null);
-  const [verificationToken, setVerificationToken] = useState('');
-  const [isVerifying, startVerifying] = useTransition();
-  const [isSavingSensitive, startSavingSensitive] = useTransition();
-  const [isChangingPassword, startChangingPassword] = useTransition();
   const [backupCodes, setBackupCodes] = useState<string[] | null>(null);
-  const [generatingCodes, startGeneratingCodes] = useTransition();
   const [deleteState, deleteAccount, deletingAccount] = useActionState(deleteAccountAction, null);
+
   const identities = user?.identities ?? [];
   const hasProvider = (provider: 'google' | 'apple') => identities.some(identity => identity.provider === provider);
-  const hasPassword = hasPasswordOverride || identities.some(identity => identity.provider === 'email') || (Array.isArray(user?.app_metadata.providers) && user.app_metadata.providers.includes('email'));
-  const queryClient = useQueryClient();
+
+  const hasPassword =
+    hasPasswordOverride ||
+    identities.some(identity => identity.provider === 'email') ||
+    (Array.isArray(user?.app_metadata.providers) && user.app_metadata.providers.includes('email'));
+
   const securityQuery = useQuery({
     queryKey: ['auth', 'security', user?.id],
     enabled: Boolean(user),
@@ -63,8 +66,10 @@ export const AccountSettings = () => {
         supabase.auth.passkey.list(),
         supabase.auth.mfa.listFactors(),
       ]);
+
       if (passkeyResult.error) throw passkeyResult.error;
       if (factorResult.error) throw factorResult.error;
+
       return {
         passkeys: passkeyResult.data ?? [],
         factors: factorResult.data.totp,
@@ -74,147 +79,70 @@ export const AccountSettings = () => {
       };
     },
   });
+
   const passkeys = securityQuery.data?.passkeys ?? [];
   const factors = securityQuery.data?.factors ?? [];
   const pendingTotpFactors = securityQuery.data?.pendingTotpFactors ?? [];
-
   const refreshSecurity = () => queryClient.invalidateQueries({ queryKey: ['auth', 'security', user?.id] });
+
   useEffect(() => {
     if (securityQuery.error) toast.error(securityQuery.error.message);
   }, [securityQuery.error]);
+
   useEffect(() => {
     if (deleteState?.error) toast.error(deleteState.error);
     if (deleteState?.success) void supabase.auth.signOut().then(() => window.location.assign('/'));
   }, [deleteState, supabase]);
 
-  const verifySensitiveSetting = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    startVerifying(async () => {
-      const result = await verifyAccountPasswordAction(formData);
-      if (result?.error || !result?.setting || !result.token) {
-        toast.error(result?.error ?? 'Unable to verify your password.');
-        return;
-      }
-      if (result.setting === 'passkey') {
-        setPasswordGate(null);
-        toast.success(result.success);
-        await registerPasskey();
-        return;
-      }
-      if (result.setting === 'mfa') {
-        setPasswordGate(null);
-        toast.success(result.success);
-        setIsMfaDialogOpen(true);
-        await enrollMfa();
-        return;
-      }
-      if (result.setting === 'backupCodes') {
-        setPasswordGate(null);
-        setIsBackupCodesDialogOpen(true);
-        toast.success(result.success);
-        return;
-      }
-      setVerificationToken(result.token);
-      setPasswordGate(null);
-      setActiveEditor(result.setting);
-      toast.success(result.success);
-    });
-  };
-
-  const saveSensitiveSetting = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    startSavingSensitive(async () => {
-      const result = await updateSensitiveAccountAction(formData);
-      if (result?.error) {
-        toast.error(result.error);
-        return;
-      }
-      setActiveEditor(null);
-      setVerificationToken('');
-      toast.success(result?.success ?? 'Account details updated.');
-    });
-  };
-
-  const submitPasswordChange = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    startChangingPassword(async () => {
-      const result = await changePasswordAction(formData);
-      if (result?.error) {
-        toast.error(result.error);
-        return;
-      }
-      setActiveEditor(null);
-      toast.success(result?.success ?? 'Password updated.');
-    });
-  };
-
-  const submitPasswordSetup = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    startChangingPassword(async () => {
-      const result = await setPasswordAction(formData);
-      if (result?.error) {
-        toast.error(result.error);
-        return;
-      }
-      setHasPasswordOverride(true);
-      setIsPasswordSetupDialogOpen(false);
-      toast.success(result?.success ?? 'Password set.');
-    });
-  };
-
-  const generateBackupCodes = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    startGeneratingCodes(async () => {
-      const result = await generateBackupCodesAction();
-      if (result?.error) {
-        toast.error(result.error);
-        return;
-      }
-      setBackupCodes(result?.codes ?? null);
-      setIsBackupCodesDialogOpen(false);
-      toast.success(result?.success ?? 'New backup codes generated.');
-    });
-  };
-
   const changeProvider = async (provider: 'google' | 'apple') => {
     const identity = identities.find(item => item.provider === provider);
+
     if (identity && identities.length < 2 && passkeys.length === 0) {
       toast.error('Add another sign-in method before disconnecting your last login method.');
       return;
     }
+
     setPending(provider);
+
     const result = identity
       ? await supabase.auth.unlinkIdentity(identity)
       : await supabase.auth.linkIdentity({
           provider,
           options: { redirectTo: `${window.location.origin}/auth/callback?next=/settings` },
         });
+
     setPending(null);
+
     if (result.error) toast.error(result.error.message);
     else if (identity) toast.success(`${provider === 'google' ? 'Google' : 'Apple'} disconnected.`);
   };
 
-  async function registerPasskey() {
+  const registerPasskey = async () => {
     setPending('passkey');
+
     const { error } = await supabase.auth.registerPasskey();
+
     setPending(null);
+
     if (error) toast.error(error.message);
     else {
       toast.success('Passkey added.');
       await refreshSecurity();
     }
-  }
+  };
 
   const removePasskey = async (passkeyId: string) => {
-    if (passkeys.length === 1 && identities.length < 2)
-      return toast.error('Add another sign-in method before removing your last passkey.');
+    if (passkeys.length === 1 && identities.length < 2) {
+      toast.error('Add another sign-in method before removing your last passkey.');
+      return;
+    }
+
     setPending(passkeyId);
+
     const { error } = await supabase.auth.passkey.delete({ passkeyId });
+
     setPending(null);
+
     if (error) toast.error(error.message);
     else {
       toast.success('Passkey removed.');
@@ -222,59 +150,99 @@ export const AccountSettings = () => {
     }
   };
 
-  async function enrollMfa() {
+  const enrollMfa = async () => {
     setPending('mfa-enroll');
+
     const pendingFactor = pendingTotpFactors.find(factor => factor.friendly_name === 'Authenticator app');
+
     if (pendingFactor) {
       const { error } = await supabase.auth.mfa.unenroll({ factorId: pendingFactor.id });
+
       if (error) {
         setPending(null);
         toast.error(error.message);
         return;
       }
     }
-    const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'Authenticator app' });
+
+    const { data, error } = await supabase.auth.mfa.enroll({
+      factorType: 'totp',
+      friendlyName: 'Authenticator app',
+    });
+
     setPending(null);
-    if (error || !data?.totp) return toast.error(error?.message ?? 'Unable to start MFA enrollment.');
-    setEnrollment({ id: data.id, qr: data.totp.qr_code, secret: data.totp.secret });
-  }
+
+    if (error || !data?.totp) {
+      toast.error(error?.message ?? 'Unable to start MFA enrollment.');
+      return;
+    }
+
+    setEnrollment({
+      id: data.id,
+      qr: data.totp.qr_code,
+      secret: data.totp.secret,
+    });
+  };
 
   const verifyMfa = async () => {
     if (!enrollment || !mfaCode) return;
+
     setPending('mfa-verify');
+
     const challenge = await supabase.auth.mfa.challenge({ factorId: enrollment.id });
     const result = challenge.error
       ? challenge
-      : await supabase.auth.mfa.verify({ factorId: enrollment.id, challengeId: challenge.data.id, code: mfaCode });
+      : await supabase.auth.mfa.verify({
+          factorId: enrollment.id,
+          challengeId: challenge.data.id,
+          code: mfaCode,
+        });
+
     setPending(null);
-    if (result.error) return toast.error(result.error.message);
+
+    if (result.error) {
+      toast.error(result.error.message);
+      return;
+    }
+
     toast.success('Two-factor authentication enabled.');
     setEnrollment(null);
     setMfaCode('');
-    setIsMfaDialogOpen(false);
+    setDialog(null);
     await refreshSecurity();
   };
 
   const cancelMfaEnrollment = async () => {
     if (!enrollment) {
-      setIsMfaDialogOpen(false);
+      setDialog(null);
       return;
     }
+
     setPending('mfa-cancel');
+
     const { error } = await supabase.auth.mfa.unenroll({ factorId: enrollment.id });
+
     setPending(null);
-    if (error) return toast.error(error.message);
+
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+
     setEnrollment(null);
     setMfaCode('');
-    setIsMfaDialogOpen(false);
+    setDialog(null);
     toast.success('Authenticator setup cancelled.');
     await refreshSecurity();
   };
 
   const disableMfa = async (factorId: string) => {
     setPending(factorId);
+
     const { error } = await supabase.auth.mfa.unenroll({ factorId });
+
     setPending(null);
+
     if (error) toast.error(error.message);
     else {
       toast.success('Two-factor authentication disabled.');
@@ -286,227 +254,41 @@ export const AccountSettings = () => {
     <div className='space-y-5'>
       <Section title='General'>
         <div className='divide-y divide-border rounded-lg border border-border'>
-          <SettingsOptionRow title='Change email' value={user?.email} onClick={() => setPasswordGate('email')} />
+          <SettingsOptionRow
+            title='Change email'
+            value={user?.email}
+            onClick={() => setDialog({ type: 'verify', setting: 'email' })}
+          />
           <SettingsOptionRow
             title='Phone Number'
             value={user?.phone || 'Not set'}
-            onClick={() => setPasswordGate('phone')}
+            onClick={() => setDialog({ type: 'verify', setting: 'phone' })}
           />
           <SettingsOptionRow
             title={hasPassword ? 'Change Password' : 'Set Password'}
             description={hasPassword ? 'Update your account password.' : 'Add a password to sign in without Google.'}
-            onClick={() => hasPassword ? setActiveEditor('password') : setIsPasswordSetupDialogOpen(true)}
+            onClick={() => setDialog({ type: hasPassword ? 'changePassword' : 'setPassword' })}
           />
           <SettingsOptionRow
             title='Location'
             value={
               typeof user?.user_metadata.location === 'string' ? user.user_metadata.location || 'Not set' : 'Not set'
             }
-            onClick={() => setPasswordGate('location')}
+            onClick={() => setDialog({ type: 'verify', setting: 'location' })}
           />
           <SettingsOptionRow
             title='Gender'
             value={typeof user?.user_metadata.gender === 'string' ? user.user_metadata.gender || 'Not set' : 'Not set'}
-            onClick={() => setPasswordGate('gender')}
+            onClick={() => setDialog({ type: 'verify', setting: 'gender' })}
           />
         </div>
       </Section>
-
-      <SettingsDialog
-        open={passwordGate !== null}
-        onOpenChange={open => !open && setPasswordGate(null)}
-        title='Verify your password'
-        description='Enter your password to continue editing this setting.'
-      >
-        <form onSubmit={verifySensitiveSetting} className='space-y-4'>
-          <input type='hidden' name='setting' value={passwordGate ?? ''} />
-          <FormField htmlFor='verification-password' label='Current password'>
-            <Input
-              id='verification-password'
-              name='password'
-              type='password'
-              required
-              autoComplete='current-password'
-            />
-          </FormField>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button type='button' variant='outline'>
-                Cancel
-              </Button>
-            </DialogClose>
-            <Button type='submit' isLoading={isVerifying}>
-              Verify password
-            </Button>
-          </DialogFooter>
-        </form>
-      </SettingsDialog>
-
-      <SettingsDialog
-        open={activeEditor === 'email'}
-        onOpenChange={open => !open && setActiveEditor(null)}
-        title='Change email'
-        description='We’ll send a confirmation email to your new address.'
-      >
-        <form onSubmit={saveSensitiveSetting} className='space-y-4'>
-          <input type='hidden' name='setting' value='email' />
-          <input type='hidden' name='verificationToken' value={verificationToken} />
-          <FormField htmlFor='email' label='Email address'>
-            <Input
-              id='email'
-              name='value'
-              type='email'
-              defaultValue={user?.email ?? ''}
-              required
-              autoComplete='email'
-            />
-          </FormField>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button type='button' variant='outline'>
-                Cancel
-              </Button>
-            </DialogClose>
-            <Button type='submit' isLoading={isSavingSensitive}>
-              Save email
-            </Button>
-          </DialogFooter>
-        </form>
-      </SettingsDialog>
-      <SettingsDialog
-        open={activeEditor === 'phone'}
-        onOpenChange={open => !open && setActiveEditor(null)}
-        title='Phone Number'
-        description='Keep your phone number current for account recovery.'
-      >
-        <form onSubmit={saveSensitiveSetting} className='space-y-4'>
-          <input type='hidden' name='setting' value='phone' />
-          <input type='hidden' name='verificationToken' value={verificationToken} />
-          <FormField htmlFor='phone' label='Phone number'>
-            <Input
-              id='phone'
-              name='value'
-              type='tel'
-              defaultValue={user?.phone ?? ''}
-              placeholder='+63 900 000 0000'
-              autoComplete='tel'
-            />
-          </FormField>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button type='button' variant='outline'>
-                Cancel
-              </Button>
-            </DialogClose>
-            <Button type='submit' isLoading={isSavingSensitive}>
-              Save phone
-            </Button>
-          </DialogFooter>
-        </form>
-      </SettingsDialog>
-      <SettingsDialog
-        open={activeEditor === 'password'}
-        onOpenChange={open => !open && setActiveEditor(null)}
-        title='Change Password'
-        description='Use at least six characters for your new password.'
-      >
-        <form onSubmit={submitPasswordChange} className='space-y-4'>
-          <FormField htmlFor='current-password' label='Current password'>
-            <Input
-              id='current-password'
-              name='currentPassword'
-              type='password'
-              required
-              autoComplete='current-password'
-            />
-          </FormField>
-          <FormField htmlFor='new-password' label='New password'>
-            <Input
-              id='new-password'
-              name='newPassword'
-              type='password'
-              minLength={6}
-              required
-              autoComplete='new-password'
-            />
-          </FormField>
-          <FormField htmlFor='confirm-password' label='Confirm new password'>
-            <Input
-              id='confirm-password'
-              name='confirmPassword'
-              type='password'
-              minLength={6}
-              required
-              autoComplete='new-password'
-            />
-          </FormField>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button type='button' variant='outline'>
-                Cancel
-              </Button>
-            </DialogClose>
-            <Button type='submit' isLoading={isChangingPassword}>
-              Save password
-            </Button>
-          </DialogFooter>
-        </form>
-      </SettingsDialog>
-      <SettingsDialog
-        open={isPasswordSetupDialogOpen}
-        onOpenChange={setIsPasswordSetupDialogOpen}
-        title='Set Password'
-        description='Create a password for signing in without Google.'
-      >
-        <form onSubmit={submitPasswordSetup} className='space-y-4'>
-          <FormField htmlFor='setup-new-password' label='New password'>
-            <Input id='setup-new-password' name='newPassword' type='password' minLength={6} required autoComplete='new-password' />
-          </FormField>
-          <FormField htmlFor='setup-confirm-password' label='Confirm new password'>
-            <Input id='setup-confirm-password' name='confirmPassword' type='password' minLength={6} required autoComplete='new-password' />
-          </FormField>
-          <DialogFooter>
-            <DialogClose asChild><Button type='button' variant='outline'>Cancel</Button></DialogClose>
-            <Button type='submit' isLoading={isChangingPassword}>Set password</Button>
-          </DialogFooter>
-        </form>
-      </SettingsDialog>
-      {(['location', 'gender'] as const).map(field => (
-        <SettingsDialog
-          key={field}
-          open={activeEditor === field}
-          onOpenChange={open => !open && setActiveEditor(null)}
-          title={field === 'location' ? 'Location' : 'Gender'}
-          description='Update this account preference.'
-        >
-          <form onSubmit={saveSensitiveSetting} className='space-y-4'>
-            <input type='hidden' name='setting' value={field} />
-            <input type='hidden' name='verificationToken' value={verificationToken} />
-            <FormField htmlFor={`profile-${field}`} label={field === 'location' ? 'Location' : 'Gender'}>
-              <Input
-                id={`profile-${field}`}
-                name='value'
-                defaultValue={typeof user?.user_metadata[field] === 'string' ? user.user_metadata[field] : ''}
-              />
-            </FormField>
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button type='button' variant='outline'>
-                  Cancel
-                </Button>
-              </DialogClose>
-              <Button type='submit' isLoading={isSavingSensitive}>
-                Save {field}
-              </Button>
-            </DialogFooter>
-          </form>
-        </SettingsDialog>
-      ))}
 
       <Section title='Account Authorization'>
         {(['google', 'apple'] as const).map(provider => {
           const label = provider === 'google' ? 'Google' : 'Apple';
           const connected = hasProvider(provider);
+
           return (
             <div key={provider} className='flex items-center justify-between gap-3 rounded-md border border-border p-3'>
               <span className='flex items-center gap-2 text-sm'>
@@ -523,6 +305,7 @@ export const AccountSettings = () => {
             </div>
           );
         })}
+
         <div className='space-y-2 rounded-md border border-border p-3'>
           <div className='flex items-center justify-between gap-3'>
             <span className='flex items-center gap-2 text-sm'>
@@ -531,12 +314,13 @@ export const AccountSettings = () => {
             <Button
               size='sm'
               variant='outline'
-              onClick={() => setPasswordGate('passkey')}
+              onClick={() => setDialog({ type: 'verify', setting: 'passkey' })}
               isLoading={pending === 'passkey'}
             >
               Add passkey
             </Button>
           </div>
+
           {passkeys.map(passkey => (
             <div key={passkey.id} className='flex items-center justify-between gap-3 text-xs text-muted-foreground'>
               <span>
@@ -553,6 +337,7 @@ export const AccountSettings = () => {
             </div>
           ))}
         </div>
+
         <div className='space-y-3 rounded-md border border-border p-3'>
           <div className='flex items-center justify-between gap-3'>
             <span className='flex items-center gap-2 text-sm'>
@@ -562,13 +347,14 @@ export const AccountSettings = () => {
               <Button
                 size='sm'
                 variant='outline'
-                onClick={() => setPasswordGate('mfa')}
+                onClick={() => setDialog({ type: 'verify', setting: 'mfa' })}
                 isLoading={pending === 'mfa-enroll'}
               >
                 Set up
               </Button>
             )}
           </div>
+
           {factors.map(factor => (
             <div key={factor.id} className='flex items-center justify-between gap-3 text-xs text-muted-foreground'>
               <span>{factor.friendly_name ?? 'Authenticator app'} enabled</span>
@@ -583,17 +369,31 @@ export const AccountSettings = () => {
             </div>
           ))}
         </div>
+
         <div className='space-y-3 rounded-md border border-border p-3'>
           <div className='flex items-center justify-between gap-3'>
             <span className='flex items-center gap-2 text-sm'>
               <Smartphone className='size-4 text-muted-foreground' /> Backup Codes
             </span>
-            <Button type='button' size='sm' variant='outline' onClick={() => setPasswordGate('backupCodes')}>
+            <Button
+              type='button'
+              size='sm'
+              variant='outline'
+              onClick={() => setDialog({ type: 'verify', setting: 'backupCodes' })}
+            >
               {backupCodes ? 'Regenerate' : 'Generate'}
             </Button>
           </div>
+
           <p className='text-xs text-muted-foreground'>Generate one-time codes to store somewhere safe.</p>
-          {backupCodes ? <div className='rounded bg-muted p-3 font-mono text-xs leading-6'>{backupCodes.map(code => <div key={code}>{code}</div>)}</div> : null}
+
+          {backupCodes ? (
+            <div className='rounded bg-muted p-3 font-mono text-xs leading-6'>
+              {backupCodes.map(code => (
+                <div key={code}>{code}</div>
+              ))}
+            </div>
+          ) : null}
         </div>
       </Section>
 
@@ -607,62 +407,6 @@ export const AccountSettings = () => {
           </Button>
         </div>
       </Section>
-      <SettingsDialog
-        open={isMfaDialogOpen}
-        onOpenChange={open => !open && void cancelMfaEnrollment()}
-        title='Set up Two-Factor Authentication'
-        description='Scan the QR code with your authenticator app, then enter its six-digit code.'
-      >
-        {enrollment ? (
-          <div className='space-y-4'>
-            <Image
-              src={enrollment.qr}
-              alt='Authenticator setup QR code'
-              width={176}
-              height={176}
-              unoptimized
-              className='size-44 bg-background p-2'
-            />
-            <p className='text-xs text-muted-foreground'>
-              Can’t scan it? Enter this setup key manually:{' '}
-              <span className='break-all font-mono text-foreground'>{enrollment.secret}</span>
-            </p>
-            <Input
-              value={mfaCode}
-              onChange={event => setMfaCode(event.target.value)}
-              inputMode='numeric'
-              placeholder='6-digit code'
-            />
-            <DialogFooter>
-              <Button onClick={() => void verifyMfa()} isLoading={pending === 'mfa-verify'}>
-                Verify and enable
-              </Button>
-              <Button variant='outline' onClick={() => void cancelMfaEnrollment()} isLoading={pending === 'mfa-cancel'}>
-                Cancel
-              </Button>
-            </DialogFooter>
-          </div>
-        ) : (
-          <p className='text-sm text-muted-foreground'>Preparing your authenticator setup…</p>
-        )}
-      </SettingsDialog>
-      <SettingsDialog
-        open={isBackupCodesDialogOpen}
-        onOpenChange={setIsBackupCodesDialogOpen}
-        title='Backup Codes'
-        description='Store these one-time codes somewhere safe. Generating new codes replaces any existing codes.'
-      >
-        <form onSubmit={generateBackupCodes} className='space-y-4'>
-          <p className='text-sm text-muted-foreground'>
-            Generate codes for account recovery when your authenticator app is unavailable.
-          </p>
-          <DialogFooter>
-            <Button type='submit' isLoading={generatingCodes}>
-              {backupCodes ? 'Regenerate codes' : 'Generate codes'}
-            </Button>
-          </DialogFooter>
-        </form>
-      </SettingsDialog>
 
       <Section title='Advanced'>
         <div className='flex flex-wrap items-center justify-between gap-3 rounded-md border border-destructive/35 bg-destructive/5 p-3'>
@@ -670,33 +414,79 @@ export const AccountSettings = () => {
             <p className='text-sm font-medium'>Delete Account</p>
             <p className='text-xs text-muted-foreground'>This permanently removes your account and data.</p>
           </div>
-          <Button variant='destructive' size='sm' onClick={() => setIsDeleteDialogOpen(true)}>
+          <Button variant='destructive' size='sm' onClick={() => setDialog({ type: 'deleteAccount' })}>
             <Trash2 className='size-3.5' /> Delete account
           </Button>
         </div>
       </Section>
-      <SettingsDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-        title='Delete account?'
-        description='This permanently deletes your account, profile, posts, comments, votes, memberships, and backup codes.'
-      >
-        <form action={deleteAccount} className='space-y-4'>
-          <FormField htmlFor='delete-confirmation' label='Type DELETE to confirm'>
-            <Input id='delete-confirmation' name='confirmation' autoComplete='off' required />
-          </FormField>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button type='button' variant='outline'>
-                Cancel
-              </Button>
-            </DialogClose>
-            <Button type='submit' variant='destructive' isLoading={deletingAccount}>
-              Delete account
-            </Button>
-          </DialogFooter>
-        </form>
-      </SettingsDialog>
+
+      <VerifyPasswordDialog
+        setting={dialog?.type === 'verify' ? dialog.setting : null}
+        onClose={() => setDialog(null)}
+        onVerified={async result => {
+          toast.success(result.success);
+
+          if (result.setting === 'passkey') {
+            setDialog(null);
+            await registerPasskey();
+            return;
+          }
+
+          if (result.setting === 'mfa') {
+            setDialog({ type: 'mfa' });
+            await enrollMfa();
+            return;
+          }
+
+          if (result.setting === 'backupCodes') {
+            setDialog({ type: 'backupCodes' });
+            return;
+          }
+
+          setDialog({ type: 'edit', setting: result.setting, token: result.token });
+        }}
+      />
+
+      <SensitiveSettingDialog
+        dialog={dialog?.type === 'edit' ? dialog : null}
+        user={user}
+        onClose={() => setDialog(null)}
+      />
+
+      <ChangePasswordDialog open={dialog?.type === 'changePassword'} onClose={() => setDialog(null)} />
+
+      <SetPasswordDialog
+        open={dialog?.type === 'setPassword'}
+        onClose={() => setDialog(null)}
+        onSuccess={() => setHasPasswordOverride(true)}
+      />
+
+      <MfaDialog
+        open={dialog?.type === 'mfa'}
+        enrollment={enrollment}
+        code={mfaCode}
+        pending={pending}
+        onCodeChange={setMfaCode}
+        onVerify={() => void verifyMfa()}
+        onCancel={() => void cancelMfaEnrollment()}
+      />
+
+      <BackupCodesDialog
+        open={dialog?.type === 'backupCodes'}
+        hasCodes={Boolean(backupCodes)}
+        onClose={() => setDialog(null)}
+        onGenerated={codes => {
+          setBackupCodes(codes);
+          setDialog(null);
+        }}
+      />
+
+      <DeleteAccountDialog
+        open={dialog?.type === 'deleteAccount'}
+        onClose={() => setDialog(null)}
+        action={deleteAccount}
+        pending={deletingAccount}
+      />
     </div>
   );
 };
