@@ -26,12 +26,5 @@ export const MAX_VISIBLE = 5;
 
 export const FALLBACK_NAMES = ['Mark', 'JP', 'Ana', 'CJ', 'Ken', 'MJ', 'Lara', 'D'];
 
-import { ApiResponse } from "@/lib/types";
-
-export const DEFAULT_ERROR = {
-  data: null,
-  message: 'Internal Server Error',
-  success: false
-} satisfies ApiResponse<null>;
 
 export const STALE_TIME = 1_000 * 60 * 60 // 1 hour;

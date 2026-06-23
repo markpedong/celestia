@@ -12,3 +12,12 @@ export const getProfileByUserName = async ({ username }: { username: string }) =
 
   return response;
 };
+
+export const getEmailByUsername = async (username: string) => {
+  const response = await __api<{ email: string }>({
+    init: { body: { username } },
+    endpoint: API_ENDPOINT.USERNAME_LOGIN,
+  });
+
+  return response.data?.email ?? null;
+};

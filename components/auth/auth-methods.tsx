@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { useAuthForm } from '@/hooks/use-auth-form';
 import { MAX_DISPLAY_NAME_LENGTH } from '@/constants';
 import type { AuthMethodsProps } from '@/lib/types';
-import { Apple, Globe, KeyRound, Mail } from 'lucide-react';
+import { Apple, Globe, KeyRound, LoaderCircle, Mail } from 'lucide-react';
 import Link from 'next/link';
 
 const AuthMethods: FC<AuthMethodsProps> = ({ mode }) => {
@@ -49,8 +49,8 @@ const AuthMethods: FC<AuthMethodsProps> = ({ mode }) => {
         </div>
         ) : null}
         <div className='space-y-2'>
-        <label htmlFor='email' className='text-sm font-medium text-card-foreground'>Email</label>
-        <Input id='email' type='email' autoComplete='email' placeholder='you@example.com' aria-invalid={Boolean(errors.email && (touchedFields.email || isSubmitted))} className='h-11 bg-background' {...register('email')} />
+        <label htmlFor='email' className='text-sm font-medium text-card-foreground'>{isSignUp ? 'Email' : 'Email or username'}</label>
+        <Input id='email' type={isSignUp ? 'email' : 'text'} autoComplete={isSignUp ? 'email' : 'username'} placeholder={isSignUp ? 'you@example.com' : 'you@example.com or username'} aria-invalid={Boolean(errors.email && (touchedFields.email || isSubmitted))} className='h-11 bg-background' {...register('email')} />
         {errors.email && (touchedFields.email || isSubmitted) ? <p className='text-xs text-destructive'>{errors.email.message}</p> : null}
         </div>
         <div className='space-y-2'>
@@ -66,8 +66,8 @@ const AuthMethods: FC<AuthMethodsProps> = ({ mode }) => {
           </div>
         ) : null}
         <Button type='submit' disabled={pending || !isValid} className='celestia-primary-action h-11 w-full rounded'>
-          {isSignUp ? <Mail className='size-4' /> : <KeyRound className='size-4' />}
-          {pending ? 'Please wait...' : isSignUp ? 'Create account' : 'Sign in'}
+          {pending ? <LoaderCircle className='size-4 animate-spin' /> : isSignUp ? <Mail className='size-4' /> : <KeyRound className='size-4' />}
+          {pending ? (isSignUp ? 'Creating account...' : 'Signing in...') : isSignUp ? 'Create account' : 'Sign in'}
         </Button>
         <div className='flex items-center justify-between gap-3 text-sm'>
           <Button asChild variant='link' size='sm' className='px-0'>

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { z } from 'zod';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
+import { getEmailByUsername } from '@/services';
 import type { AuthMode } from '@/lib/types';
 import { MAX_DISPLAY_NAME_LENGTH, MAX_EMAIL_LENGTH, MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '@/constants';
 import { useZodForm } from './use-zod-form';
@@ -13,7 +14,7 @@ const supabase = createSupabaseBrowserClient();
 
 const authSchema = z.object({
   name: z.string().trim().max(MAX_DISPLAY_NAME_LENGTH, `Display name must be ${MAX_DISPLAY_NAME_LENGTH} characters or fewer.`),
-  email: z.string().trim().email('Enter a valid email address.').max(MAX_EMAIL_LENGTH, 'Email address is too long.'),
+  email: z.string().trim().min(1, 'Enter your email or username.').max(MAX_EMAIL_LENGTH, 'Email address or username is too long.'),
   password: z.string().min(MIN_PASSWORD_LENGTH, `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`).max(MAX_PASSWORD_LENGTH, `Password must be ${MAX_PASSWORD_LENGTH} characters or fewer.`),
   confirmPassword: z.string().optional(),
 });
@@ -57,6 +58,10 @@ export const useAuthForm = (mode: AuthMode) => {
   const schema = authSchema.superRefine((values, context) => {
     if (!isSignUp) return;
 
+    if (!z.string().email().safeParse(values.email).success) {
+      context.addIssue({ code: 'custom', message: 'Enter a valid email address.', path: ['email'] });
+    }
+
     if (!values.confirmPassword) {
       context.addIssue({ code: 'custom', message: 'Please confirm your password.', path: ['confirmPassword'] });
     } else if (values.password !== values.confirmPassword) {
@@ -70,7 +75,16 @@ export const useAuthForm = (mode: AuthMode) => {
     setMessage(null);
 
     startTransition(async () => {
-      const email = values.email.trim().toLowerCase();
+      let email = values.email.trim().toLowerCase();
+      if (!isSignUp && !email.includes('@')) {
+        console.log('email', email);
+        const usernameEmail = await getEmailByUsername(email);
+        if (!usernameEmail) {
+          setError('That email, username, or password is incorrect. Check your details and try again.');
+          return;
+        }
+        email = usernameEmail;
+      }
       const username = email.split('@')[0];
       const result = isSignUp
         ? await supabase.auth.signUp({
@@ -95,7 +109,7 @@ export const useAuthForm = (mode: AuthMode) => {
             username,
             email: result.data.user.email,
             avatar_url: `https://api.dicebear.com/9.x/thumbs/svg?seed=${result.data.user.email ?? email}`,
-          });
+          }, { ignoreDuplicates: true });
 
         if (profileError) {
           setError(profileError.message);

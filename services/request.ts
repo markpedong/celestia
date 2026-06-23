@@ -1,4 +1,3 @@
-import { DEFAULT_ERROR } from '@/constants';
 import { API_ENDPOINT, REQUEST_METHOD } from '@/constants/enums';
 import { ApiResponse } from '@/lib/types';
 import { generateParameters, generateRequestInit } from '@/services/utils';
@@ -32,7 +31,6 @@ export const __api = async <TApiResponse = null>({ endpoint, params, init }: TAp
   const requestInput = process.env.DOMAIN + "/api" + endpoint + parameters;
   const requestInit = await generateRequestInit(init);
   const response = await fetch<TApiResponse>(requestInput, requestInit);
-  if (!response.ok) return DEFAULT_ERROR;
 
   return await response.json();
 };

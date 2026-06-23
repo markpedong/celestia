@@ -1,5 +1,6 @@
 export enum API_ENDPOINT {
-  USER = '/user'
+  USER = '/user',
+  USERNAME_LOGIN = '/auth/username',
 }
 
 export enum REQUEST_METHOD {
