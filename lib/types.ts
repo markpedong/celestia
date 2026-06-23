@@ -156,8 +156,6 @@ export type ProfileMediaFormState = ErrorFormState<{ success?: string }>;
 
 export type AuthMode = 'sign-in' | 'sign-up';
 
-export type DisplayMode = 'system' | 'dark' | 'light';
-
 export type AuthMethodsProps = {
   mode: AuthMode;
 };

@@ -3,8 +3,10 @@
 import { STALE_TIME } from '@/constants';
 import { getProfileByUserName } from '@/services';
 import { useQuery } from '@tanstack/react-query';
+import type { Session } from '@supabase/supabase-js';
 import { useSession } from './useSession';
-import { getUserNameByAuth } from '@/constants/helpers';
+
+const getUserNameByAuth = (user?: Session['user']) => user?.email?.split('@')[0] ?? '';
 
 export const useGetProfile = () => {
   const { user: authUser } = useSession();
