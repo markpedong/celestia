@@ -17,6 +17,7 @@ import {
   changePasswordAction,
   deleteAccountAction,
   generateBackupCodesAction,
+  setPasswordAction,
   updateSensitiveAccountAction,
   verifyAccountPasswordAction,
 } from '@/lib/actions/security';
@@ -38,6 +39,8 @@ export const AccountSettings = () => {
   const [mfaCode, setMfaCode] = useState('');
   const [isMfaDialogOpen, setIsMfaDialogOpen] = useState(false);
   const [isBackupCodesDialogOpen, setIsBackupCodesDialogOpen] = useState(false);
+  const [isPasswordSetupDialogOpen, setIsPasswordSetupDialogOpen] = useState(false);
+  const [hasPasswordOverride, setHasPasswordOverride] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [activeEditor, setActiveEditor] = useState<'email' | 'phone' | 'password' | 'gender' | 'location' | null>(null);
   const [passwordGate, setPasswordGate] = useState<SensitiveSetting | null>(null);
@@ -49,6 +52,7 @@ export const AccountSettings = () => {
   const [deleteState, deleteAccount, deletingAccount] = useActionState(deleteAccountAction, null);
   const identities = user?.identities ?? [];
   const hasProvider = (provider: 'google' | 'apple') => identities.some(identity => identity.provider === provider);
+  const hasPassword = hasPasswordOverride || identities.some(identity => identity.provider === 'email') || (Array.isArray(user?.app_metadata.providers) && user.app_metadata.providers.includes('email'));
   const queryClient = useQueryClient();
   const securityQuery = useQuery({
     queryKey: ['auth', 'security', user?.id],
@@ -147,6 +151,21 @@ export const AccountSettings = () => {
       }
       setActiveEditor(null);
       toast.success(result?.success ?? 'Password updated.');
+    });
+  };
+
+  const submitPasswordSetup = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    startChangingPassword(async () => {
+      const result = await setPasswordAction(formData);
+      if (result?.error) {
+        toast.error(result.error);
+        return;
+      }
+      setHasPasswordOverride(true);
+      setIsPasswordSetupDialogOpen(false);
+      toast.success(result?.success ?? 'Password set.');
     });
   };
 
@@ -263,9 +282,9 @@ export const AccountSettings = () => {
             onClick={() => setPasswordGate('phone')}
           />
           <SettingsOptionRow
-            title='Change Password'
-            description='Update your account password.'
-            onClick={() => setActiveEditor('password')}
+            title={hasPassword ? 'Change Password' : 'Set Password'}
+            description={hasPassword ? 'Update your account password.' : 'Add a password to sign in without Google.'}
+            onClick={() => hasPassword ? setActiveEditor('password') : setIsPasswordSetupDialogOpen(true)}
           />
           <SettingsOptionRow
             title='Location'
@@ -419,6 +438,25 @@ export const AccountSettings = () => {
             <Button type='submit' isLoading={isChangingPassword}>
               Save password
             </Button>
+          </DialogFooter>
+        </form>
+      </SettingsDialog>
+      <SettingsDialog
+        open={isPasswordSetupDialogOpen}
+        onOpenChange={setIsPasswordSetupDialogOpen}
+        title='Set Password'
+        description='Create a password for signing in without Google.'
+      >
+        <form onSubmit={submitPasswordSetup} className='space-y-4'>
+          <FormField htmlFor='setup-new-password' label='New password'>
+            <Input id='setup-new-password' name='newPassword' type='password' minLength={6} required autoComplete='new-password' />
+          </FormField>
+          <FormField htmlFor='setup-confirm-password' label='Confirm new password'>
+            <Input id='setup-confirm-password' name='confirmPassword' type='password' minLength={6} required autoComplete='new-password' />
+          </FormField>
+          <DialogFooter>
+            <DialogClose asChild><Button type='button' variant='outline'>Cancel</Button></DialogClose>
+            <Button type='submit' isLoading={isChangingPassword}>Set password</Button>
           </DialogFooter>
         </form>
       </SettingsDialog>

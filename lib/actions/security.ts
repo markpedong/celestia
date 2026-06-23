@@ -88,6 +88,21 @@ export const changePasswordAction = async (formData: FormData): Promise<ErrorFor
   return { success: 'Password updated.' };
 };
 
+export const setPasswordAction = async (formData: FormData): Promise<ErrorFormState<{ success?: string }>> => {
+  const newPassword = formData.get('newPassword');
+  const confirmPassword = formData.get('confirmPassword');
+  if (typeof newPassword !== 'string' || newPassword.length < 6) return { error: 'Your new password must be at least 6 characters.' };
+  if (newPassword !== confirmPassword) return { error: 'New passwords do not match.' };
+  const supabase = await createSupabaseServerClient();
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) return { error: 'You must be signed in to set a password.' };
+  const hasPassword = user.identities?.some(identity => identity.provider === 'email') || user.app_metadata.providers?.includes('email');
+  if (hasPassword) return { error: 'A password is already set. Use Change Password instead.' };
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
+  if (error) return { error: error.message };
+  return { success: 'Password set. You can now sign in with email and password.' };
+};
+
 export const generateBackupCodesAction = async (): Promise<SecurityActionState> => {
   const user = await getSessionUser();
   if (!user) return { error: 'You must be signed in to generate backup codes.' };
