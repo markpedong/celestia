@@ -10,11 +10,12 @@ import { useSession } from '@/hooks/useSession';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FormField } from '@/components/ui/form-field';
-import { DialogClose, DialogFooter, SettingsDialog } from '@/components/ui/dialog';
+import { DialogClose, DialogFooter } from '@/components/ui/dialog';
+import { SettingsDialog } from '@/components/ui/settings-dialog';
 import { SettingsOptionRow } from '@/components/ui/settings-option-row';
 import { changePasswordAction, deleteAccountAction, generateBackupCodesAction, updateSensitiveAccountAction, verifyAccountPasswordAction } from '@/lib/actions/security';
 
-type SensitiveSetting = 'email' | 'phone' | 'gender' | 'location';
+type SensitiveSetting = 'email' | 'phone' | 'gender' | 'location' | 'passkey';
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <section className='celestia-card space-y-5 p-5 md:p-6'>
@@ -76,6 +77,12 @@ export const AccountSettings = () => {
         toast.error(result?.error ?? 'Unable to verify your password.');
         return;
       }
+      if (result.setting === 'passkey') {
+        setPasswordGate(null);
+        toast.success(result.success);
+        await registerPasskey();
+        return;
+      }
       setVerificationToken(result.token);
       setPasswordGate(null);
       setActiveEditor(result.setting);
@@ -127,12 +134,12 @@ export const AccountSettings = () => {
     else if (identity) toast.success(`${provider === 'google' ? 'Google' : 'Apple'} disconnected.`);
   };
 
-  const registerPasskey = async () => {
+  async function registerPasskey() {
     setPending('passkey');
     const { error } = await supabase.auth.registerPasskey();
     setPending(null);
     if (error) toast.error(error.message); else { toast.success('Passkey added.'); await refreshSecurity(); }
-  };
+  }
 
   const removePasskey = async (passkeyId: string) => {
     if (passkeys.length === 1 && identities.length < 2) return toast.error('Add another sign-in method before removing your last passkey.');
@@ -229,7 +236,7 @@ export const AccountSettings = () => {
           </div>;
         })}
         <div className='space-y-2 rounded-md border border-border p-3'>
-          <div className='flex items-center justify-between gap-3'><span className='flex items-center gap-2 text-sm'><KeyRound className='size-4 text-muted-foreground' /> Passkeys</span><Button size='sm' variant='outline' onClick={() => void registerPasskey()} isLoading={pending === 'passkey'}>Add passkey</Button></div>
+          <div className='flex items-center justify-between gap-3'><span className='flex items-center gap-2 text-sm'><KeyRound className='size-4 text-muted-foreground' /> Passkeys</span><Button size='sm' variant='outline' onClick={() => setPasswordGate('passkey')} isLoading={pending === 'passkey'}>Add passkey</Button></div>
           {passkeys.map(passkey => <div key={passkey.id} className='flex items-center justify-between gap-3 text-xs text-muted-foreground'><span>{passkey.friendly_name ?? 'Passkey'} · added {new Date(passkey.created_at).toLocaleDateString()}</span><Button size='xs' variant='ghost' onClick={() => void removePasskey(passkey.id)} isLoading={pending === passkey.id}>Remove</Button></div>)}
         </div>
         <div className='space-y-3 rounded-md border border-border p-3'>

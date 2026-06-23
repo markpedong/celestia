@@ -9,9 +9,11 @@ import type { ErrorFormState } from '../types';
 
 type SecurityActionState = ErrorFormState<{ success?: string; codes?: string[] }>;
 type SensitiveSetting = 'email' | 'phone' | 'gender' | 'location';
-type PasswordVerificationState = ErrorFormState<{ success?: string; setting?: SensitiveSetting; token?: string }>;
+type PasswordVerificationSetting = SensitiveSetting | 'passkey';
+type PasswordVerificationState = ErrorFormState<{ success?: string; setting?: PasswordVerificationSetting; token?: string }>;
 
 const sensitiveSettings = new Set<SensitiveSetting>(['email', 'phone', 'gender', 'location']);
+const passwordProtectedSettings = new Set<PasswordVerificationSetting>(['email', 'phone', 'gender', 'location', 'passkey']);
 const verificationLifetime = 5 * 60 * 1000;
 
 const hashCode = (code: string) => createHash('sha256').update(code).digest('hex');
@@ -19,14 +21,14 @@ const makeCode = () => randomBytes(9).toString('base64url').toUpperCase();
 
 const verificationSecret = () => process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-const createVerificationToken = (userId: string, setting: SensitiveSetting) => {
+const createVerificationToken = (userId: string, setting: PasswordVerificationSetting) => {
   const secret = verificationSecret();
   if (!secret) throw new Error('Password verification is not configured.');
   const payload = Buffer.from(JSON.stringify({ userId, setting, expiresAt: Date.now() + verificationLifetime })).toString('base64url');
   return `${payload}.${createHmac('sha256', secret).update(payload).digest('base64url')}`;
 };
 
-const verifyVerificationToken = (token: string, userId: string, setting: SensitiveSetting) => {
+const verifyVerificationToken = (token: string, userId: string, setting: PasswordVerificationSetting) => {
   const secret = verificationSecret();
   const [payload, signature] = token.split('.');
   if (!secret || !payload || !signature) return false;
@@ -50,11 +52,11 @@ const verifyCurrentPassword = async (password: string) => {
 export const verifyAccountPasswordAction = async (formData: FormData): Promise<PasswordVerificationState> => {
   const setting = formData.get('setting');
   const password = formData.get('password');
-  if (typeof setting !== 'string' || !sensitiveSettings.has(setting as SensitiveSetting)) return { error: 'Choose a valid account setting.' };
+  if (typeof setting !== 'string' || !passwordProtectedSettings.has(setting as PasswordVerificationSetting)) return { error: 'Choose a valid account setting.' };
   if (typeof password !== 'string' || !password) return { error: 'Enter your password.' };
   const verification = await verifyCurrentPassword(password);
   if ('error' in verification) return verification;
-  return { success: 'Password verified.', setting: setting as SensitiveSetting, token: createVerificationToken(verification.user.id, setting as SensitiveSetting) };
+  return { success: 'Password verified.', setting: setting as PasswordVerificationSetting, token: createVerificationToken(verification.user.id, setting as PasswordVerificationSetting) };
 };
 
 export const updateSensitiveAccountAction = async (formData: FormData): Promise<ErrorFormState<{ success?: string }>> => {
