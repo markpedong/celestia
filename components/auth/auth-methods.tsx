@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FormField, PasswordField } from '@/components/ui/form-field';
 import { useAuthForm } from '@/hooks/use-auth-form';
-import { MAX_DISPLAY_NAME_LENGTH } from '@/constants';
 import type { AuthMethodsProps } from '@/lib/types';
 import { Fingerprint, KeyRound, Mail } from 'lucide-react';
 import Link from 'next/link';
@@ -74,18 +73,19 @@ const AuthMethods: FC<AuthMethodsProps> = ({ mode }) => {
       <form onSubmit={handleSubmit(submit)} onKeyDown={onFormKeyDown} className='space-y-4' noValidate>
         {isSignUp ? (
           <FormField
-            htmlFor='name'
-            label='Display name'
+            htmlFor='username'
+            label='Username'
             labelClassName='text-card-foreground'
-            error={errors.name && (touchedFields.name || isSubmitted) ? errors.name.message : undefined}
+            error={errors.username && (touchedFields.username || isSubmitted) ? errors.username.message : undefined}
           >
             <Input
-              id='name'
-              placeholder='Your name'
-              maxLength={MAX_DISPLAY_NAME_LENGTH}
-              aria-invalid={Boolean(errors.name && (touchedFields.name || isSubmitted))}
+              id='username'
+              placeholder='your_username'
+              maxLength={20}
+              autoComplete='username'
+              aria-invalid={Boolean(errors.username && (touchedFields.username || isSubmitted))}
               className='h-11 bg-background'
-              {...register('name')}
+              {...register('username')}
             />
           </FormField>
         ) : null}

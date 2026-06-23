@@ -48,7 +48,8 @@ export const AccountSettings = () => {
   const [isVerifying, startVerifying] = useTransition();
   const [isSavingSensitive, startSavingSensitive] = useTransition();
   const [isChangingPassword, startChangingPassword] = useTransition();
-  const [backupState, generateBackupCodes, generatingCodes] = useActionState(generateBackupCodesAction, null);
+  const [backupCodes, setBackupCodes] = useState<string[] | null>(null);
+  const [generatingCodes, startGeneratingCodes] = useTransition();
   const [deleteState, deleteAccount, deletingAccount] = useActionState(deleteAccountAction, null);
   const identities = user?.identities ?? [];
   const hasProvider = (provider: 'google' | 'apple') => identities.some(identity => identity.provider === provider);
@@ -78,10 +79,6 @@ export const AccountSettings = () => {
   const pendingTotpFactors = securityQuery.data?.pendingTotpFactors ?? [];
 
   const refreshSecurity = () => queryClient.invalidateQueries({ queryKey: ['auth', 'security', user?.id] });
-  useEffect(() => {
-    if (backupState?.error) toast.error(backupState.error);
-    if (backupState?.success) toast.success(backupState.success);
-  }, [backupState]);
   useEffect(() => {
     if (securityQuery.error) toast.error(securityQuery.error.message);
   }, [securityQuery.error]);
@@ -166,6 +163,20 @@ export const AccountSettings = () => {
       setHasPasswordOverride(true);
       setIsPasswordSetupDialogOpen(false);
       toast.success(result?.success ?? 'Password set.');
+    });
+  };
+
+  const generateBackupCodes = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    startGeneratingCodes(async () => {
+      const result = await generateBackupCodesAction();
+      if (result?.error) {
+        toast.error(result.error);
+        return;
+      }
+      setBackupCodes(result?.codes ?? null);
+      setIsBackupCodesDialogOpen(false);
+      toast.success(result?.success ?? 'New backup codes generated.');
     });
   };
 
@@ -578,10 +589,11 @@ export const AccountSettings = () => {
               <Smartphone className='size-4 text-muted-foreground' /> Backup Codes
             </span>
             <Button type='button' size='sm' variant='outline' onClick={() => setPasswordGate('backupCodes')}>
-              {backupState?.codes ? 'Regenerate' : 'Generate'}
+              {backupCodes ? 'Regenerate' : 'Generate'}
             </Button>
           </div>
           <p className='text-xs text-muted-foreground'>Generate one-time codes to store somewhere safe.</p>
+          {backupCodes ? <div className='rounded bg-muted p-3 font-mono text-xs leading-6'>{backupCodes.map(code => <div key={code}>{code}</div>)}</div> : null}
         </div>
       </Section>
 
@@ -640,21 +652,13 @@ export const AccountSettings = () => {
         title='Backup Codes'
         description='Store these one-time codes somewhere safe. Generating new codes replaces any existing codes.'
       >
-        <form action={generateBackupCodes} className='space-y-4'>
-          {backupState?.codes ? (
-            <div className='rounded bg-muted p-3 font-mono text-xs leading-6'>
-              {backupState.codes.map(code => (
-                <div key={code}>{code}</div>
-              ))}
-            </div>
-          ) : (
-            <p className='text-sm text-muted-foreground'>
-              Generate codes for account recovery when your authenticator app is unavailable.
-            </p>
-          )}
+        <form onSubmit={generateBackupCodes} className='space-y-4'>
+          <p className='text-sm text-muted-foreground'>
+            Generate codes for account recovery when your authenticator app is unavailable.
+          </p>
           <DialogFooter>
             <Button type='submit' isLoading={generatingCodes}>
-              {backupState?.codes ? 'Regenerate codes' : 'Generate codes'}
+              {backupCodes ? 'Regenerate codes' : 'Generate codes'}
             </Button>
           </DialogFooter>
         </form>

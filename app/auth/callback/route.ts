@@ -16,6 +16,7 @@ export const GET = async (request: Request) => {
         id: data.user.id,
         username: data.user.email.split('@')[0],
         email: data.user.email,
+        display_name: data.user.user_metadata.display_name ?? data.user.user_metadata.full_name ?? data.user.user_metadata.name ?? null,
         avatar_url: data.user.user_metadata.avatar_url ?? null,
       });
 

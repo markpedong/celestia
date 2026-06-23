@@ -18,8 +18,9 @@ export const ensureUserProfile = async (identity: {
   id: string;
   name: string;
   image?: string | null;
+  username?: string;
 }): Promise<User> => {
-  const baseUsername = generateUsername(identity.name);
+  const baseUsername = generateUsername(identity.username ?? identity.name);
   const usernameWithId = `${baseUsername}_${identity.id.replace(/[^a-z0-9]/gi, '').slice(-8).toLowerCase()}`;
 
   let row;
@@ -27,7 +28,7 @@ export const ensureUserProfile = async (identity: {
     row = await prisma.userProfile.upsert({
       where: { id: identity.id },
       update: {},
-      create: { id: identity.id, username: baseUsername },
+      create: { id: identity.id, username: baseUsername, displayName: identity.name },
     });
   } catch (error) {
     if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== 'P2002') throw error;
@@ -35,7 +36,7 @@ export const ensureUserProfile = async (identity: {
     row = await prisma.userProfile.upsert({
       where: { id: identity.id },
       update: {},
-      create: { id: identity.id, username: usernameWithId },
+      create: { id: identity.id, username: usernameWithId, displayName: identity.name },
     });
   }
 

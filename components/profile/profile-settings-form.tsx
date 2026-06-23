@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect, useState } from 'react';
+import { useState, useTransition, type FormEvent } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
 import { toast } from 'sonner';
@@ -26,8 +26,8 @@ type ProfileSettingsFormProps = {
 
 export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
   const queryClient = useQueryClient();
-  const [detailsState, saveDetails, savingDetails] = useActionState(updateProfileSettingsAction, null);
-  const [mediaState, saveMedia, savingMedia] = useActionState(updateProfileMediaAction, null);
+  const [savingDetails, startSavingDetails] = useTransition();
+  const [savingMedia, startSavingMedia] = useTransition();
   const [activeEditor, setActiveEditor] = useState<'displayName' | 'bio' | 'avatar' | 'banner' | null>(null);
   const [mediaPreview, setMediaPreview] = useState<{ kind: 'avatar' | 'banner'; url: string } | null>(null);
 
@@ -55,13 +55,35 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
     });
   };
 
-  useEffect(() => {
-    const message = detailsState?.error ?? detailsState?.success ?? mediaState?.error ?? mediaState?.success;
-    if (message) (detailsState?.error || mediaState?.error ? toast.error : toast.success)(message);
-    if (detailsState?.success || mediaState?.success) {
+  const submitDetails = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    startSavingDetails(async () => {
+      const result = await updateProfileSettingsAction(null, formData);
+      if (result?.error) {
+        toast.error(result.error);
+        return;
+      }
+      closeEditor();
       void queryClient.invalidateQueries({ queryKey: ['profile'] });
-    }
-  }, [detailsState, mediaState, queryClient]);
+      toast.success(result?.success ?? 'Profile details updated.');
+    });
+  };
+
+  const submitMedia = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    startSavingMedia(async () => {
+      const result = await updateProfileMediaAction(null, formData);
+      if (result?.error) {
+        toast.error(result.error);
+        return;
+      }
+      closeEditor();
+      void queryClient.invalidateQueries({ queryKey: ['profile'] });
+      toast.success(result?.success ?? 'Profile media updated.');
+    });
+  };
 
   return (
     <div className='space-y-5'>
@@ -108,7 +130,7 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
         title='Display Name'
         description='This is the name shown across Celestia.'
       >
-        <form action={saveDetails} className='space-y-4'>
+        <form onSubmit={submitDetails} className='space-y-4'>
           <input type='hidden' name='bio' value={profile.bio ?? ''} />
           <FormField htmlFor='displayName' label='Display Name'>
             <Input id='displayName' name='displayName' defaultValue={profile.displayName ?? ''} maxLength={80} />
@@ -131,7 +153,7 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
         title='About / Bio'
         description='Tell people a little about yourself.'
       >
-        <form action={saveDetails} className='space-y-4'>
+        <form onSubmit={submitDetails} className='space-y-4'>
           <input type='hidden' name='displayName' value={profile.displayName ?? ''} />
           <FormField htmlFor='bio' label='About / Bio'>
             <Textarea
@@ -166,7 +188,7 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
             title={kind === 'avatar' ? 'Avatar' : 'Banner'}
             description='Upload an image to update your public profile.'
           >
-            <form action={saveMedia} className='space-y-4'>
+            <form onSubmit={submitMedia} className='space-y-4'>
               <div
                 className={`relative overflow-hidden rounded-lg border border-border bg-muted ${kind === 'avatar' ? 'size-28' : 'aspect-[3/1] w-full'}`}
               >

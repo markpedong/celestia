@@ -8,13 +8,15 @@ import { z } from 'zod';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { getEmailByUsername } from '@/services';
 import type { AuthMode } from '@/lib/types';
-import { MAX_DISPLAY_NAME_LENGTH, MAX_EMAIL_LENGTH, MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '@/constants';
+import { MAX_EMAIL_LENGTH, MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '@/constants';
 import { useZodForm } from './use-zod-form';
 
 const supabase = createSupabaseBrowserClient();
 
+const usernameSchema = z.string().trim().min(3, 'Username must be at least 3 characters.').max(20, 'Username must be 20 characters or fewer.').regex(/^[a-z0-9_]+$/, 'Use lowercase letters, numbers, or underscores.');
+
 const authSchema = z.object({
-  name: z.string().trim().max(MAX_DISPLAY_NAME_LENGTH, `Display name must be ${MAX_DISPLAY_NAME_LENGTH} characters or fewer.`),
+  username: usernameSchema.optional(),
   email: z.string().trim().min(1, 'Enter your email or username.').max(MAX_EMAIL_LENGTH, 'Email address or username is too long.'),
   password: z.string().min(MIN_PASSWORD_LENGTH, `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`).max(MAX_PASSWORD_LENGTH, `Password must be ${MAX_PASSWORD_LENGTH} characters or fewer.`),
   confirmPassword: z.string().optional(),
@@ -51,6 +53,17 @@ const getAuthErrorMessage = (message: string, intent: AuthIntent): string => {
   return 'We could not sign you in. Please try again.';
 };
 
+const getInitialDisplayName = async (fallback: string) => {
+  try {
+    const response = await fetch('https://random-word-api.herokuapp.com/word?number=2');
+    const words = await response.json();
+    if (Array.isArray(words) && words.length === 2 && words.every(word => typeof word === 'string')) {
+      return words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    }
+  } catch { }
+  return fallback.trim() || 'New User';
+};
+
 export const useAuthForm = (mode: AuthMode) => {
   const router = useRouter();
   const [message, setMessage] = useState<string | null>(null);
@@ -58,6 +71,10 @@ export const useAuthForm = (mode: AuthMode) => {
   const isSignUp = mode === 'sign-up';
   const schema = authSchema.superRefine((values, context) => {
     if (!isSignUp) return;
+
+    if (!usernameSchema.safeParse(values.username).success) {
+      context.addIssue({ code: 'custom', message: 'Use 3-20 lowercase letters, numbers, or underscores.', path: ['username'] });
+    }
 
     if (!z.string().email().safeParse(values.email).success) {
       context.addIssue({ code: 'custom', message: 'Enter a valid email address.', path: ['email'] });
@@ -69,7 +86,7 @@ export const useAuthForm = (mode: AuthMode) => {
       context.addIssue({ code: 'custom', message: 'Passwords do not match.', path: ['confirmPassword'] });
     }
   });
-  const form = useZodForm<AuthValues>(schema, { name: '', email: '', password: '', confirmPassword: '' });
+  const form = useZodForm<AuthValues>(schema, { username: '', email: '', password: '', confirmPassword: '' });
 
   const submit = (values: AuthValues) => {
     setMessage(null);
@@ -85,13 +102,16 @@ export const useAuthForm = (mode: AuthMode) => {
         }
         email = usernameEmail;
       }
-      const username = email.split('@')[0];
+      const fallbackUsername = email.split('@')[0];
+      const requestedUsername = isSignUp ? values.username?.trim().toLowerCase() : undefined;
+      const displayName = isSignUp ? await getInitialDisplayName(requestedUsername ?? fallbackUsername) : undefined;
       const result = isSignUp
         ? await supabase.auth.signUp({
           email,
           password: values.password,
           options: {
             emailRedirectTo: `${window.location.origin}/auth/sign-in`,
+            data: { display_name: displayName, username: requestedUsername },
           },
         })
         : await supabase.auth.signInWithPassword({ email, password: values.password });
@@ -102,6 +122,7 @@ export const useAuthForm = (mode: AuthMode) => {
       }
 
       if (result.data.session && result.data.user) {
+        const username = typeof result.data.user.user_metadata.username === 'string' ? result.data.user.user_metadata.username : requestedUsername ?? fallbackUsername;
         const { error: profileError } = await supabase
           .from('user_profiles')
           .upsert({
