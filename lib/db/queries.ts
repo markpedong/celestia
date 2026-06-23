@@ -178,6 +178,19 @@ export const listPostsByAuthor = async (authorId: string, sort: FeedSort, userId
   return listEnrichedPosts(sort, { authorId }, userId);
 }
 
+export const listVotedPostsByUser = async (
+  userId: string,
+  value: -1 | 1,
+  viewerId: string | undefined,
+): Promise<FeedPostRow[]> => {
+  const votes = await prisma.vote.findMany({
+    where: { userId, targetType: 'post', value },
+    select: { targetId: true },
+  });
+  const postIds = votes.map(vote => vote.targetId);
+  return postIds.length ? listEnrichedPosts('new', { id: { in: postIds } }, viewerId) : [];
+};
+
 const userVotesForPosts = async (
   userId: string | undefined,
   postIds: string[],
@@ -474,9 +487,9 @@ export const getUserStats = async (userId: string): Promise<UserStats> => {
   };
 }
 
-export const listCommentsByAuthor = async (authorId: string): Promise<UserCommentActivity[]> => {
+const listComments = async (where: Prisma.CommentWhereInput): Promise<UserCommentActivity[]> => {
   const rows = await prisma.comment.findMany({
-    where: { authorId },
+    where,
     orderBy: { createdAt: 'desc' },
     take: 25,
     include: { post: { select: { title: true } } },
@@ -489,7 +502,18 @@ export const listCommentsByAuthor = async (authorId: string): Promise<UserCommen
     body: row.body,
     createdAt: row.createdAt.toISOString(),
   }));
-}
+};
+
+export const listCommentsByAuthor = async (authorId: string): Promise<UserCommentActivity[]> => listComments({ authorId });
+
+export const listVotedCommentsByUser = async (userId: string, value: -1 | 1): Promise<UserCommentActivity[]> => {
+  const votes = await prisma.vote.findMany({
+    where: { userId, targetType: 'comment', value },
+    select: { targetId: true },
+  });
+  const commentIds = votes.map(vote => vote.targetId);
+  return commentIds.length ? listComments({ id: { in: commentIds } }) : [];
+};
 
 export const getPostScore = async (postId: string): Promise<number> => {
   const agg = await prisma.vote.aggregate({

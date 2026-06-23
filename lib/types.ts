@@ -303,13 +303,12 @@ export type EditPostFormProps = {
   post: Post;
 };
 
-export type ProfileActivityTab = 'overview' | 'posts' | 'comments';
+export type ProfileActivityTab = 'overview' | 'posts' | 'comments' | 'upvoted' | 'downvoted';
 
-export type ProfileActivityTabsProps = {
-  overview: ReactNode;
-  posts: ReactNode;
-  comments: ReactNode;
-};
+export type ProfileActivityTabsProps = WithChildren<{
+  activeTab: ProfileActivityTab;
+  username: string;
+}>;
 
 export type ProfileMediaField = 'avatar' | 'cover';
 
@@ -367,7 +366,7 @@ export type CommunityPageProps = RouteProps<{ slug: string }> & SearchParamsProp
 
 export type CommunitySettingsPageProps = RouteProps<{ slug: string }>;
 
-export type UserPageProps = RouteProps<{ username: string }>;
+export type UserPageProps = RouteProps<{ username: string }> & SearchParamsProps<{ tab?: string | string[] }>;
 
 export type AuthPageProps = RouteProps<{ pathname: string }>;
 

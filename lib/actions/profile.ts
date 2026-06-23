@@ -40,7 +40,7 @@ export const updateProfileMediaAction = async (
 
   revalidatePath('/');
   revalidatePath('/profile');
-  revalidatePath('/profile/settings');
+  revalidatePath('/settings');
   revalidatePath(`/u/${profile.username}`);
   return { success: 'Profile media updated.' };
 };
@@ -76,7 +76,7 @@ export const updateProfileSettingsAction = async (
     },
   });
 
-  revalidatePath('/profile/settings');
+  revalidatePath('/settings');
   revalidatePath('/profile');
   revalidatePath(`/u/${profile.username}`);
   revalidatePath(`/u/${username}`);

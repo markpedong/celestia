@@ -15,7 +15,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LaptopMinimal, LogOut, MonitorCog, Moon, Settings, Sun, UserRoundCog } from 'lucide-react';
+import { LaptopMinimal, LogOut, MonitorCog, Moon, Settings, Sun } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useTheme } from 'next-themes';
@@ -88,15 +88,9 @@ const AccountMenu: FC = () => {
         </DropdownMenuLabel>
         <DropdownMenuSeparator className='mb-2' />
         <DropdownMenuItem asChild className='rounded-none py-2'>
-          <Link href='/profile/settings' onClick={() => setIsAccountMenuOpen(false)}>
-            <UserRoundCog className='size-4' />
-            Profile Settings
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild className='rounded-none py-2'>
           <Link href='/settings' onClick={() => setIsAccountMenuOpen(false)}>
             <Settings className='size-4' />
-            Account Settings
+            Settings
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSub>
