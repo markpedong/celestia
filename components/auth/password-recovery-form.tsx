@@ -10,13 +10,14 @@ import { MAX_EMAIL_LENGTH, MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '@/co
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 
 type PasswordRecoveryFormProps = { mode: 'request' | 'update' };
+type PasswordRecoveryErrorField = 'email' | 'password' | 'confirmPassword';
 
 export const PasswordRecoveryForm = ({ mode }: PasswordRecoveryFormProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{ field: PasswordRecoveryErrorField; message: string } | null>(null);
   const [pending, startTransition] = useTransition();
 
   const submit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -25,28 +26,38 @@ export const PasswordRecoveryForm = ({ mode }: PasswordRecoveryFormProps) => {
     setMessage(null);
 
     if (mode === 'request' && !/^\S+@\S+\.\S+$/.test(email)) {
-      setError('Enter a valid email address.');
+      setError({ field: 'email', message: 'Enter a valid email address.' });
       return;
     }
     if (mode === 'update' && (password.length < MIN_PASSWORD_LENGTH || password.length > MAX_PASSWORD_LENGTH)) {
-      setError(`Password must be ${MIN_PASSWORD_LENGTH}-${MAX_PASSWORD_LENGTH} characters.`);
+      setError({
+        field: 'password',
+        message: `Password must be ${MIN_PASSWORD_LENGTH}-${MAX_PASSWORD_LENGTH} characters.`,
+      });
       return;
     }
     if (mode === 'update' && password !== confirmPassword) {
-      setError('Passwords do not match.');
+      setError({ field: 'confirmPassword', message: 'Passwords do not match.' });
       return;
     }
 
     startTransition(async () => {
       const supabase = createSupabaseBrowserClient();
-      const result = mode === 'request'
-        ? await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
-          redirectTo: `${window.location.origin}/auth/callback?next=/auth/update-password`,
-        })
-        : await supabase.auth.updateUser({ password });
+      const result =
+        mode === 'request'
+          ? await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+              redirectTo: `${window.location.origin}/auth/callback?next=/auth/update-password`,
+            })
+          : await supabase.auth.updateUser({ password });
 
       if (result.error) {
-        setError(mode === 'request' ? 'We could not send a reset email. Please try again.' : 'We could not update your password. Request a new reset link and try again.');
+        setError({
+          field: mode === 'request' ? 'email' : 'password',
+          message:
+            mode === 'request'
+              ? 'We could not send a reset email. Please try again.'
+              : 'We could not update your password. Request a new reset link and try again.',
+        });
         return;
       }
 
@@ -57,19 +68,71 @@ export const PasswordRecoveryForm = ({ mode }: PasswordRecoveryFormProps) => {
 
   const isRequest = mode === 'request';
   return (
-    <form onSubmit={submit} className='space-y-4' noValidate>
+    <form onSubmit={submit} className='space-y-4' noValidate autoComplete={isRequest ? undefined : 'off'}>
       {isRequest ? (
-        <FormField htmlFor='email' label='Email' labelClassName='text-card-foreground' error={error ?? undefined}>
-          <Input id='email' type='email' autoComplete='email' value={email} onChange={event => setEmail(event.target.value)} maxLength={MAX_EMAIL_LENGTH} placeholder='you@example.com' className='h-11 bg-background' />
+        <FormField
+          htmlFor='email'
+          label='Email'
+          labelClassName='text-card-foreground'
+          error={error?.field === 'email' ? error.message : undefined}
+        >
+          <Input
+            id='email'
+            type='email'
+            autoComplete='email'
+            value={email}
+            onChange={event => {
+              setEmail(event.target.value);
+              setError(null);
+            }}
+            aria-invalid={error?.field === 'email'}
+            maxLength={MAX_EMAIL_LENGTH}
+            placeholder='you@example.com'
+            className='h-11 bg-background'
+          />
         </FormField>
       ) : (
         <>
-          <PasswordField id='password' label='New password' labelClassName='text-card-foreground' autoComplete='new-password' value={password} onChange={event => setPassword(event.target.value)} placeholder={`At least ${MIN_PASSWORD_LENGTH} characters`} className='h-11 bg-background' />
-          <PasswordField id='confirm-password' label='Confirm new password' labelClassName='text-card-foreground' autoComplete='new-password' value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} placeholder='Re-enter your password' className='h-11 bg-background' error={error ?? undefined} />
+          <PasswordField
+            id='password'
+            name='new-password'
+            label='New password'
+            labelClassName='text-card-foreground'
+            autoComplete='new-password'
+            value={password}
+            onChange={event => {
+              setPassword(event.target.value);
+              setError(null);
+            }}
+            placeholder={`At least ${MIN_PASSWORD_LENGTH} characters`}
+            className='h-11 bg-background'
+            error={error?.field === 'password' ? error.message : undefined}
+          />
+          <PasswordField
+            id='confirm-password'
+            name='confirm-new-password'
+            label='Confirm new password'
+            labelClassName='text-card-foreground'
+            autoComplete='new-password'
+            value={confirmPassword}
+            onChange={event => {
+              setConfirmPassword(event.target.value);
+              setError(null);
+            }}
+            placeholder='Re-enter your password'
+            className='h-11 bg-background'
+            error={error?.field === 'confirmPassword' ? error.message : undefined}
+          />
         </>
       )}
       <Button type='submit' disabled={pending} className='celestia-primary-action h-11 w-full rounded'>
-        {pending ? <LoaderCircle className='size-4 animate-spin' /> : isRequest ? <Mail className='size-4' /> : <KeyRound className='size-4' />}
+        {pending ? (
+          <LoaderCircle className='size-4 animate-spin' />
+        ) : isRequest ? (
+          <Mail className='size-4' />
+        ) : (
+          <KeyRound className='size-4' />
+        )}
         {pending ? 'Please wait...' : isRequest ? 'Send reset link' : 'Update password'}
       </Button>
       <Button asChild variant='link' size='sm' className='w-full'>

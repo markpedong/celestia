@@ -24,14 +24,19 @@ export const PasswordField: FC<PasswordFieldProps> = ({ error, label, labelClass
   return (
     <FormField htmlFor={inputProps.id} label={label} labelClassName={labelClassName} error={error}>
       <div className='relative'>
-        <Input {...inputProps} type={isVisible ? 'text' : 'password'} className={cn(inputProps.className, 'pr-10')} />
+        <Input
+          {...inputProps}
+          type={isVisible ? 'text' : 'password'}
+          aria-invalid={inputProps['aria-invalid'] ?? Boolean(error)}
+          className={cn(inputProps.className, 'pr-10')}
+        />
         <button
           type='button'
           onClick={() => setIsVisible(visible => !visible)}
           className='absolute inset-y-0 right-0 grid w-10 place-items-center text-muted-foreground hover:text-foreground'
           aria-label={isVisible ? 'Hide password' : 'Show password'}
         >
-          {isVisible ? <EyeOff className='size-4' /> : <Eye className='size-4' />}
+          {isVisible ? <Eye className='size-4' /> : <EyeOff className='size-4' />}
         </button>
       </div>
     </FormField>

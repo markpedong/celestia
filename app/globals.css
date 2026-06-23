@@ -58,8 +58,7 @@
   --color-orbit: var(--orbit);
 }
 
-:root,
-.light {
+html.light {
   --background: #f7f9fc;
   --foreground: #0f172a;
   --card: #ffffff;
@@ -104,7 +103,8 @@
   --sidebar-ring: rgba(124, 58, 237, 0.45);
 }
 
-.dark {
+:root,
+html.dark {
   --background: #050814;
   --foreground: #f1f5f9;
   --card: #0b1020;
