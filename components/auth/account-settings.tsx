@@ -49,11 +49,16 @@ export const AccountSettings = () => {
       const [passkeyResult, factorResult] = await Promise.all([supabase.auth.passkey.list(), supabase.auth.mfa.listFactors()]);
       if (passkeyResult.error) throw passkeyResult.error;
       if (factorResult.error) throw factorResult.error;
-      return { passkeys: passkeyResult.data ?? [], factors: factorResult.data.totp };
+      return {
+        passkeys: passkeyResult.data ?? [],
+        factors: factorResult.data.totp,
+        pendingTotpFactors: factorResult.data.all.filter(factor => factor.factor_type === 'totp' && factor.status === 'unverified'),
+      };
     },
   });
   const passkeys = securityQuery.data?.passkeys ?? [];
   const factors = securityQuery.data?.factors ?? [];
+  const pendingTotpFactors = securityQuery.data?.pendingTotpFactors ?? [];
 
   const refreshSecurity = () => queryClient.invalidateQueries({ queryKey: ['auth', 'security', user?.id] });
   useEffect(() => {
@@ -151,6 +156,15 @@ export const AccountSettings = () => {
 
   const enrollMfa = async () => {
     setPending('mfa-enroll');
+    const pendingFactor = pendingTotpFactors.find(factor => factor.friendly_name === 'Authenticator app');
+    if (pendingFactor) {
+      const { error } = await supabase.auth.mfa.unenroll({ factorId: pendingFactor.id });
+      if (error) {
+        setPending(null);
+        toast.error(error.message);
+        return;
+      }
+    }
     const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'Authenticator app' });
     setPending(null);
     if (error || !data?.totp) return toast.error(error?.message ?? 'Unable to start MFA enrollment.');
@@ -165,6 +179,18 @@ export const AccountSettings = () => {
     setPending(null);
     if (result.error) return toast.error(result.error.message);
     toast.success('Two-factor authentication enabled.'); setEnrollment(null); setMfaCode(''); await refreshSecurity();
+  };
+
+  const cancelMfaEnrollment = async () => {
+    if (!enrollment) return;
+    setPending('mfa-cancel');
+    const { error } = await supabase.auth.mfa.unenroll({ factorId: enrollment.id });
+    setPending(null);
+    if (error) return toast.error(error.message);
+    setEnrollment(null);
+    setMfaCode('');
+    toast.success('Authenticator setup cancelled.');
+    await refreshSecurity();
   };
 
   const disableMfa = async (factorId: string) => {
@@ -241,7 +267,7 @@ export const AccountSettings = () => {
         </div>
         <div className='space-y-3 rounded-md border border-border p-3'>
           <div className='flex items-center justify-between gap-3'><span className='flex items-center gap-2 text-sm'><ShieldCheck className='size-4 text-muted-foreground' /> Two-Factor Authentication</span>{factors.length ? null : <Button size='sm' variant='outline' onClick={() => void enrollMfa()} isLoading={pending === 'mfa-enroll'}>Set up</Button>}</div>
-          {enrollment ? <div className='space-y-3 rounded bg-muted/50 p-3'><Image src={`data:image/svg+xml;utf8,${encodeURIComponent(enrollment.qr)}`} alt='Authenticator setup QR code' width={176} height={176} unoptimized className='size-44 bg-background p-2' /><Input value={mfaCode} onChange={event => setMfaCode(event.target.value)} inputMode='numeric' placeholder='6-digit code' /><Button size='sm' onClick={() => void verifyMfa()} isLoading={pending === 'mfa-verify'}>Verify and enable</Button></div> : null}
+          {enrollment ? <div className='space-y-3 rounded bg-muted/50 p-3'><Image src={`data:image/svg+xml;utf8,${encodeURIComponent(enrollment.qr)}`} alt='Authenticator setup QR code' width={176} height={176} unoptimized className='size-44 bg-background p-2' /><Input value={mfaCode} onChange={event => setMfaCode(event.target.value)} inputMode='numeric' placeholder='6-digit code' className='h-11 bg-background' /><div className='flex gap-2'><Button size='sm' onClick={() => void verifyMfa()} isLoading={pending === 'mfa-verify'}>Verify and enable</Button><Button size='sm' variant='outline' onClick={() => void cancelMfaEnrollment()} isLoading={pending === 'mfa-cancel'}>Cancel</Button></div></div> : null}
           {factors.map(factor => <div key={factor.id} className='flex items-center justify-between gap-3 text-xs text-muted-foreground'><span>{factor.friendly_name ?? 'Authenticator app'} enabled</span><Button size='xs' variant='ghost' onClick={() => void disableMfa(factor.id)} isLoading={pending === factor.id}>Disable</Button></div>)}
         </div>
         <div className='space-y-3 rounded-md border border-border p-3'><div className='flex items-center justify-between gap-3'><span className='flex items-center gap-2 text-sm'><Smartphone className='size-4 text-muted-foreground' /> Backup Codes</span><form action={generateBackupCodes}><Button type='submit' size='sm' variant='outline' isLoading={generatingCodes}>{backupState?.codes ? 'Regenerate' : 'Generate'}</Button></form></div>{backupState?.codes ? <div className='rounded bg-muted p-3 font-mono text-xs leading-6'>{backupState.codes.map(code => <div key={code}>{code}</div>)}</div> : <p className='text-xs text-muted-foreground'>Generate one-time codes to store somewhere safe.</p>}</div>
