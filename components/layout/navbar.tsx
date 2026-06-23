@@ -1,6 +1,6 @@
 'use client';
 
-import type { FC } from 'react';
+import { type FC } from 'react';
 import { Plus, Zap } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';

@@ -21,3 +21,6 @@ export const getEmailByUsername = async (username: string) => {
 
   return response.data?.email ?? null;
 };
+
+export const getInitialDisplayName = async (): Promise<string> =>
+  ((await (await fetch('https://random-word-api.herokuapp.com/word?number=2')).json()) as string[]).join('-');
