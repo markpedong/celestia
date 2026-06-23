@@ -34,12 +34,9 @@ export const PostImageGallery: FC<PostImageGalleryProps> = ({ imageUrls, title, 
   const imageUnavailable = (imageUrl: string) => !isImageUrl(imageUrl) || failedImageUrls.includes(imageUrl);
   const displayImageUrls =
     variant === 'gallery' ? imageUrls.filter(imageUrl => !imageUnavailable(imageUrl)) : imageUrls;
+
   if (displayImageUrls.length === 0) {
-    return variant === 'thumbnail' ? (
-      <div className='h-20 w-28 shrink-0 self-center overflow-hidden rounded border border-border/80 shadow-inner'>
-        <ImagePlaceholder ratio={7 / 5} />
-      </div>
-    ) : null;
+    return null;
   }
 
   const open = (index: number) => {
