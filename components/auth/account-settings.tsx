@@ -7,7 +7,6 @@ import { KeyRound, Link2, Moon, ShieldCheck, Smartphone, Trash2 } from 'lucide-r
 import { toast } from 'sonner';
 import { useTheme } from 'next-themes';
 import { useSession } from '@/hooks/useSession';
-import { useUpdateAuthUser } from '@/hooks/useQueries';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FormField } from '@/components/ui/form-field';
@@ -26,7 +25,6 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
 
 export const AccountSettings = () => {
   const { supabase, user } = useSession();
-  const updateAuthUser = useUpdateAuthUser();
   const { theme, setTheme } = useTheme();
   const [pending, setPending] = useState<string | null>(null);
   const [enrollment, setEnrollment] = useState<{ id: string; qr: string } | null>(null);
@@ -169,22 +167,6 @@ export const AccountSettings = () => {
     if (error) toast.error(error.message); else { toast.success('Two-factor authentication disabled.'); await refreshSecurity(); }
   };
 
-  const savePreferences = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const data = Object.fromEntries(formData) as Record<string, string>;
-    setPending('preferences');
-    try {
-      await updateAuthUser.mutateAsync({ data });
-    } catch (error) {
-      setPending(null);
-      toast.error(error instanceof Error ? error.message : 'Unable to update your preferences.');
-      return;
-    }
-    setPending(null);
-    toast.success('Account preferences updated.');
-  };
-
   return (
     <div className='space-y-5'>
       <Section title='General'>
@@ -263,16 +245,6 @@ export const AccountSettings = () => {
           <span className='flex items-center gap-2 text-sm'><Moon className='size-4 text-muted-foreground' /> Dark Mode</span>
           <Button variant='outline' size='sm' onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>Toggle</Button>
         </div>
-        <form onSubmit={event => void savePreferences(event)} className='flex flex-col gap-3 sm:flex-row sm:items-end'>
-          <FormField htmlFor='defaultFeedSort' label='Application Preferences' className='flex-1'>
-            <select id='defaultFeedSort' name='defaultFeedSort' defaultValue={typeof user?.user_metadata.defaultFeedSort === 'string' ? user.user_metadata.defaultFeedSort : 'hot'} className='flex h-8 w-full rounded-md border border-input bg-background px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50'>
-              <option value='hot'>Default feed: Hot</option>
-              <option value='new'>Default feed: New</option>
-              <option value='top'>Default feed: Top</option>
-            </select>
-          </FormField>
-          <Button type='submit' variant='outline' isLoading={pending === 'preferences'}>Save preferences</Button>
-        </form>
       </Section>
 
       <Section title='Advanced'>

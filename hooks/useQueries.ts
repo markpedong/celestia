@@ -2,8 +2,8 @@
 
 import { STALE_TIME } from '@/constants';
 import { getProfileByUserName } from '@/services';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { Session, UserAttributes } from '@supabase/supabase-js';
+import { useQuery } from '@tanstack/react-query';
+import type { Session } from '@supabase/supabase-js';
 import { useSession } from './useSession';
 
 const getUserNameByAuth = (user?: Session['user']) => {
@@ -22,22 +22,5 @@ export const useGetProfile = () => {
     queryFn: () => getProfileByUserName({ username }),
     enabled: Boolean(username),
     staleTime: STALE_TIME,
-  });
-};
-
-export const useUpdateAuthUser = () => {
-  const { supabase } = useSession();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationKey: ['auth', 'user', 'update'],
-    mutationFn: async (attributes: UserAttributes) => {
-      const { data, error } = await supabase.auth.updateUser(attributes);
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['profile'] });
-    },
   });
 };
