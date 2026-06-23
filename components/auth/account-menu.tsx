@@ -49,6 +49,7 @@ const AccountMenu: FC = () => {
   const name = userData?.data?.username;
   const email = userData?.data?.email;
   const avatarUrl = userData?.data?.avatarUrl;
+  const profileHref = name ? `/u/${encodeURIComponent(name)}` : '/profile';
 
   const handleSignOut = async () => {
     if (isSigningOut) return;
@@ -74,7 +75,7 @@ const AccountMenu: FC = () => {
       </DropdownMenuTrigger>
       <DropdownMenuContent align='end' className='w-64 space-y-2 p-3'>
         <DropdownMenuLabel className='flex items-center gap-3'>
-          <Link href='/profile' onClick={() => setIsAccountMenuOpen(false)} className='flex gap-1 justify-start'>
+          <Link href={profileHref} onClick={() => setIsAccountMenuOpen(false)} className='flex gap-1 justify-start'>
             <Avatar className='size-10'>
               <AvatarImage src={avatarUrl} alt={name} />
               <AvatarFallback>{getInitials(name, email)}</AvatarFallback>

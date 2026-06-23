@@ -3,7 +3,6 @@
 import type { FC } from 'react';
 import { voteCommentAction } from '@/lib/actions/comments';
 import { votePostAction } from '@/lib/actions/posts';
-import { showSignInToVoteToast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 import { formatCount } from '@/lib/format';
 import type { VoteActionValue, VoteButtonsProps, VoteValue } from '@/lib/types';
@@ -22,6 +21,14 @@ const VoteButtons: FC<VoteButtonsProps> = ({ target, targetID, score, userVote, 
 
   const isPost = target === 'post';
   const hasSession = session === undefined ? isSignedIn : Boolean(session);
+
+  const showSignInToVoteToast = () =>
+    toast('Sign in to vote', {
+      description: 'Sign in to upvote or downvote posts and comments.',
+      action: { label: 'Sign in', onClick: () => window.location.assign('/auth/sign-in') },
+      position: typeof window !== 'undefined' && window.innerWidth < 1024 ? 'top-center' : 'bottom-right',
+      duration: 1500,
+    });
 
   const vote = (value: VoteActionValue) => {
     if (!hasSession) {

@@ -9,7 +9,6 @@ import type { AuthMode } from '@/lib/types';
 import { MAX_DISPLAY_NAME_LENGTH, MAX_EMAIL_LENGTH, MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '@/constants';
 import { getAuthErrorMessage } from '@/lib/error-messages';
 import { useZodForm } from './use-zod-form';
-import { getAvatarUrl } from '@/lib/avatar';
 
 const supabase = createSupabaseBrowserClient();
 
@@ -68,7 +67,7 @@ export const useAuthForm = (mode: AuthMode) => {
             id: result.data.user.id,
             username,
             email: result.data.user.email,
-            avatar_url: getAvatarUrl(result.data.user.email ?? email),
+            avatar_url: `https://api.dicebear.com/9.x/thumbs/svg?seed=${result.data.user.email ?? email}`,
           });
 
         if (profileError) {
