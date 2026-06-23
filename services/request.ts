@@ -42,3 +42,7 @@ export const generateSuccessResponse = <T>(data: T, status = 200, message = "Dat
 export const generateErrorResponse = (message: string, status = 400) => {
   return NextResponse.json({ success: false, data: null, message }, { status });
 }
+
+export const redirectResponse = (nextPath: string, origin: string) => {
+  return NextResponse.redirect(new URL(nextPath, origin));
+}
