@@ -5,9 +5,8 @@ import Link from 'next/link';
 import { CalendarDays, CirclePlus, MessageCircle } from 'lucide-react';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { UserAvatar } from '@/components/ui/user-avatar';
-import { formatCount } from '@/lib/format';
 import type { User, UserStats } from '@/lib/types';
-import { formatTimeAgo } from '@/lib/utils';
+import { formatCount, formatTimeAgo } from '@/lib/utils';
 
 type AuthorHoverCardProps = {
   author: User;

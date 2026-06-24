@@ -3,8 +3,7 @@
 import type { FC } from 'react';
 import { voteCommentAction } from '@/lib/actions/comments';
 import { votePostAction } from '@/lib/actions/posts';
-import { cn } from '@/lib/utils';
-import { formatCount } from '@/lib/format';
+import { cn, formatCount } from '@/lib/utils';
 import type { VoteActionValue, VoteButtonsProps, VoteValue } from '@/lib/types';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
