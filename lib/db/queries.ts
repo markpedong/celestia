@@ -379,11 +379,6 @@ export const getAuthorByID = async (authorID: string): Promise<User | null> => {
   });
 };
 
-export const getProfileSettingsByUserID = cache(async (userID: string) => prisma.users.findUnique({
-  where: { id: userID },
-  select: { userName: true, displayName: true, bio: true, avatarUrl: true, coverUrl: true },
-}));
-
 export const getUserByUserName = cache(async (userName: string): Promise<User | null> => {
   return prisma.users.findUnique({ where: { userName } });
 });
