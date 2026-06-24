@@ -305,10 +305,9 @@ export type EditPostFormProps = {
 
 export type ProfileActivityTab = 'overview' | 'posts' | 'comments' | 'upvoted' | 'downvoted';
 
-export type ProfileActivityTabsProps = WithChildren<{
-  activeTab: ProfileActivityTab;
-  username: string;
-}>;
+export type ProfileActivityTabsProps = {
+  children: React.ReactNode[];
+};
 
 export type EmptyStateProps = WithOptionalChildren<WithClassName<{
   icon: LucideIcon;

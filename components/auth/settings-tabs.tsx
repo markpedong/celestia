@@ -1,24 +1,26 @@
 'use client';
 
-import { useLayoutEffect, useRef, useState, type FC } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import type { ProfileActivityTab, ProfileActivityTabsProps } from '@/lib/types';
 
-const tabs: { id: ProfileActivityTab; label: string }[] = [
-  { id: 'overview', label: 'Overview' },
-  { id: 'posts', label: 'Posts' },
-  { id: 'comments', label: 'Comments' },
-  { id: 'upvoted', label: 'Upvoted' },
-  { id: 'downvoted', label: 'Downvoted' },
+type SettingsTab = 'account' | 'profile';
+
+type SettingsTabsProps = {
+  account: React.ReactNode;
+  profile: React.ReactNode;
+};
+
+const tabs: { id: SettingsTab; label: string }[] = [
+  { id: 'account', label: 'Account' },
+  { id: 'profile', label: 'Profile' },
 ];
 
-export const ProfileActivityTabs: FC<ProfileActivityTabsProps> = ({ children }) => {
-  const [activeTab, setActiveTab] = useState<ProfileActivityTab>('overview');
+export const SettingsTabs = ({ account, profile }: SettingsTabsProps) => {
+  const [activeTab, setActiveTab] = useState<SettingsTab>('account');
   const [direction, setDirection] = useState(1);
-  const tabRefs = useRef<Partial<Record<ProfileActivityTab, HTMLButtonElement>>>({});
+  const tabRefs = useRef<Partial<Record<SettingsTab, HTMLButtonElement>>>({});
   const [indicator, setIndicator] = useState({ left: 0, width: 0 });
-  const activeIndex = tabs.findIndex(tab => tab.id === activeTab);
 
   useLayoutEffect(() => {
     const updateIndicator = () => {
@@ -31,15 +33,15 @@ export const ProfileActivityTabs: FC<ProfileActivityTabsProps> = ({ children }) 
     return () => window.removeEventListener('resize', updateIndicator);
   }, [activeTab]);
 
-  const selectTab = (nextTab: ProfileActivityTab) => {
+  const selectTab = (nextTab: SettingsTab) => {
     if (nextTab === activeTab) return;
-    setDirection(tabs.findIndex(tab => tab.id === nextTab) > activeIndex ? 1 : -1);
+    setDirection(tabs.findIndex(tab => tab.id === nextTab) > tabs.findIndex(tab => tab.id === activeTab) ? 1 : -1);
     setActiveTab(nextTab);
   };
 
   return (
     <>
-      <nav className='relative mb-4 flex overflow-x-auto border-b border-border/80 text-sm font-semibold' aria-label='Profile sections'>
+      <nav className='relative mb-5 flex border-b border-border/80 text-sm font-semibold' aria-label='Settings sections'>
         {tabs.map(tab => (
           <button
             key={tab.id}
@@ -50,7 +52,7 @@ export const ProfileActivityTabs: FC<ProfileActivityTabsProps> = ({ children }) 
             aria-current={activeTab === tab.id ? 'page' : undefined}
             onClick={() => selectTab(tab.id)}
             className={cn(
-              'relative shrink-0 px-4 py-2.5 transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset',
+              'relative px-4 py-2.5 transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset',
               activeTab === tab.id ? 'text-primary' : 'text-muted-foreground',
             )}
           >
@@ -78,7 +80,7 @@ export const ProfileActivityTabs: FC<ProfileActivityTabsProps> = ({ children }) 
             }}
             transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
           >
-            {children[activeIndex]}
+            {activeTab === 'account' ? account : profile}
           </motion.div>
         </AnimatePresence>
       </div>

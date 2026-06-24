@@ -20,7 +20,7 @@ import {
   listVotedPostsByUser,
 } from '@/lib/db/queries';
 import { formatCount, formatRelativeTime } from '@/lib/format';
-import type { CommentsListProps, FeedPostRow, ProfileActivityTab, UserCommentActivity, UserPageProps } from '@/lib/types';
+import type { CommentsListProps, FeedPostRow, UserCommentActivity, UserPageProps } from '@/lib/types';
 import { ArrowBigDown, ArrowBigUp, AtSign, CakeSlice, FileText, MessageSquare, Trophy } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -28,8 +28,6 @@ import { notFound } from 'next/navigation';
 
 export const revalidate = 300;
 export const dynamicParams = true;
-
-const validTabs: ProfileActivityTab[] = ['overview', 'posts', 'comments', 'upvoted', 'downvoted'];
 
 const excerpt = (body: string) => {
   const clean = body.replace(/\s+/g, ' ').trim();
@@ -40,29 +38,22 @@ type OverviewActivity =
   | { kind: 'post' | 'upvoted-post' | 'downvoted-post'; createdAt: string; row: FeedPostRow }
   | { kind: 'comment' | 'upvoted-comment' | 'downvoted-comment'; createdAt: string; comment: UserCommentActivity };
 
-const UserPage = async ({ params, searchParams }: UserPageProps) => {
+const UserPage = async ({ params }: UserPageProps) => {
   const { username: rawUsername } = await params;
-  const query = await searchParams;
   const username = decodeURIComponent(rawUsername);
-  const requestedTab = Array.isArray(query.tab) ? query.tab[0] : query.tab;
-  const activeTab = validTabs.includes(requestedTab as ProfileActivityTab) ? requestedTab as ProfileActivityTab : 'overview';
   const profile = await getUserByUsername(username);
   if (!profile) notFound();
 
-  const showOwnPosts = activeTab === 'overview' || activeTab === 'posts';
-  const showOwnComments = activeTab === 'overview' || activeTab === 'comments';
-  const showUpvotes = activeTab === 'overview' || activeTab === 'upvoted';
-  const showDownvotes = activeTab === 'overview' || activeTab === 'downvoted';
   const sessionUser = await getSessionUser();
   const [tags, stats, posts, comments, upvotedPosts, upvotedComments, downvotedPosts, downvotedComments] = await Promise.all([
     listTags(),
     getUserStats(profile.id),
-    showOwnPosts ? listPostsByAuthor(profile.id, 'new', sessionUser?.id) : Promise.resolve([]),
-    showOwnComments ? listCommentsByAuthor(profile.id) : Promise.resolve([]),
-    showUpvotes ? listVotedPostsByUser(profile.id, 1, sessionUser?.id) : Promise.resolve([]),
-    showUpvotes ? listVotedCommentsByUser(profile.id, 1) : Promise.resolve([]),
-    showDownvotes ? listVotedPostsByUser(profile.id, -1, sessionUser?.id) : Promise.resolve([]),
-    showDownvotes ? listVotedCommentsByUser(profile.id, -1) : Promise.resolve([]),
+    listPostsByAuthor(profile.id, 'new', sessionUser?.id),
+    listCommentsByAuthor(profile.id),
+    listVotedPostsByUser(profile.id, 1, sessionUser?.id),
+    listVotedCommentsByUser(profile.id, 1),
+    listVotedPostsByUser(profile.id, -1, sessionUser?.id),
+    listVotedCommentsByUser(profile.id, -1),
   ]);
   const allRows = [...posts, ...upvotedPosts, ...downvotedPosts];
   const authorIds = [...new Set(allRows.map(({ post }) => post.authorId).concat(profile.id))];
@@ -85,13 +76,13 @@ const UserPage = async ({ params, searchParams }: UserPageProps) => {
     </section>
   ) : null;
 
-  const content = (() => {
-    if (activeTab === 'posts') return renderPosts(posts) ?? <ProfileEmpty icon={FileText} title='No posts yet' description={`Posts from u/${profile.username} will show here.`} />;
-    if (activeTab === 'comments') return comments.length ? <CommentsList comments={comments} title='Comments' /> : <ProfileEmpty icon={MessageSquare} title='No comments yet' description={`Comments from u/${profile.username} will show here.`} />;
-    if (activeTab === 'upvoted') return <VotedActivity posts={upvotedPosts} comments={upvotedComments} direction='up' emptyFor={profile.username} renderPosts={renderPosts} />;
-    if (activeTab === 'downvoted') return <VotedActivity posts={downvotedPosts} comments={downvotedComments} direction='down' emptyFor={profile.username} renderPosts={renderPosts} />;
-    return hasActivity ? <OverviewActivityFeed items={overviewActivity} authorsById={authorsById} authorStatsById={authorStatsById} tagsBySlug={tagsBySlug} isSignedIn={Boolean(sessionUser)} /> : <ProfileEmpty icon={AtSign} title='No activity yet' description={`Posts, comments, and votes from u/${profile.username} will show here.`} />;
-  })();
+  const content = [
+    hasActivity ? <OverviewActivityFeed key='overview' items={overviewActivity} authorsById={authorsById} authorStatsById={authorStatsById} tagsBySlug={tagsBySlug} isSignedIn={Boolean(sessionUser)} /> : <ProfileEmpty key='overview-empty' icon={AtSign} title='No activity yet' description={`Posts, comments, and votes from u/${profile.username} will show here.`} />,
+    renderPosts(posts) ?? <ProfileEmpty key='posts-empty' icon={FileText} title='No posts yet' description={`Posts from u/${profile.username} will show here.`} />,
+    comments.length ? <CommentsList key='comments' comments={comments} title='Comments' /> : <ProfileEmpty key='comments-empty' icon={MessageSquare} title='No comments yet' description={`Comments from u/${profile.username} will show here.`} />,
+    <VotedActivity key='upvoted' posts={upvotedPosts} comments={upvotedComments} direction='up' emptyFor={profile.username} renderPosts={renderPosts} />,
+    <VotedActivity key='downvoted' posts={downvotedPosts} comments={downvotedComments} direction='down' emptyFor={profile.username} renderPosts={renderPosts} />,
+  ];
 
   return (
     <ContentWithSidebar sidebar={<ProfileSidebar karma={stats.karma} joinedAt={profile.createdAt.toISOString()} />}>
@@ -114,7 +105,7 @@ const UserPage = async ({ params, searchParams }: UserPageProps) => {
           <StatGrid className='mt-4 max-w-xl' stats={[{ label: 'Post karma', value: formatCount(stats.karma) }, { label: 'Posts', value: formatCount(stats.postCount) }, { label: 'Comments', value: formatCount(stats.commentCount) }]} />
         </div>
       </section>
-      <ProfileActivityTabs activeTab={activeTab} username={profile.username}>{content}</ProfileActivityTabs>
+      <ProfileActivityTabs>{content}</ProfileActivityTabs>
     </ContentWithSidebar>
   );
 };
