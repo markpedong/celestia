@@ -58,6 +58,15 @@ export const AccountSettings = () => {
     identities.some(identity => identity.provider === 'email') ||
     (Array.isArray(user?.app_metadata.providers) && user.app_metadata.providers.includes('email'));
 
+  const openPasswordProtectedSetting = (setting: SensitiveSetting) => {
+    if (!hasPassword) {
+      toast.error('Set a password first before changing this setting.');
+      return;
+    }
+
+    setDialog({ type: 'verify', setting });
+  };
+
   const securityQuery = useQuery({
     queryKey: ['auth', 'security', user?.id],
     enabled: Boolean(user),
@@ -257,12 +266,12 @@ export const AccountSettings = () => {
           <SettingsOptionRow
             title='Change email'
             value={user?.email}
-            onClick={() => setDialog({ type: 'verify', setting: 'email' })}
+            onClick={() => openPasswordProtectedSetting('email')}
           />
           <SettingsOptionRow
             title='Phone Number'
             value={user?.phone || 'Not set'}
-            onClick={() => setDialog({ type: 'verify', setting: 'phone' })}
+            onClick={() => openPasswordProtectedSetting('phone')}
           />
           <SettingsOptionRow
             title={hasPassword ? 'Change Password' : 'Set Password'}
@@ -274,12 +283,12 @@ export const AccountSettings = () => {
             value={
               typeof user?.user_metadata.location === 'string' ? user.user_metadata.location || 'Not set' : 'Not set'
             }
-            onClick={() => setDialog({ type: 'verify', setting: 'location' })}
+            onClick={() => openPasswordProtectedSetting('location')}
           />
           <SettingsOptionRow
             title='Gender'
             value={typeof user?.user_metadata.gender === 'string' ? user.user_metadata.gender || 'Not set' : 'Not set'}
-            onClick={() => setDialog({ type: 'verify', setting: 'gender' })}
+            onClick={() => openPasswordProtectedSetting('gender')}
           />
         </div>
       </Section>
@@ -314,7 +323,7 @@ export const AccountSettings = () => {
             <Button
               size='sm'
               variant='outline'
-              onClick={() => setDialog({ type: 'verify', setting: 'passkey' })}
+              onClick={() => openPasswordProtectedSetting('passkey')}
               isLoading={pending === 'passkey'}
             >
               Add passkey
@@ -347,7 +356,7 @@ export const AccountSettings = () => {
               <Button
                 size='sm'
                 variant='outline'
-                onClick={() => setDialog({ type: 'verify', setting: 'mfa' })}
+                onClick={() => openPasswordProtectedSetting('mfa')}
                 isLoading={pending === 'mfa-enroll'}
               >
                 Set up
@@ -379,7 +388,7 @@ export const AccountSettings = () => {
               type='button'
               size='sm'
               variant='outline'
-              onClick={() => setDialog({ type: 'verify', setting: 'backupCodes' })}
+              onClick={() => openPasswordProtectedSetting('backupCodes')}
             >
               {backupCodes ? 'Regenerate' : 'Generate'}
             </Button>
