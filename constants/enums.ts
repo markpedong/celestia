@@ -2,6 +2,7 @@ export enum API_ENDPOINT {
   USER = '/user',
   USERNAME_LOGIN = '/auth/userName',
   COMMUNITY = '/community',
+  COMMUNITY_JOIN = '/community/join',
 }
 
 export enum REQUEST_METHOD {

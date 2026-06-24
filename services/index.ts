@@ -13,6 +13,10 @@ export const getProfileByUserName = async ({ userName }: { userName: string }) =
   return response;
 };
 
+export const getInitialDisplayName = async (): Promise<string> =>
+  ((await (await fetch('https://random-word-api.herokuapp.com/word?number=2')).json()) as string[]).join('-');
+
+
 export const getEmailByUserName = async (userName: string) => {
   const response = await __api<{ email: string }>({
     init: { body: { userName } },
@@ -33,7 +37,11 @@ export const getCommunityFeed = async (slug: string, sort: FeedSort) => {
   return response.data;
 };
 
+export const joinCommunity = async (slug: string) => {
+  const response = await __api({
+    init: { body: { slug }, method: REQUEST_METHOD.POST },
+    endpoint: API_ENDPOINT.COMMUNITY_JOIN,
+  });
 
-
-export const getInitialDisplayName = async (): Promise<string> =>
-  ((await (await fetch('https://random-word-api.herokuapp.com/word?number=2')).json()) as string[]).join('-');
+  return response;
+};

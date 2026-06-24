@@ -1,30 +1,32 @@
 'use client';
 
 import type { FC } from 'react';
-import { getCommunityMembershipAction, setCommunityMembershipAction } from '@/lib/actions/communities';
 import { Button } from '@/components/ui/button';
 import { Check, Plus, UserMinus } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useState, useTransition } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { useOptimistic, useTransition } from 'react';
+import { usePathname } from 'next/navigation';
 import { useSession } from '@/hooks/useSession';
-import { useGetProfile } from '@/hooks/useQueries';
+import { useCommunityJoin, useGetProfile } from '@/hooks/useQueries';
 
-const CommunityMembershipButton: FC<{ ownerID: string }> = ({ ownerID }) => {
+type CommunityMembershipButtonProps = {
+  ownerID: string;
+  initialIsMember: boolean;
+};
+
+const CommunityMembershipButton: FC<CommunityMembershipButtonProps> = ({ ownerID, initialIsMember }) => {
   const slug = usePathname().split('/').pop() ?? '';
   const user = useGetProfile().data?.data;
-  const router = useRouter();
   const session = useSession().session;
-  const [pending, startTransition] = useTransition();
-  const [member, setMember] = useState(false);
+  const [isTransitionPending, startTransition] = useTransition();
+
+  const [optimisticMember, setOptimisticMember] = useOptimistic(initialIsMember, (_current, next: boolean) => next);
+
+  const { mutate, isPending } = useCommunityJoin();
 
   const resolvedIsOwner = Boolean(ownerID) && user?.id === ownerID;
   const resolvedIsSignedIn = session === undefined ? !!user : Boolean(session);
-
-  useEffect(() => {
-    // That determines whether the button displays Join or Joined—and whether to show Create Post for a joined member.
-    if (session && slug) void getCommunityMembershipAction(slug).then(({ isMember }) => setMember(isMember));
-  }, [session, slug]);
+  const isSaving = isPending || isTransitionPending;
 
   if (!resolvedIsSignedIn) {
     return (
@@ -35,13 +37,14 @@ const CommunityMembershipButton: FC<{ ownerID: string }> = ({ ownerID }) => {
   }
 
   const toggleMembership = () => {
-    startTransition(async () => {
-      setMember(!member);
-      const result = await setCommunityMembershipAction(slug, !member);
-      if (result.error) {
-        setMember(!!member);
-        router.refresh();
-      }
+    startTransition(() => {
+      setOptimisticMember(!optimisticMember);
+
+      mutate(slug, {
+        onError: () => {
+          setOptimisticMember(optimisticMember);
+        },
+      });
     });
   };
 
@@ -61,6 +64,7 @@ const CommunityMembershipButton: FC<{ ownerID: string }> = ({ ownerID }) => {
             <Check /> Manage
           </Link>
         </Button>
+
         {renderCreatePost()}
       </div>
     );
@@ -70,18 +74,19 @@ const CommunityMembershipButton: FC<{ ownerID: string }> = ({ ownerID }) => {
     <div className='flex items-center gap-2'>
       <Button
         type='button'
-        variant={member ? 'outline' : 'default'}
+        variant={optimisticMember ? 'outline' : 'default'}
         size='sm'
         onClick={toggleMembership}
-        isLoading={pending}
+        isLoading={isSaving}
         loadingText='Saving…'
-        className={member ? undefined : 'celestia-primary-action'}
+        className={optimisticMember ? undefined : 'celestia-primary-action'}
       >
-        {member ? <Check /> : <Plus />}
-        {member ? 'Joined' : 'Join'}
-        {member ? <UserMinus /> : null}
+        {optimisticMember ? <Check /> : <Plus />}
+        {optimisticMember ? 'Joined' : 'Join'}
+        {optimisticMember ? <UserMinus /> : null}
       </Button>
-      {member && renderCreatePost()}
+
+      {optimisticMember && renderCreatePost()}
     </div>
   );
 };

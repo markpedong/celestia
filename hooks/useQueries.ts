@@ -1,11 +1,12 @@
 'use client';
 
 import { STALE_TIME } from '@/constants';
-import { getCommunityFeed, getProfileByUserName } from '@/services';
-import { useQuery } from '@tanstack/react-query';
+import { getCommunityFeed, getProfileByUserName, joinCommunity } from '@/services';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import type { Session } from '@supabase/supabase-js';
 import { useSession } from './useSession';
 import type { FeedSort } from '@/lib/types';
+import { useRouter } from 'next/navigation';
 
 const getUserNameByAuth = (user?: Session['user']) => {
   const userName = user?.user_metadata.userName;
@@ -31,5 +32,14 @@ export const useCommunityFeed = (slug: string, sort: FeedSort) => {
     queryKey: ['community-feed', slug, sort],
     queryFn: () => getCommunityFeed(slug, sort),
     staleTime: STALE_TIME,
+  });
+};
+
+export const useCommunityJoin = () => {
+  const router = useRouter();
+
+  return useMutation({
+    mutationFn: (slug: string) => joinCommunity(slug),
+    onSuccess: () => router.refresh(),
   });
 };

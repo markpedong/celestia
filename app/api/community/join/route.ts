@@ -1,8 +1,7 @@
 import { revalidatePath } from 'next/cache';
-import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUserID } from '@/lib/auth';
-import { generateErrorResponse } from '@/services/request';
+import { generateErrorResponse, generateSuccessResponse } from '@/services/request';
 import { HTTP_MESSAGE } from '@/constants/enums';
 
 export const POST = async (req: Request) => {
@@ -26,32 +25,16 @@ export const POST = async (req: Request) => {
   const isMember = Boolean(existingMembership);
 
   if (isMember) {
-    if (community.createdByID === userID) {
-      return generateErrorResponse('Community owners cannot leave their community.', 403);
-    }
+    if (community.createdByID === userID) return generateErrorResponse('Community owners cannot leave their community.', 403);
 
-    await prisma.communityMembers.delete({
-      where: {
-        userID_communitySlug: {
-          userID,
-          communitySlug,
-        },
-      },
-    });
+    await prisma.communityMembers.delete({ where: { userID_communitySlug: { userID, communitySlug } } });
   } else {
-    await prisma.communityMembers.create({
-      data: {
-        userID,
-        communitySlug,
-      },
-    });
+    await prisma.communityMembers.create({ data: { userID, communitySlug } });
   }
 
   revalidatePath('/');
   revalidatePath('/submit');
   revalidatePath(`/r/${communitySlug}`);
 
-  return NextResponse.json({
-    isMember: !isMember,
-  });
+  return generateSuccessResponse({ isMember: !isMember });
 };
