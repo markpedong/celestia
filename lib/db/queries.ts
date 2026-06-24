@@ -3,7 +3,7 @@ import { cache } from "react";
 import { Prisma } from "../generated/prisma/client";
 import { PostModel } from "../generated/prisma/models";
 import { prisma } from "../prisma";
-import type { Comment, Community, CommunityData, CommunityStats, EnrichedCommentNode, FeedPostRow, FeedSort, Post, SearchPostSuggestion, SearchTagSuggestion, Tag, TagPostCount, User, UserCommentActivity, UserStats, VoteTarget } from "../types";
+import type { Comment, Community, CommunityData, EnrichedCommentNode, FeedPostRow, FeedSort, Post, SearchPostSuggestion, SearchTagSuggestion, Tag, TagPostCount, User, UserCommentActivity, UserStats, VoteTarget } from "../types";
 
 export const batchAuthorsForIDs = async (authorIDs: string[]): Promise<Map<string, User>> => {
   const unique = [...new Set(authorIDs)];
@@ -213,23 +213,6 @@ export const listCommunity = cache(async (): Promise<Tag[]> => {
     hashColor: t.hashColor,
   }));
 });
-
-export const getCommunityStats = async (slug: string): Promise<CommunityStats> => {
-  const tagSlug = slug.toLowerCase();
-  const [postCount, memberCount, commentRows] = await Promise.all([
-    prisma.postTag.count({ where: { tagSlug } }),
-    prisma.communityMembers.count({ where: { communitySlug: tagSlug } }),
-    prisma.comment.count({
-      where: { post: { postTags: { some: { tagSlug } } } },
-    }),
-  ]);
-
-  return {
-    postCount,
-    memberCount,
-    commentCount: commentRows,
-  };
-}
 
 export const getCommunityMembership = async (userID: string | undefined, slug: string): Promise<boolean> => {
   if (!userID) return false;

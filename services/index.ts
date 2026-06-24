@@ -1,6 +1,6 @@
 'use server';
 
-import { CommunityData, FeedSort, User } from "@/lib/types";
+import { CommunityData, CommunityStats, FeedSort, User } from "@/lib/types";
 import { __api } from "./request";
 import { API_ENDPOINT, REQUEST_METHOD } from "@/constants/enums";
 
@@ -41,6 +41,15 @@ export const joinCommunity = async (slug: string) => {
   const response = await __api({
     init: { body: { slug }, method: REQUEST_METHOD.POST },
     endpoint: API_ENDPOINT.COMMUNITY_JOIN,
+  });
+
+  return response;
+};
+
+export const getCommunityStats = async (slug: string) => {
+  const response = await __api<CommunityStats>({
+    init: { body: { slug }, method: REQUEST_METHOD.POST },
+    endpoint: API_ENDPOINT.COMMUNITY_STATS,
   });
 
   return response;

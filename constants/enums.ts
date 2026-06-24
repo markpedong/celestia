@@ -3,6 +3,7 @@ export enum API_ENDPOINT {
   USERNAME_LOGIN = '/auth/userName',
   COMMUNITY = '/community',
   COMMUNITY_JOIN = '/community/join',
+  COMMUNITY_STATS = '/community/stats',
 }
 
 export enum REQUEST_METHOD {
