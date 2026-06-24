@@ -73,7 +73,7 @@ export const profileMediaSchema = z.object({
 
 export const passwordRecoverySchema = z
   .object({
-    email: z.email().trim(),
+    email: z.string(),
     password: z.string().min(6, 'Password must be at least 6 characters'),
     confirmPassword: z.string(),
   })

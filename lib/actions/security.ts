@@ -104,6 +104,16 @@ export const setPasswordAction = async (values: { newPassword: string; confirmPa
   return { success: 'Password set. You can now sign in with email and password.' };
 };
 
+export const updateRecoveredPasswordAction = async (values: { newPassword: string; confirmPassword: string }): Promise<ErrorFormState<{ success?: string }>> => {
+  const parsed = setPasswordSchema.safeParse(values);
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'Check your new password.' };
+  const supabase = await createSupabaseServerClient();
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) return { error: 'Your reset link has expired. Request a new one and try again.' };
+  const { error } = await supabase.auth.updateUser({ password: parsed.data.newPassword });
+  return error ? { error: error.message } : { success: 'Password updated.' };
+};
+
 export const generateBackupCodesAction = async (): Promise<SecurityActionState> => {
   const user = await getSessionUser();
   if (!user) return { error: 'You must be signed in to generate backup codes.' };

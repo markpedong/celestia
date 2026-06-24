@@ -1,12 +1,14 @@
 'use client';
 
 import { FC, useState, useTransition } from 'react';
+import { z } from 'zod';
 import Link from 'next/link';
 import { KeyRound, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import FormField from '@/components/ui/form-field';
 import { REDIRECT_FORGOT, MIN_PASSWORD_LENGTH, PASSWORD_RECOVERY } from '@/constants';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
+import { updateRecoveredPasswordAction } from '@/lib/actions/security';
 import useFormValidate from '@/hooks/useFormValidate';
 import useFormSchema from '@/hooks/useFormSchema';
 
@@ -15,6 +17,9 @@ const PasswordRecoveryForm: FC<{ mode: 'request' | 'update' }> = ({ mode }) => {
   const [pending, startTransition] = useTransition();
   const isRequest = mode === 'request';
   const { passwordRecoverySchema } = useFormSchema();
+  const schema = isRequest
+    ? z.object({ email: z.email().trim(), password: z.string(), confirmPassword: z.string() })
+    : passwordRecoverySchema;
 
   const {
     register,
@@ -22,7 +27,7 @@ const PasswordRecoveryForm: FC<{ mode: 'request' | 'update' }> = ({ mode }) => {
     setError,
     onFormKeyDown,
     formState: { errors },
-  } = useFormValidate({ schema: passwordRecoverySchema, defaultValues: PASSWORD_RECOVERY });
+  } = useFormValidate({ schema, defaultValues: PASSWORD_RECOVERY });
 
   const onSubmit = handleSubmit(values => {
     if (isRequest && !/^\S+@\S+\.\S+$/.test(values.email)) {
@@ -40,25 +45,25 @@ const PasswordRecoveryForm: FC<{ mode: 'request' | 'update' }> = ({ mode }) => {
     setMessage(null);
 
     startTransition(async () => {
-      const supabase = createSupabaseBrowserClient();
-
-      const result = isRequest
-        ? await supabase.auth.resetPasswordForEmail(values.email.trim().toLowerCase(), {
-            redirectTo: `${window.location.origin}${REDIRECT_FORGOT}`,
-          })
-        : await supabase.auth.updateUser({ password: values.password });
-
-      if (result.error) {
-        setError(isRequest ? 'email' : 'password', {
-          message: isRequest
-            ? 'We could not send a reset email. Please try again.'
-            : 'We could not update your password. Request a new reset link and try again.',
+      if (isRequest) {
+        const supabase = createSupabaseBrowserClient();
+        const { error } = await supabase.auth.resetPasswordForEmail(values.email.trim().toLowerCase(), {
+          redirectTo: `${window.location.origin}${REDIRECT_FORGOT}`,
         });
+        if (error) {
+          setError('email', { message: error.message });
+          return;
+        }
+        setMessage('If an account exists for that email, a reset link is on its way.');
         return;
       }
 
-      if (isRequest) setMessage('If an account exists for that email, a reset link is on its way.');
-      else window.location.assign('/');
+      const result = await updateRecoveredPasswordAction({ newPassword: values.password, confirmPassword: values.confirmPassword });
+      if (result?.error) {
+        setError('password', { message: result.error });
+        return;
+      }
+      window.location.assign('/');
     });
   });
 
@@ -88,7 +93,7 @@ const PasswordRecoveryForm: FC<{ mode: 'request' | 'update' }> = ({ mode }) => {
             label='Confirm new password'
             placeholder='Re-enter your password'
             labelClassName='text-card-foreground'
-            error={errors.password?.message}
+            error={errors.confirmPassword?.message}
             {...register('confirmPassword')}
           />
         </>

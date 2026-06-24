@@ -14,6 +14,7 @@ export const GET = async (request: Request) => {
   const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error || !data.user?.email) return redirectResponse('/auth/sign-in?error=oauth', origin);;
+  if (nextPath === '/auth/update-password') return redirectResponse(nextPath, origin);
 
   const { data: profile } = await supabase
     .from('user_profiles')
