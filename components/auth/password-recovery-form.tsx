@@ -29,7 +29,7 @@ const PasswordRecoveryForm: FC<{ mode: 'request' | 'update' }> = ({ mode }) => {
     formState: { errors },
   } = useFormValidate({ schema, defaultValues: PASSWORD_RECOVERY });
 
-  const onSubmit = handleSubmit(values => {
+  const onSubmit = (values: z.infer<typeof schema>) => {
     if (isRequest && !/^\S+@\S+\.\S+$/.test(values.email)) {
       setError('email', { message: 'Enter a valid email address.' });
       return;
@@ -58,17 +58,26 @@ const PasswordRecoveryForm: FC<{ mode: 'request' | 'update' }> = ({ mode }) => {
         return;
       }
 
-      const result = await updateRecoveredPasswordAction({ newPassword: values.password, confirmPassword: values.confirmPassword });
+      const result = await updateRecoveredPasswordAction({
+        newPassword: values.password,
+        confirmPassword: values.confirmPassword,
+      });
       if (result?.error) {
         setError('password', { message: result.error });
         return;
       }
       window.location.assign('/');
     });
-  });
+  };
 
   return (
-    <form onSubmit={onSubmit} onKeyDown={onFormKeyDown} className='space-y-4' noValidate autoComplete={isRequest ? undefined : 'off'}>
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      onKeyDown={onFormKeyDown}
+      className='space-y-4'
+      noValidate
+      autoComplete={isRequest ? undefined : 'off'}
+    >
       {isRequest ? (
         <FormField
           type='email'

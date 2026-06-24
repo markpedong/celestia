@@ -5,17 +5,17 @@ import { useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
 import { toast } from 'sonner';
 import { updateProfileMediaAction, updateProfileSettingsAction } from '@/lib/actions/profile';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import FormField from '@/components/ui/form-field';
 import { Textarea } from '@/components/ui/textarea';
-import { DialogClose, DialogFooter } from '@/components/ui/dialog';
+import DialogActions from '@/components/ui/dialog-actions';
 import SettingsDialog from '@/components/ui/settings-dialog';
 import { SettingsOptionRow } from '@/components/ui/settings-option-row';
 import { IMAGE_ACCEPT } from '@/constants';
 import useFormValidate from '@/hooks/useFormValidate';
 import useFormSchema from '@/hooks/useFormSchema';
 import { useGetProfile } from '@/hooks/useQueries';
+import z from 'zod';
 
 const ProfileSettingsForm = () => {
   const queryClient = useQueryClient();
@@ -43,6 +43,12 @@ const ProfileSettingsForm = () => {
     });
 
   const openEditor = (editor: 'displayName' | 'bio' | 'avatar' | 'banner') => {
+    if (editor === 'displayName' || editor === 'bio') {
+      detailsForm.reset({ displayName: profile?.displayName ?? '', bio: profile?.bio ?? '' });
+    } else {
+      mediaForm.reset({ avatar: undefined, cover: undefined });
+    }
+
     if (editor === 'avatar' || editor === 'banner') clearMediaPreview();
     setActiveEditor(editor);
   };
@@ -60,8 +66,9 @@ const ProfileSettingsForm = () => {
     });
   };
 
-  const submitDetails = async ({ displayName, bio }: { displayName: string; bio: string }) => {
+  const submitDetails = async (values: z.infer<typeof profileDetailsSchema>) => {
     startSavingDetails(async () => {
+      const { displayName, bio } = values;
       const result = await updateProfileSettingsAction({ displayName, bio });
       if (result?.error) {
         toast.error(result.error);
@@ -73,8 +80,9 @@ const ProfileSettingsForm = () => {
     });
   };
 
-  const submitMedia = async ({ avatar, cover }: { avatar?: FileList; cover?: FileList }) => {
+  const submitMedia = async (values: z.infer<typeof profileMediaSchema>) => {
     startSavingMedia(async () => {
+      const { avatar, cover } = values;
       const result = await updateProfileMediaAction({ avatar, cover });
       if (result?.error) {
         toast.error(result.error);
@@ -109,7 +117,7 @@ const ProfileSettingsForm = () => {
       <section className='celestia-card space-y-5 p-5 md:p-6'>
         <div>
           <h2 className='text-base font-semibold'>Profile media</h2>
-          <p className='mt-1 text-sm text-muted-foreground'>Choose the images people see on your profile?.</p>
+          <p className='mt-1 text-sm text-muted-foreground'>Choose the images people see on your profile.</p>
         </div>
         <div className='divide-y divide-border rounded-lg border border-border'>
           <SettingsOptionRow
@@ -137,19 +145,15 @@ const ProfileSettingsForm = () => {
           className='space-y-4'
           noValidate
         >
-          <FormField htmlFor='displayName' label='Display Name'>
-            <Input id='displayName' maxLength={80} {...detailsForm.register('displayName')} />
-          </FormField>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button type='button' variant='outline'>
-                Cancel
-              </Button>
-            </DialogClose>
-            <Button type='submit' isLoading={savingDetails}>
-              Save display name
-            </Button>
-          </DialogFooter>
+          <FormField
+            label='Display Name'
+            labelClassName='text-card-foreground'
+            placeholder='johndoe'
+            error={detailsForm.formState.errors.displayName?.message}
+            maxLength={20}
+            {...detailsForm.register('displayName')}
+          />
+          <DialogActions submitLabel='Save display name' submitLoading={savingDetails} />
         </form>
       </SettingsDialog>
       <SettingsDialog
@@ -164,19 +168,17 @@ const ProfileSettingsForm = () => {
           className='space-y-4'
           noValidate
         >
-          <FormField htmlFor='bio' label='About / Bio'>
-            <Textarea id='bio' maxLength={500} rows={5} className='resize-y' {...detailsForm.register('bio')} />
+          <FormField htmlFor='bio' label='About / Bio' error={detailsForm.errors('bio')}>
+            <Textarea
+              id='bio'
+              maxLength={500}
+              rows={5}
+              className='resize-y'
+              aria-invalid={Boolean(detailsForm.errors('bio'))}
+              {...detailsForm.register('bio')}
+            />
           </FormField>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button type='button' variant='outline'>
-                Cancel
-              </Button>
-            </DialogClose>
-            <Button type='submit' isLoading={savingDetails}>
-              Save bio
-            </Button>
-          </DialogFooter>
+          <DialogActions submitLabel='Save bio' submitLoading={savingDetails} />
         </form>
       </SettingsDialog>
       {(['avatar', 'banner'] as const).map(kind => {
@@ -188,7 +190,7 @@ const ProfileSettingsForm = () => {
             open={activeEditor === kind}
             onOpenChange={open => !open && closeEditor()}
             title={kind === 'avatar' ? 'Avatar' : 'Banner'}
-            description='Upload an image to update your public profile?.'
+            description='Upload an image to update your public profile.'
           >
             <form
               onSubmit={mediaForm.handleSubmit(submitMedia)}
@@ -224,22 +226,14 @@ const ProfileSettingsForm = () => {
                   accept={IMAGE_ACCEPT}
                   required
                   disabled={savingMedia}
+                  aria-invalid={Boolean(mediaForm.formState.errors[kind === 'avatar' ? 'avatar' : 'cover'])}
                   {...mediaForm.register(kind === 'avatar' ? 'avatar' : 'cover', {
                     required: 'Choose an image to upload.',
                     onChange: event => previewMedia(kind, event.target.files?.[0]),
                   })}
                 />
               </FormField>
-              <DialogFooter>
-                <DialogClose asChild>
-                  <Button type='button' variant='outline'>
-                    Cancel
-                  </Button>
-                </DialogClose>
-                <Button type='submit' isLoading={savingMedia}>
-                  Upload {kind}
-                </Button>
-              </DialogFooter>
+              <DialogActions submitLabel={`Upload ${kind}`} submitLoading={savingMedia} />
             </form>
           </SettingsDialog>
         );
