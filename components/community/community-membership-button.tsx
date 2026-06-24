@@ -10,7 +10,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useSession } from '@/hooks/useSession';
 import { useGetProfile } from '@/hooks/useQueries';
 
-export const CommunityMembershipButton: FC<{ ownerId: string }> = ({ ownerId }) => {
+const CommunityMembershipButton: FC<{ ownerID: string }> = ({ ownerID }) => {
   const slug = usePathname().split('/').pop() ?? '';
   const user = useGetProfile().data?.data;
   const router = useRouter();
@@ -18,10 +18,11 @@ export const CommunityMembershipButton: FC<{ ownerId: string }> = ({ ownerId }) 
   const [pending, startTransition] = useTransition();
   const [member, setMember] = useState(false);
 
-  const resolvedIsOwner = Boolean(ownerId) && user?.id === ownerId;
+  const resolvedIsOwner = Boolean(ownerID) && user?.id === ownerID;
   const resolvedIsSignedIn = session === undefined ? !!user : Boolean(session);
 
   useEffect(() => {
+    // That determines whether the button displays Join or Joined—and whether to show Create Post for a joined member.
     if (session && slug) void getCommunityMembershipAction(slug).then(({ isMember }) => setMember(isMember));
   }, [session, slug]);
 
@@ -34,24 +35,34 @@ export const CommunityMembershipButton: FC<{ ownerId: string }> = ({ ownerId }) 
   }
 
   const toggleMembership = () => {
-    const nextMembership = !member;
     startTransition(async () => {
-      setMember(nextMembership);
-      const result = await setCommunityMembershipAction(slug, nextMembership);
+      setMember(!member);
+      const result = await setCommunityMembershipAction(slug, !member);
       if (result.error) {
-        setMember(!nextMembership);
+        setMember(!!member);
         router.refresh();
       }
     });
   };
 
+  const renderCreatePost = () => (
+    <Button asChild size='sm' className='celestia-primary-action'>
+      <Link href={`/submit?community=${encodeURIComponent(slug)}`}>
+        <Plus /> Create Post
+      </Link>
+    </Button>
+  );
+
   if (resolvedIsOwner) {
     return (
-      <Button asChild type='button' variant='outline' size='sm'>
-        <Link href={`/r/${encodeURIComponent(slug)}/settings`}>
-          <Check /> Manage
-        </Link>
-      </Button>
+      <div className='flex items-center gap-2'>
+        <Button asChild type='button' variant='outline' size='sm'>
+          <Link href={`/r/${encodeURIComponent(slug)}/settings`}>
+            <Check /> Manage
+          </Link>
+        </Button>
+        {renderCreatePost()}
+      </div>
     );
   }
 
@@ -70,14 +81,9 @@ export const CommunityMembershipButton: FC<{ ownerId: string }> = ({ ownerId }) 
         {member ? 'Joined' : 'Join'}
         {member ? <UserMinus /> : null}
       </Button>
-      {member && (
-        <Button asChild size='sm' className='celestia-primary-action'>
-          <Link href={`/submit?community=${encodeURIComponent(slug)}`}>
-            <Plus />
-            Create Post
-          </Link>
-        </Button>
-      )}
+      {member && renderCreatePost()}
     </div>
   );
 };
+
+export default CommunityMembershipButton;

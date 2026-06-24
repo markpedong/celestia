@@ -1,6 +1,6 @@
 import CommunityFeed from '@/components/feed/community-feed';
 import { ContentWithSidebar } from '@/components/layout/content-with-sidebar';
-import { CommunityMembershipButton } from '@/components/community/community-membership-button';
+import CommunityMembershipButton from '@/components/community/community-membership-button';
 import { StatGrid } from '@/components/ui/stat-grid';
 import { getCommunityBySlug, getCommunityStats, listCommunity } from '@/lib/db/queries';
 import { formatCount } from '@/lib/format';
@@ -64,7 +64,7 @@ const CommunityPage = async ({ params }: CommunityPageProps) => {
               </div>
             </div>
             <div className='flex items-center gap-2'>
-              <CommunityMembershipButton ownerId={community.createdById ?? ''} />
+              <CommunityMembershipButton ownerID={community.createdById ?? ''} />
             </div>
           </div>
           <p className='mt-4 max-w-2xl text-sm leading-6 text-muted-foreground'>
