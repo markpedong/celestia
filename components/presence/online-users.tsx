@@ -2,34 +2,39 @@
 
 import { useEffect, useState } from 'react';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { useGetProfile } from '@/hooks/useQueries';
+import { UserAvatar } from '../ui/user-avatar';
+import type { User } from '@/lib/types';
 
 const supabase = createSupabaseBrowserClient();
 
 export const ActiveNow = () => {
-  const [activeSessions, setActiveSessions] = useState(0);
+  const profile = useGetProfile().data?.data;
+  const [activeUsers, setActiveUsers] = useState<User[]>([]);
 
   useEffect(() => {
+    if (!profile) return;
+
     const channel = supabase.channel('celestia:online', {
       config: { presence: { key: crypto.randomUUID() } },
     });
 
     channel
       .on('presence', { event: 'sync' }, () => {
-        setActiveSessions(Object.keys(channel.presenceState()).length);
+        const users = Object.values(channel.presenceState<{ user: User }>())
+          .flat()
+          .map(({ user }) => user)
+          .filter((user): user is User => Boolean(user));
+        setActiveUsers([...new Map(users.map(user => [user.id, user])).values()].slice(0, 5));
       })
       .subscribe(status => {
-        if (status === 'SUBSCRIBED') void channel.track({});
+        if (status === 'SUBSCRIBED') void channel.track({ user: profile });
       });
 
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, []);
-
-  const visibleUsers = Array.from({ length: Math.min(activeSessions, 5) }, (_, index) => ({
-    image: `https://api.dicebear.com/9.x/thumbs/svg?seed=celestia-${index}`,
-  }));
+  }, [profile]);
 
   return (
     <section className='celestia-card p-4'>
@@ -39,22 +44,18 @@ export const ActiveNow = () => {
       </h3>
       <div className='flex items-center'>
         <div className='flex items-center'>
-          {visibleUsers.map((user, index) => (
-            <Avatar
-              key={`${user.image}-${index}`}
-              className='border-2 border-card bg-secondary shadow-sm'
+          {activeUsers.map((user, index) => (
+            <div
+              key={user.id}
               style={{ marginLeft: index ? -8 : 0, zIndex: 10 - index }}
             >
-              <AvatarImage src={user.image} alt={user.image} />
-              <AvatarFallback className='bg-secondary text-[10px] font-semibold text-secondary-foreground'>
-                {user.image.slice(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+              <UserAvatar user={user} className='border-2 border-card bg-secondary shadow-sm' />
+            </div>
           ))}
         </div>
 
         <span className='ml-3 text-xs text-muted-foreground'>
-          {activeSessions > 0 ? `+${activeSessions} online` : 'No one online'}
+          {activeUsers.length > 0 ? `+${activeUsers.length} online` : 'No one online'}
         </span>
       </div>
     </section>

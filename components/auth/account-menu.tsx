@@ -1,7 +1,7 @@
 'use client';
 
 import type { FC } from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/ui/user-avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,17 +28,6 @@ const displayModeOptions = [
   { value: 'light', label: 'Light', icon: Sun },
 ] as const;
 
-const getInitials = (name?: string | null, email?: string | null) => {
-  const source = name?.trim() || email?.split('@')[0] || 'User';
-  const parts = source.split(/\s+/).filter(Boolean);
-
-  if (parts.length === 1) {
-    return parts[0].slice(0, 2).toUpperCase();
-  }
-
-  return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-};
-
 const AccountMenu: FC = () => {
   const supabase = useSession().supabase;
   const { data: userData } = useGetProfile();
@@ -46,9 +35,8 @@ const AccountMenu: FC = () => {
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
 
-  const name = userData?.data?.username;
-  const email = userData?.data?.email;
-  const avatarUrl = userData?.data?.avatarUrl;
+  const user = userData?.data;
+  const name = user?.username;
   const profileHref = name ? `/u/${encodeURIComponent(name)}` : '/profile';
 
   const handleSignOut = async () => {
@@ -59,6 +47,8 @@ const AccountMenu: FC = () => {
     window.location.replace('/');
   };
 
+  if (!user) return null;
+
   return (
     <DropdownMenu open={isAccountMenuOpen} onOpenChange={setIsAccountMenuOpen}>
       <DropdownMenuTrigger asChild>
@@ -66,20 +56,14 @@ const AccountMenu: FC = () => {
           type='button'
           className='inline-flex size-8 shrink-0 items-center justify-center rounded-full outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-02 cursor-pointer'
         >
-          <Avatar>
-            <AvatarImage src={avatarUrl ?? undefined} alt={name} />
-            <AvatarFallback>{getInitials(name, email)}</AvatarFallback>
-          </Avatar>
+          <UserAvatar user={user} />
           <span className='sr-only'>Open account menu</span>
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align='end' className='w-64 space-y-2 p-3'>
         <DropdownMenuLabel className='flex items-center gap-3'>
           <Link href={profileHref} onClick={() => setIsAccountMenuOpen(false)} className='flex gap-1 justify-start'>
-            <Avatar size='lg'>
-              <AvatarImage src={avatarUrl ?? undefined} alt={name} />
-              <AvatarFallback>{getInitials(name, email)}</AvatarFallback>
-            </Avatar>
+            <UserAvatar user={user} size='lg' />
             <span className='min-w-0 space-y-1.5'>
               <span className='block truncate text-sm font-medium text-foreground'>View Profile</span>
               <span className='block truncate text-xs font-normal text-muted-foreground'>u/{name}</span>

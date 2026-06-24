@@ -74,6 +74,7 @@ const AuthMethods: FC<AuthMethodsProps> = ({ mode }) => {
           <FormField
             label='Username'
             labelClassName='text-card-foreground'
+            placeholder='johndoe'
             error={errors.username && (touchedFields.username || isSubmitted) ? errors.username.message : undefined}
             maxLength={20}
             {...register('username')}
@@ -112,7 +113,7 @@ const AuthMethods: FC<AuthMethodsProps> = ({ mode }) => {
           disabled={!isValid}
           isLoading={pending}
           loadingText={isSignUp ? 'Creating account...' : 'Signing in...'}
-          className='celestia-primary-action w-full'
+          className='celestia-primary-action h-11 w-full'
         >
           {isSignUp ? <Mail /> : <KeyRound />}
           {isSignUp ? 'Create account' : 'Sign in'}

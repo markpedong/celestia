@@ -8,7 +8,7 @@ import VoteButtons from '../feed/vote-buttons';
 import CommentComposer from './comment-composer';
 import { Clock, CornerDownRight, MinusCircle, PlusCircle, Share2 } from 'lucide-react';
 import Link from 'next/link';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { UserAvatar } from '../ui/user-avatar';
 
 export const CommentNode: FC<CommentNodeProps> = ({
   node,
@@ -27,16 +27,7 @@ export const CommentNode: FC<CommentNodeProps> = ({
   return (
     <li className='relative p-4 pt-0 pl-8'>
       <div className='flex items-start gap-2'>
-        <Avatar>
-          <AvatarImage src={node.author.avatarUrl ?? ''} alt='@shadcn' />
-          <AvatarFallback>
-            {node.author.username
-              .split(' ')
-              .map(word => word[0])
-              .join('')
-              .toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
+        <UserAvatar user={node.author} />
         <div className='flex flex-col'>
           <div className='mb-3 mt-[0.4rem] flex flex-wrap items-center gap-2 text-xs text-muted-foreground'>
             <Link href={`/u/${node.author.username}`} className='font-medium text-muted-foreground hover:text-primary'>

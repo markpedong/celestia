@@ -97,7 +97,7 @@ export const useAuthForm = (mode: AuthMode) => {
             username,
             email: result.data.user.email,
             display_name: result.data.user.user_metadata.display_name,
-            avatar_url: `https://api.dicebear.com/9.x/thumbs/svg?seed=${result.data.user.email ?? email}`,
+            avatar_url: `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(result.data.user.email ?? email)}`,
           }, { ignoreDuplicates: true });
 
         if (profileError) {
