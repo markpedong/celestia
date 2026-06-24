@@ -1,21 +1,20 @@
 'use client';
 
-import type { Dispatch, SetStateAction } from 'react';
 import FormField from '@/components/ui/form-field';
 import SettingsDialog from '@/components/ui/settings-dialog';
 import DialogActions from '@/components/ui/dialog-actions';
 
 type DeleteAccountDialogProps = {
   open: boolean;
-  onClose: () => void;
-  action: Dispatch<SetStateAction<FormData>>;
+  onCloseAction: () => void;
+  action: (formData: FormData) => void;
   pending: boolean;
 };
 
-export const DeleteAccountDialog = ({ open, onClose, action, pending }: DeleteAccountDialogProps) => (
+export const DeleteAccountDialog = ({ open, onCloseAction, action, pending }: DeleteAccountDialogProps) => (
   <SettingsDialog
     open={open}
-    onOpenChange={nextOpen => !nextOpen && onClose()}
+    onOpenChange={nextOpen => !nextOpen && onCloseAction()}
     title='Delete account?'
     description='This permanently deletes your account, profile, posts, comments, votes, memberships, and backup codes.'
   >

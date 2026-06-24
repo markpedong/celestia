@@ -9,10 +9,10 @@ import { changePasswordAction } from '@/lib/actions/security';
 
 type ChangePasswordDialogProps = {
   open: boolean;
-  onClose: () => void;
+  onCloseAction: () => void;
 };
 
-export const ChangePasswordDialog = ({ open, onClose }: ChangePasswordDialogProps) => {
+export const ChangePasswordDialog = ({ open, onCloseAction }: ChangePasswordDialogProps) => {
   const [pending, startTransition] = useTransition();
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
@@ -28,7 +28,7 @@ export const ChangePasswordDialog = ({ open, onClose }: ChangePasswordDialogProp
         return;
       }
 
-      onClose();
+      onCloseAction();
       toast.success(result?.success ?? 'Password updated.');
     });
   };
@@ -36,7 +36,7 @@ export const ChangePasswordDialog = ({ open, onClose }: ChangePasswordDialogProp
   return (
     <SettingsDialog
       open={open}
-      onOpenChange={nextOpen => !nextOpen && onClose()}
+      onOpenChange={nextOpen => !nextOpen && onCloseAction()}
       title='Change Password'
       description='Use at least six characters for your new password.'
     >

@@ -17,11 +17,11 @@ type VerifiedResult = {
 
 type VerifyPasswordDialogProps = {
   setting: SensitiveSetting | null;
-  onClose: () => void;
-  onVerified: (result: VerifiedResult) => void | Promise<void>;
+  onCloseAction: () => void;
+  onVerifiedAction: (result: VerifiedResult) => void | Promise<void>;
 };
 
-export const VerifyPasswordDialog = ({ setting, onClose, onVerified }: VerifyPasswordDialogProps) => {
+export const VerifyPasswordDialog = ({ setting, onCloseAction, onVerifiedAction }: VerifyPasswordDialogProps) => {
   const [pending, startTransition] = useTransition();
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
@@ -40,14 +40,14 @@ export const VerifyPasswordDialog = ({ setting, onClose, onVerified }: VerifyPas
         return;
       }
 
-      await onVerified(result as VerifiedResult);
+      await onVerifiedAction(result as VerifiedResult);
     });
   };
 
   return (
     <SettingsDialog
       open={setting !== null}
-      onOpenChange={open => !open && onClose()}
+      onOpenChange={open => !open && onCloseAction()}
       title='Verify your password'
       description='Enter your password to continue editing this setting.'
     >

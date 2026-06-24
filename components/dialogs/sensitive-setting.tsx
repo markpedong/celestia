@@ -13,10 +13,10 @@ type EditableSetting = 'email' | 'phone' | 'gender' | 'location';
 type SensitiveSettingDialogProps = {
   dialog: { type: 'edit'; setting: EditableSetting; token: string } | null;
   user: User | null;
-  onClose: () => void;
+  onCloseAction: () => void;
 };
 
-export const SensitiveSettingDialog = ({ dialog, user, onClose }: SensitiveSettingDialogProps) => {
+export const SensitiveSettingDialog = ({ dialog, user, onCloseAction }: SensitiveSettingDialogProps) => {
   const [pending, startTransition] = useTransition();
 
   const config = dialog
@@ -82,7 +82,7 @@ export const SensitiveSettingDialog = ({ dialog, user, onClose }: SensitiveSetti
         return;
       }
 
-      onClose();
+      onCloseAction();
       toast.success(result?.success ?? 'Account details updated.');
     });
   };
@@ -92,7 +92,7 @@ export const SensitiveSettingDialog = ({ dialog, user, onClose }: SensitiveSetti
   return (
     <SettingsDialog
       open
-      onOpenChange={open => !open && onClose()}
+      onOpenChange={open => !open && onCloseAction()}
       title={config.title}
       description={config.description}
     >

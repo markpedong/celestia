@@ -9,11 +9,11 @@ import { setPasswordAction } from '@/lib/actions/security';
 
 type SetPasswordDialogProps = {
   open: boolean;
-  onClose: () => void;
-  onSuccess: () => void;
+  onCloseAction: () => void;
+  onSuccessAction: () => void;
 };
 
-export const SetPasswordDialog = ({ open, onClose, onSuccess }: SetPasswordDialogProps) => {
+export const SetPasswordDialog = ({ open, onCloseAction, onSuccessAction }: SetPasswordDialogProps) => {
   const [pending, startTransition] = useTransition();
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
@@ -29,8 +29,8 @@ export const SetPasswordDialog = ({ open, onClose, onSuccess }: SetPasswordDialo
         return;
       }
 
-      onSuccess();
-      onClose();
+      onSuccessAction();
+      onCloseAction();
       toast.success(result?.success ?? 'Password set.');
     });
   };
@@ -38,7 +38,7 @@ export const SetPasswordDialog = ({ open, onClose, onSuccess }: SetPasswordDialo
   return (
     <SettingsDialog
       open={open}
-      onOpenChange={nextOpen => !nextOpen && onClose()}
+      onOpenChange={nextOpen => !nextOpen && onCloseAction()}
       title='Set Password'
       description='Create a password for signing in without Google.'
     >

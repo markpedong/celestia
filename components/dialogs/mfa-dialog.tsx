@@ -10,15 +10,23 @@ type MfaDialogProps = {
   enrollment: { id: string; qr: string; secret: string } | null;
   code: string;
   pending: string | null;
-  onCodeChange: (code: string) => void;
-  onVerify: () => void;
-  onCancel: () => void;
+  onCodeChangeAction: (code: string) => void;
+  onVerifiedAction: () => void;
+  onCancelAction: () => void;
 };
 
-export const MfaDialog = ({ open, enrollment, code, pending, onCodeChange, onVerify, onCancel }: MfaDialogProps) => (
+export const MfaDialog = ({
+  open,
+  enrollment,
+  code,
+  pending,
+  onCodeChangeAction,
+  onVerifiedAction,
+  onCancelAction,
+}: MfaDialogProps) => (
   <SettingsDialog
     open={open}
-    onOpenChange={nextOpen => !nextOpen && onCancel()}
+    onOpenChange={nextOpen => !nextOpen && onCancelAction()}
     title='Set up Two-Factor Authentication'
     description='Scan the QR code with your authenticator app, then enter its six-digit code.'
   >
@@ -40,17 +48,17 @@ export const MfaDialog = ({ open, enrollment, code, pending, onCodeChange, onVer
 
         <Input
           value={code}
-          onChange={event => onCodeChange(event.target.value)}
+          onChange={event => onCodeChangeAction(event.target.value)}
           inputMode='numeric'
           placeholder='6-digit code'
         />
 
         <div className='flex justify-end gap-2'>
-          <Button type='button' variant='outline' onClick={onCancel} isLoading={pending === 'mfa-cancel'}>
+          <Button type='button' variant='outline' onClick={onCancelAction} isLoading={pending === 'mfa-cancel'}>
             Cancel
           </Button>
 
-          <Button type='button' onClick={onVerify} isLoading={pending === 'mfa-verify'}>
+          <Button type='button' onClick={onVerifiedAction} isLoading={pending === 'mfa-verify'}>
             Verify and enable
           </Button>
         </div>

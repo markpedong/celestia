@@ -422,8 +422,8 @@ export const AccountSettings = () => {
 
       <VerifyPasswordDialog
         setting={dialog?.type === 'verify' ? dialog.setting : null}
-        onClose={() => setDialog(null)}
-        onVerified={async result => {
+        onCloseAction={() => setDialog(null)}
+        onVerifiedAction={async result => {
           toast.success(result.success);
 
           if (result.setting === 'passkey') {
@@ -449,16 +449,16 @@ export const AccountSettings = () => {
 
       <SensitiveSettingDialog
         dialog={dialog?.type === 'edit' ? dialog : null}
-        user={user}
-        onClose={() => setDialog(null)}
+        user={user ?? null}
+        onCloseAction={() => setDialog(null)}
       />
 
-      <ChangePasswordDialog open={dialog?.type === 'changePassword'} onClose={() => setDialog(null)} />
+      <ChangePasswordDialog open={dialog?.type === 'changePassword'} onCloseAction={() => setDialog(null)} />
 
       <SetPasswordDialog
         open={dialog?.type === 'setPassword'}
-        onClose={() => setDialog(null)}
-        onSuccess={() => setHasPasswordOverride(true)}
+        onCloseAction={() => setDialog(null)}
+        onSuccessAction={() => setHasPasswordOverride(true)}
       />
 
       <MfaDialog
@@ -466,16 +466,16 @@ export const AccountSettings = () => {
         enrollment={enrollment}
         code={mfaCode}
         pending={pending}
-        onCodeChange={setMfaCode}
-        onVerify={() => void verifyMfa()}
-        onCancel={() => void cancelMfaEnrollment()}
+        onCodeChangeAction={setMfaCode}
+        onVerifiedAction={() => void verifyMfa()}
+        onCancelAction={() => void cancelMfaEnrollment()}
       />
 
       <BackupCodesDialog
         open={dialog?.type === 'backupCodes'}
         hasCodes={Boolean(backupCodes)}
-        onClose={() => setDialog(null)}
-        onGenerated={codes => {
+        onCloseAction={() => setDialog(null)}
+        onGeneratedAction={codes => {
           setBackupCodes(codes);
           setDialog(null);
         }}
@@ -483,7 +483,7 @@ export const AccountSettings = () => {
 
       <DeleteAccountDialog
         open={dialog?.type === 'deleteAccount'}
-        onClose={() => setDialog(null)}
+        onCloseAction={() => setDialog(null)}
         action={deleteAccount}
         pending={deletingAccount}
       />

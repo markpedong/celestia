@@ -9,11 +9,11 @@ import { generateBackupCodesAction } from '@/lib/actions/security';
 type BackupCodesDialogProps = {
   open: boolean;
   hasCodes: boolean;
-  onClose: () => void;
-  onGenerated: (codes: string[] | null) => void;
+  onCloseAction: () => void;
+  onGeneratedAction: (codes: string[] | null) => void;
 };
 
-export const BackupCodesDialog = ({ open, hasCodes, onClose, onGenerated }: BackupCodesDialogProps) => {
+export const BackupCodesDialog = ({ open, hasCodes, onCloseAction, onGeneratedAction }: BackupCodesDialogProps) => {
   const [pending, startTransition] = useTransition();
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
@@ -27,7 +27,7 @@ export const BackupCodesDialog = ({ open, hasCodes, onClose, onGenerated }: Back
         return;
       }
 
-      onGenerated(result?.codes ?? null);
+      onGeneratedAction(result?.codes ?? null);
       toast.success(result?.success ?? 'New backup codes generated.');
     });
   };
@@ -35,7 +35,7 @@ export const BackupCodesDialog = ({ open, hasCodes, onClose, onGenerated }: Back
   return (
     <SettingsDialog
       open={open}
-      onOpenChange={nextOpen => !nextOpen && onClose()}
+      onOpenChange={nextOpen => !nextOpen && onCloseAction()}
       title='Backup Codes'
       description='Store these one-time codes somewhere safe. Generating new codes replaces any existing codes.'
     >

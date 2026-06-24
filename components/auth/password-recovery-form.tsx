@@ -5,18 +5,10 @@ import Link from 'next/link';
 import { KeyRound, Mail } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
-import { FormField, PasswordField } from '@/components/ui/form-field';
-import { Input } from '@/components/ui/input';
-import {
-  REDIRECT_FORGOT,
-  MAX_EMAIL_LENGTH,
-  MAX_PASSWORD_LENGTH,
-  MIN_PASSWORD_LENGTH,
-  PASSWORD_RECOVERY,
-} from '@/constants';
+import FormField from '@/components/ui/form-field';
+import { REDIRECT_FORGOT, MIN_PASSWORD_LENGTH, PASSWORD_RECOVERY } from '@/constants';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { PasswordRecoveryValues } from '@/lib/types';
-import { ENTER_VALID_EMAIL, MIN_MAX_PASS } from '@/constants/messages';
 
 const PasswordRecoveryForm: FC<{ mode: 'request' | 'update' }> = ({ mode }) => {
   const [message, setMessage] = useState<string | null>(null);
@@ -26,7 +18,7 @@ const PasswordRecoveryForm: FC<{ mode: 'request' | 'update' }> = ({ mode }) => {
   const {
     register,
     handleSubmit,
-    watch,
+    getValues,
     setError,
     formState: { errors },
   } = useForm<PasswordRecoveryValues>({
@@ -40,7 +32,9 @@ const PasswordRecoveryForm: FC<{ mode: 'request' | 'update' }> = ({ mode }) => {
       const supabase = createSupabaseBrowserClient();
 
       const result = isRequest
-        ? await supabase.auth.resetPasswordForEmail(values.email.trim().toLowerCase(), { redirectTo: REDIRECT_FORGOT })
+        ? await supabase.auth.resetPasswordForEmail(values.email.trim().toLowerCase(), {
+            redirectTo: `${window.location.origin}${REDIRECT_FORGOT}`,
+          })
         : await supabase.auth.updateUser({ password: values.password });
 
       if (result.error) {
@@ -60,58 +54,32 @@ const PasswordRecoveryForm: FC<{ mode: 'request' | 'update' }> = ({ mode }) => {
   return (
     <form onSubmit={onSubmit} className='space-y-4' noValidate autoComplete={isRequest ? undefined : 'off'}>
       {isRequest ? (
-        <FormField htmlFor='email' label='Email' labelClassName='text-card-foreground' error={errors.email?.message}>
-          <Input
-            id='email'
-            type='email'
-            autoComplete='email'
-            maxLength={MAX_EMAIL_LENGTH}
-            placeholder='you@example.com'
-            className='h-11 bg-background'
-            aria-invalid={Boolean(errors.email)}
-            {...register('email', {
-              required: 'Email is required.',
-              maxLength: {
-                value: MAX_EMAIL_LENGTH,
-                message: `Email must be at most ${MAX_EMAIL_LENGTH} characters.`,
-              },
-              pattern: {
-                value: /^\S+@\S+\.\S+$/,
-                message: ENTER_VALID_EMAIL,
-              },
-            })}
-          />
-        </FormField>
+        <FormField
+          type='email'
+          label='Email'
+          placeholder='you@example.com'
+          labelClassName='text-card-foreground'
+          error={errors.email?.message}
+          {...register('email')}
+        />
       ) : (
         <>
-          <PasswordField
-            id='password'
+          <FormField
+            type='password'
             label='New password'
-            labelClassName='text-card-foreground'
-            autoComplete='new-password'
             placeholder={`At least ${MIN_PASSWORD_LENGTH} characters`}
-            className='h-11 bg-background'
-            error={errors.password?.message}
-            aria-invalid={Boolean(errors.password)}
-            {...register('password', {
-              required: 'Password is required.',
-              minLength: { value: MIN_PASSWORD_LENGTH, message: MIN_MAX_PASS },
-              maxLength: { value: MAX_PASSWORD_LENGTH, message: MIN_MAX_PASS },
-            })}
-          />
-
-          <PasswordField
-            id='confirm-password'
-            label='Confirm new password'
             labelClassName='text-card-foreground'
-            autoComplete='new-password'
+            error={errors.password?.message}
+            {...register('password')}
+          />
+          <FormField
+            type='password'
+            label='Confirm new password'
             placeholder='Re-enter your password'
-            className='h-11 bg-background'
-            error={errors.confirmPassword?.message}
-            aria-invalid={Boolean(errors.confirmPassword)}
+            labelClassName='text-card-foreground'
+            error={errors.password?.message}
             {...register('confirmPassword', {
-              required: 'Confirm your password.',
-              validate: value => value === watch('password') || 'Passwords do not match.',
+              validate: value => value === getValues('password') || 'Passwords do not match.',
             })}
           />
         </>
