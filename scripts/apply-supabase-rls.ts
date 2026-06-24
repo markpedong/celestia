@@ -56,7 +56,8 @@ async function main() {
   $$;
 
   drop trigger if exists user_profiles_username_immutable on public.users;
-  create trigger user_profiles_username_immutable
+  drop trigger if exists users_username_immutable on public.users;
+  create trigger users_username_immutable
   before update of username on public.users
   for each row execute function public.prevent_username_change();
   `;

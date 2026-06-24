@@ -1,60 +1,34 @@
-/*
-  Warnings:
-
-  - You are about to drop the `community_memberships` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `tags` table. If the table is not empty, all the data it contains will be lost.
-
-*/
--- DropForeignKey
-ALTER TABLE "community_memberships" DROP CONSTRAINT "community_memberships_community_slug_fkey";
-
--- DropForeignKey
-ALTER TABLE "post_tags" DROP CONSTRAINT "post_tags_tag_slug_fkey";
-
 -- AlterTable
 ALTER TABLE "backup_codes" ALTER COLUMN "id" DROP DEFAULT;
-
--- DropTable
-DROP TABLE "community_memberships";
-
--- DropTable
-DROP TABLE "tags";
 
 -- RenameTable
 ALTER TABLE "user_profiles" RENAME TO "users";
 
+-- RenameTrigger
+ALTER TRIGGER "user_profiles_username_immutable" ON "users" RENAME TO "users_username_immutable";
+
+-- RenameTable
+ALTER TABLE "tags" RENAME TO "community";
+
+-- RenameTable
+ALTER TABLE "community_memberships" RENAME TO "community_members";
+
 -- Match the renamed model's required email field without discarding existing profiles.
+UPDATE "users" AS profile
+SET "email" = auth_user."email"
+FROM auth.users AS auth_user
+WHERE profile."id" = auth_user."id"::text
+  AND profile."email" IS NULL;
+
 ALTER TABLE "users" ALTER COLUMN "email" SET NOT NULL;
-
--- CreateTable
-CREATE TABLE "community" (
-    "slug" TEXT NOT NULL,
-    "label" TEXT NOT NULL,
-    "description" TEXT NOT NULL DEFAULT '',
-    "hash_color" TEXT NOT NULL,
-    "created_by_id" TEXT,
-    "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "community_pkey" PRIMARY KEY ("slug")
-);
-
--- CreateTable
-CREATE TABLE "community_members" (
-    "user_id" TEXT NOT NULL,
-    "community_slug" TEXT NOT NULL,
-    "joined_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "community_members_pkey" PRIMARY KEY ("user_id","community_slug")
-);
 
 -- RenameIndex
 ALTER INDEX "user_profiles_username_key" RENAME TO "users_username_key";
 
--- CreateIndex
-CREATE INDEX "community_members_community_slug_joined_at_idx" ON "community_members"("community_slug", "joined_at");
+-- RenameIndex
+ALTER INDEX "community_memberships_community_slug_joined_at_idx" RENAME TO "community_members_community_slug_joined_at_idx";
 
--- AddForeignKey
-ALTER TABLE "community_members" ADD CONSTRAINT "community_members_community_slug_fkey" FOREIGN KEY ("community_slug") REFERENCES "community"("slug") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "post_tags" ADD CONSTRAINT "post_tags_tag_slug_fkey" FOREIGN KEY ("tag_slug") REFERENCES "community"("slug") ON DELETE RESTRICT ON UPDATE CASCADE;
+-- Rename constraints to match the renamed tables. Their relationships survive the table renames.
+ALTER TABLE "community" RENAME CONSTRAINT "tags_pkey" TO "community_pkey";
+ALTER TABLE "community_members" RENAME CONSTRAINT "community_memberships_pkey" TO "community_members_pkey";
+ALTER TABLE "community_members" RENAME CONSTRAINT "community_memberships_community_slug_fkey" TO "community_members_community_slug_fkey";

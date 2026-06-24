@@ -7,14 +7,11 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/h
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { formatCount } from '@/lib/format';
 import type { User, UserStats } from '@/lib/types';
+import { formatTimeAgo } from '@/lib/utils';
 
 type AuthorHoverCardProps = {
   author: User;
   authorStats?: UserStats;
-};
-
-const formatJoinDate = (date: Date) => {
-  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }).format(date);
 };
 
 export const AuthorHoverCard: FC<AuthorHoverCardProps> = ({ author, authorStats }) => {
@@ -23,7 +20,10 @@ export const AuthorHoverCard: FC<AuthorHoverCardProps> = ({ author, authorStats 
   return (
     <HoverCard>
       <HoverCardTrigger asChild>
-        <span tabIndex={0} className='truncate text-xs font-medium text-card-foreground outline-none focus-visible:text-primary'>
+        <span
+          tabIndex={0}
+          className='truncate text-xs font-medium text-card-foreground outline-none focus-visible:text-primary'
+        >
           {authorName}
         </span>
       </HoverCardTrigger>
@@ -37,11 +37,11 @@ export const AuthorHoverCard: FC<AuthorHoverCardProps> = ({ author, authorStats 
             >
               {authorName}
             </Link>
-            {author.createdAt ? (
+            {author.createdAt && (
               <p className='mt-1 flex items-center gap-1 text-xs text-muted-foreground'>
-                <CalendarDays className='size-3.5' /> {formatJoinDate(author.createdAt)}
+                <CalendarDays className='size-3.5' /> {formatTimeAgo(author.createdAt)}
               </p>
-            ) : null}
+            )}
           </div>
         </div>
         <div className='mt-5 grid grid-cols-2 gap-6'>
@@ -55,10 +55,18 @@ export const AuthorHoverCard: FC<AuthorHoverCardProps> = ({ author, authorStats 
           </div>
         </div>
         <div className='mt-5 flex gap-2'>
-          <button type='button' disabled className='inline-flex h-9 items-center gap-2 rounded-lg bg-primary/20 px-4 text-sm font-semibold text-primary-foreground opacity-70'>
+          <button
+            type='button'
+            disabled
+            className='inline-flex h-9 items-center gap-2 rounded-lg bg-primary/20 px-4 text-sm font-semibold text-primary-foreground opacity-70'
+          >
             <CirclePlus className='size-4' /> Follow
           </button>
-          <button type='button' disabled className='inline-flex h-9 items-center gap-2 rounded-lg bg-muted px-4 text-sm font-semibold text-muted-foreground opacity-70'>
+          <button
+            type='button'
+            disabled
+            className='inline-flex h-9 items-center gap-2 rounded-lg bg-muted px-4 text-sm font-semibold text-muted-foreground opacity-70'
+          >
             <MessageCircle className='size-4' /> Start Chat
           </button>
         </div>

@@ -124,15 +124,11 @@ export type FeedPostRow = {
   userVote: VoteValue;
 };
 
-export type CommunityFeedData = {
+export type CommunityData = {
   rows: FeedPostRow[];
   authors: User[];
   authorStats: [string, UserStats][];
   tags: Tag[];
-};
-
-export type CommunityFeedApiResponse = Omit<CommunityFeedData, 'authors'> & {
-  authors: (Omit<User, 'createdAt'> & { createdAt: string })[];
 };
 
 export type EnrichedCommentNode = {

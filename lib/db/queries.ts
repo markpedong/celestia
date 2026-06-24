@@ -3,7 +3,7 @@ import { cache } from "react";
 import { Prisma } from "../generated/prisma/client";
 import { PostModel } from "../generated/prisma/models";
 import { prisma } from "../prisma";
-import type { Comment, Community, CommunityFeedData, CommunityStats, EnrichedCommentNode, FeedPostRow, FeedSort, Post, SearchPostSuggestion, SearchTagSuggestion, Tag, TagPostCount, User, UserCommentActivity, UserStats, VoteTarget } from "../types";
+import type { Comment, Community, CommunityData, CommunityStats, EnrichedCommentNode, FeedPostRow, FeedSort, Post, SearchPostSuggestion, SearchTagSuggestion, Tag, TagPostCount, User, UserCommentActivity, UserStats, VoteTarget } from "../types";
 
 export const batchAuthorsForIds = async (authorIds: string[]): Promise<Map<string, User>> => {
   const unique = [...new Set(authorIds)];
@@ -145,7 +145,7 @@ export const getCommunityFeedData = async (
   slug: string,
   sort: FeedSort,
   userId: string | undefined,
-): Promise<CommunityFeedData> => {
+): Promise<CommunityData> => {
   const [rows, tags] = await Promise.all([
     listPostSorted(sort, slug, userId),
     listTags(),
