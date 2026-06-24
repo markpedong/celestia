@@ -1,62 +1,19 @@
 import { nestCommentRows } from "../comment-tree";
 import { cache } from "react";
-import { Prisma } from "../generated/prisma/client";
+import { Prisma, UserProfile } from "../generated/prisma/client";
 import { PostModel } from "../generated/prisma/models";
 import { prisma } from "../prisma";
 import type { Comment, Community, CommunityStats, EnrichedCommentNode, FeedPostRow, FeedSort, Post, SearchPostSuggestion, SearchTagSuggestion, Tag, TagPostCount, User, UserCommentActivity, UserStats, VoteTarget } from "../types";
 
-const fallbackUsernameForId = (id: string) => {
-  return id
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_|_$/g, "")
-    .slice(0, 28) || `user_${id.slice(0, 6)}`;
-}
-
-const fallbackUserForId = (id: string): User => ({
-  id,
-  username: fallbackUsernameForId(id),
-});
-
-const mapUserProfile = (row: {
-  id: string;
-  username: string;
-  displayName: string | null;
-  bio: string | null;
-  avatarUrl: string | null;
-  coverUrl: string | null;
-  createdAt: Date;
-}): User => ({
-  id: row.id,
-  username: row.username,
-  displayName: row.displayName ?? undefined,
-  bio: row.bio ?? undefined,
-  avatarUrl: row.avatarUrl ?? undefined,
-  coverUrl: row.coverUrl ?? undefined,
-  createdAt: row.createdAt.toISOString(),
-});
-
-export const batchAuthorsForIds = async (authorIds: string[]): Promise<Map<string, User>> => {
+export const batchAuthorsForIds = async (authorIds: string[]): Promise<UserProfile[]> => {
   const unique = [...new Set(authorIds)];
-  if (unique.length === 0) return new Map();
+  if (unique.length === 0) return [];
 
   const rows = await prisma.userProfile.findMany({
     where: { id: { in: unique } },
   });
 
-  const result = new Map<string, User>();
-
-  for (const row of rows) {
-    result.set(row.id, mapUserProfile(row));
-  }
-
-  for (const id of unique) {
-    if (!result.has(id)) {
-      result.set(id, fallbackUserForId(id));
-    }
-  }
-
-  return result;
+  return rows;
 }
 
 export const batchUserStatsForIds = async (userIds: string[]): Promise<Map<string, UserStats>> => {
@@ -72,15 +29,15 @@ export const batchUserStatsForIds = async (userIds: string[]): Promise<Map<strin
   const commentIds = comments.map(comment => comment.id);
   const voteSums = postIds.length || commentIds.length
     ? await prisma.vote.groupBy({
-        by: ['targetType', 'targetId'],
-        where: {
-          OR: [
-            ...(postIds.length ? [{ targetType: 'post', targetId: { in: postIds } }] : []),
-            ...(commentIds.length ? [{ targetType: 'comment', targetId: { in: commentIds } }] : []),
-          ],
-        },
-        _sum: { value: true },
-      })
+      by: ['targetType', 'targetId'],
+      where: {
+        OR: [
+          ...(postIds.length ? [{ targetType: 'post', targetId: { in: postIds } }] : []),
+          ...(commentIds.length ? [{ targetType: 'comment', targetId: { in: commentIds } }] : []),
+        ],
+      },
+      _sum: { value: true },
+    })
     : [];
   const postAuthorById = new Map(posts.map(post => [post.id, post.authorId]));
   const commentAuthorById = new Map(comments.map(comment => [comment.id, comment.authorId]));
@@ -433,28 +390,19 @@ export const listUsernames = cache(async () => {
   return profiles.map(profile => profile.username);
 });
 
-export const getAuthorByID = async (authorID: string): Promise<User> => {
-  const row = await prisma.userProfile.findUnique({ where: { id: authorID } });
-  return row ? mapUserProfile(row) : fallbackUserForId(authorID);
-}
+export const getAuthorByID = async (authorID: string): Promise<User | null> => {
+  return prisma.userProfile.findUnique({
+    where: { id: authorID },
+  });
+};
 
 export const getProfileSettingsByUserId = cache(async (userId: string) => prisma.userProfile.findUnique({
   where: { id: userId },
   select: { username: true, displayName: true, bio: true, avatarUrl: true, coverUrl: true },
 }));
 
-export const getUserByUsername = cache(async (username: string): Promise<User | undefined> => {
-  const row = await prisma.userProfile.findUnique({ where: { username } });
-  if (row) return mapUserProfile(row);
-
-  const [postAuthors, commentAuthors] = await Promise.all([
-    prisma.post.findMany({ distinct: ['authorId'], select: { authorId: true } }),
-    prisma.comment.findMany({ distinct: ['authorId'], select: { authorId: true } }),
-  ]);
-  const authorIds = [...new Set([...postAuthors, ...commentAuthors].map(author => author.authorId))];
-  const fallbackId = authorIds.find(authorId => fallbackUsernameForId(authorId) === username);
-
-  return fallbackId ? fallbackUserForId(fallbackId) : undefined;
+export const getUserByUsername = cache(async (username: string): Promise<User | null> => {
+  return prisma.userProfile.findUnique({ where: { username } });
 });
 
 export const getUserStats = async (userId: string): Promise<UserStats> => {
@@ -518,32 +466,42 @@ export const getPostScore = async (postId: string): Promise<number> => {
   return Number(agg._sum.value ?? 0);
 }
 
-export const getCommentTree = async (postID: string, sessionID?: string): Promise<EnrichedCommentNode[]> => {
-  const flat = await listCommentsForPost(postID)
-  if (flat.length === 0) return []
+export const getCommentTree = async (
+  postID: string,
+  sessionID?: string,
+): Promise<EnrichedCommentNode[]> => {
+  const flat = await listCommentsForPost(postID);
 
-  const authorIDs = [...new Set(flat.map(c => c.authorId))]
-  const commentIDs = flat.map(c => c.id)
-  const [authorMap, scoreMap, voteMap] = await Promise.all([
+  if (flat.length === 0) return [];
+
+  const authorIDs = [...new Set(flat.map(comment => comment.authorId))];
+  const commentIDs = flat.map(comment => comment.id);
+
+  const [authors, scoreMap, voteMap] = await Promise.all([
     batchAuthorsForIds(authorIDs),
     batchCommentScores(commentIDs),
-    sessionID ? batchUserVotesForComments(sessionID, commentIDs) : Promise.resolve(new Map<string, -1 | 0 | 1>()),
+    sessionID
+      ? batchUserVotesForComments(sessionID, commentIDs)
+      : Promise.resolve(new Map<string, -1 | 0 | 1>()),
   ]);
 
-  const enriched = flat.map(c => {
-    const author = authorMap.get(c.authorId)
-    if (!author) return null;
+  const authorMap = new Map(authors.map(author => [author.id, author]));
+
+  const enriched = flat.flatMap(comment => {
+    const author = authorMap.get(comment.authorId);
+
+    if (!author) return [];
 
     return {
-      ...c,
+      ...comment,
       author,
-      score: scoreMap.get(c.id) ?? 0,
-      userVote: voteMap.get(c.id) ?? 0,
-    }
-  }).filter((c): c is NonNullable<typeof c> => c !== null);
+      score: scoreMap.get(comment.id) ?? 0,
+      userVote: voteMap.get(comment.id) ?? 0,
+    };
+  });
 
   return nestCommentRows(enriched);
-}
+};
 
 export const batchUserVotesForComments = async (userID: string, commentIDs: string[]): Promise<Map<string, -1 | 0 | 1>> => {
   if (commentIDs.length === 0) return new Map();

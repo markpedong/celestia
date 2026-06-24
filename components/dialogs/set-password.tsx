@@ -1,11 +1,13 @@
 'use client';
 
-import { useTransition, type FormEvent } from 'react';
+import { useTransition } from 'react';
 import { toast } from 'sonner';
 import FormField from '@/components/ui/form-field';
 import SettingsDialog from '@/components/ui/settings-dialog';
 import DialogActions from '@/components/ui/dialog-actions';
 import { setPasswordAction } from '@/lib/actions/security';
+import { setPasswordSchema } from '@/lib/form-schemas';
+import { useZodForm } from '@/hooks/use-zod-form';
 
 type SetPasswordDialogProps = {
   open: boolean;
@@ -15,11 +17,12 @@ type SetPasswordDialogProps = {
 
 export const SetPasswordDialog = ({ open, onCloseAction, onSuccessAction }: SetPasswordDialogProps) => {
   const [pending, startTransition] = useTransition();
+  const { register, handleSubmit, onFormKeyDown, formState: { errors } } = useZodForm(setPasswordSchema, { newPassword: '', confirmPassword: '' });
 
-  const submit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    const formData = new FormData(event.currentTarget);
+  const submit = handleSubmit(({ newPassword, confirmPassword }) => {
+    const formData = new FormData();
+    formData.set('newPassword', newPassword);
+    formData.set('confirmPassword', confirmPassword);
 
     startTransition(async () => {
       const result = await setPasswordAction(formData);
@@ -33,7 +36,7 @@ export const SetPasswordDialog = ({ open, onCloseAction, onSuccessAction }: SetP
       onCloseAction();
       toast.success(result?.success ?? 'Password set.');
     });
-  };
+  });
 
   return (
     <SettingsDialog
@@ -42,9 +45,9 @@ export const SetPasswordDialog = ({ open, onCloseAction, onSuccessAction }: SetP
       title='Set Password'
       description='Create a password for signing in without Google.'
     >
-      <form onSubmit={submit} className='space-y-4'>
-        <FormField name='newPassword' label='New password' type='password' minLength={6} required />
-        <FormField name='confirmPassword' label='Confirm new password' type='password' minLength={6} required />
+      <form onSubmit={submit} onKeyDown={onFormKeyDown} className='space-y-4' noValidate>
+        <FormField label='New password' type='password' error={errors.newPassword?.message} {...register('newPassword', { required: 'Enter a new password.', minLength: { value: 6, message: 'Use at least 6 characters.' } })} />
+        <FormField label='Confirm new password' type='password' error={errors.confirmPassword?.message} {...register('confirmPassword')} />
 
         <DialogActions submitLabel='Set password' submitLoading={pending} />
       </form>

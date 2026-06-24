@@ -1,6 +1,5 @@
 import { cache } from "react";
 import { User } from "./types";
-import { ensureUserProfile } from "./db/user-profile";
 import { createSupabaseServerClient } from "./supabase/server";
 
 export const getCurrentUserID = cache(async (): Promise<string | undefined> => {
@@ -21,7 +20,19 @@ export const getSessionUser = cache(async (): Promise<User | null> => {
     user.email?.split('@')[0] ||
     'user';
   const image = typeof user.user_metadata.avatar_url === 'string' ? user.user_metadata.avatar_url : undefined;
-  const username = typeof user.user_metadata.username === 'string' ? user.user_metadata.username : undefined;
+  const username =
+    (typeof user.user_metadata.username === 'string' && user.user_metadata.username) ||
+    user.email?.split('@')[0] ||
+    'user';
 
-  return ensureUserProfile({ id: user.id, name: displayName, image, username });
+  return {
+    id: user.id,
+    username,
+    email: user.email ?? '',
+    displayName,
+    bio: null,
+    avatarUrl: image ?? null,
+    coverUrl: null,
+    createdAt: new Date(user.created_at),
+  };
 });

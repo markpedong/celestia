@@ -3,7 +3,7 @@
 import { createCommunityAction } from '@/lib/actions/communities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { FormField } from '@/components/ui/form-field';
+import FormField from '@/components/ui/form-field';
 import { Textarea } from '@/components/ui/textarea';
 import { createCommunitySchema } from '@/lib/form-schemas';
 import { useServerActionForm } from '@/hooks/use-server-action-form';

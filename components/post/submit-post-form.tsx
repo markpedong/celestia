@@ -4,7 +4,7 @@ import { createPostAction } from '@/lib/actions/posts';
 import { postSchema } from '@/lib/form-schemas';
 import { useServerActionForm } from '@/hooks/use-server-action-form';
 import { Label } from '../ui/label';
-import { FormField } from '../ui/form-field';
+import FormField from '../ui/form-field';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';

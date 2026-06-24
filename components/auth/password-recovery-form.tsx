@@ -3,12 +3,12 @@
 import { FC, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { KeyRound, Mail } from 'lucide-react';
-import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import FormField from '@/components/ui/form-field';
 import { REDIRECT_FORGOT, MIN_PASSWORD_LENGTH, PASSWORD_RECOVERY } from '@/constants';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
-import { PasswordRecoveryValues } from '@/lib/types';
+import { passwordRecoverySchema } from '@/lib/form-schemas';
+import { useZodForm } from '@/hooks/use-zod-form';
 
 const PasswordRecoveryForm: FC<{ mode: 'request' | 'update' }> = ({ mode }) => {
   const [message, setMessage] = useState<string | null>(null);
@@ -18,14 +18,23 @@ const PasswordRecoveryForm: FC<{ mode: 'request' | 'update' }> = ({ mode }) => {
   const {
     register,
     handleSubmit,
-    getValues,
     setError,
     formState: { errors },
-  } = useForm<PasswordRecoveryValues>({
-    defaultValues: PASSWORD_RECOVERY,
-  });
+  } = useZodForm(passwordRecoverySchema, PASSWORD_RECOVERY);
 
   const onSubmit = handleSubmit(values => {
+    if (isRequest && !/^\S+@\S+\.\S+$/.test(values.email)) {
+      setError('email', { message: 'Enter a valid email address.' });
+      return;
+    }
+    if (!isRequest && values.password.length < MIN_PASSWORD_LENGTH) {
+      setError('password', { message: `Password must be at least ${MIN_PASSWORD_LENGTH} characters.` });
+      return;
+    }
+    if (!isRequest && values.password !== values.confirmPassword) {
+      setError('confirmPassword', { message: 'Passwords do not match.' });
+      return;
+    }
     setMessage(null);
 
     startTransition(async () => {
@@ -78,9 +87,7 @@ const PasswordRecoveryForm: FC<{ mode: 'request' | 'update' }> = ({ mode }) => {
             placeholder='Re-enter your password'
             labelClassName='text-card-foreground'
             error={errors.password?.message}
-            {...register('confirmPassword', {
-              validate: value => value === getValues('password') || 'Passwords do not match.',
-            })}
+            {...register('confirmPassword')}
           />
         </>
       )}

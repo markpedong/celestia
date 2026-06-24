@@ -6,7 +6,7 @@ import type { EditPostFormProps } from '@/lib/types';
 import { editPostSchema } from '@/lib/form-schemas';
 import { useServerActionForm } from '@/hooks/use-server-action-form';
 import { Button } from '../ui/button';
-import { FormField } from '../ui/form-field';
+import FormField from '../ui/form-field';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';

@@ -1,18 +1,20 @@
 'use client';
 
-import { useState, useTransition, type FormEvent } from 'react';
+import { useState, useTransition } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
 import { toast } from 'sonner';
 import { updateProfileMediaAction, updateProfileSettingsAction } from '@/lib/actions/profile';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { FormField } from '@/components/ui/form-field';
+import FormField from '@/components/ui/form-field';
 import { Textarea } from '@/components/ui/textarea';
 import { DialogClose, DialogFooter } from '@/components/ui/dialog';
-import { SettingsDialog } from '@/components/ui/settings-dialog';
+import SettingsDialog from '@/components/ui/settings-dialog';
 import { SettingsOptionRow } from '@/components/ui/settings-option-row';
 import { IMAGE_ACCEPT } from '@/constants';
+import { profileDetailsSchema, profileMediaSchema } from '@/lib/form-schemas';
+import { useZodForm } from '@/hooks/use-zod-form';
 
 type ProfileSettingsFormProps = {
   profile: {
@@ -30,6 +32,8 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
   const [savingMedia, startSavingMedia] = useTransition();
   const [activeEditor, setActiveEditor] = useState<'displayName' | 'bio' | 'avatar' | 'banner' | null>(null);
   const [mediaPreview, setMediaPreview] = useState<{ kind: 'avatar' | 'banner'; url: string } | null>(null);
+  const detailsForm = useZodForm(profileDetailsSchema, { displayName: profile.displayName ?? '', bio: profile.bio ?? '' });
+  const mediaForm = useZodForm(profileMediaSchema, { avatar: undefined, cover: undefined });
 
   const clearMediaPreview = () =>
     setMediaPreview(current => {
@@ -55,9 +59,10 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
     });
   };
 
-  const submitDetails = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
+  const submitDetails = detailsForm.handleSubmit(({ displayName, bio }) => {
+    const formData = new FormData();
+    formData.set('displayName', displayName);
+    formData.set('bio', bio);
     startSavingDetails(async () => {
       const result = await updateProfileSettingsAction(null, formData);
       if (result?.error) {
@@ -68,11 +73,12 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
       void queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast.success(result?.success ?? 'Profile details updated.');
     });
-  };
+  });
 
-  const submitMedia = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
+  const submitMedia = mediaForm.handleSubmit(({ avatar, cover }) => {
+    const formData = new FormData();
+    if (avatar?.[0]) formData.set('avatar', avatar[0]);
+    if (cover?.[0]) formData.set('cover', cover[0]);
     startSavingMedia(async () => {
       const result = await updateProfileMediaAction(null, formData);
       if (result?.error) {
@@ -83,7 +89,7 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
       void queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast.success(result?.success ?? 'Profile media updated.');
     });
-  };
+  });
 
   return (
     <div className='space-y-5'>
@@ -130,10 +136,9 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
         title='Display Name'
         description='This is the name shown across Celestia.'
       >
-        <form onSubmit={submitDetails} className='space-y-4'>
-          <input type='hidden' name='bio' value={profile.bio ?? ''} />
+        <form onSubmit={submitDetails} onKeyDown={detailsForm.onFormKeyDown} className='space-y-4' noValidate>
           <FormField htmlFor='displayName' label='Display Name'>
-            <Input id='displayName' name='displayName' defaultValue={profile.displayName ?? ''} maxLength={80} />
+            <Input id='displayName' maxLength={80} {...detailsForm.register('displayName')} />
           </FormField>
           <DialogFooter>
             <DialogClose asChild>
@@ -153,17 +158,9 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
         title='About / Bio'
         description='Tell people a little about yourself.'
       >
-        <form onSubmit={submitDetails} className='space-y-4'>
-          <input type='hidden' name='displayName' value={profile.displayName ?? ''} />
+        <form onSubmit={submitDetails} onKeyDown={detailsForm.onFormKeyDown} className='space-y-4' noValidate>
           <FormField htmlFor='bio' label='About / Bio'>
-            <Textarea
-              id='bio'
-              name='bio'
-              defaultValue={profile.bio ?? ''}
-              maxLength={500}
-              rows={5}
-              className='resize-y'
-            />
+            <Textarea id='bio' maxLength={500} rows={5} className='resize-y' {...detailsForm.register('bio')} />
           </FormField>
           <DialogFooter>
             <DialogClose asChild>
@@ -188,9 +185,9 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
             title={kind === 'avatar' ? 'Avatar' : 'Banner'}
             description='Upload an image to update your public profile.'
           >
-            <form onSubmit={submitMedia} className='space-y-4'>
+            <form onSubmit={submitMedia} onKeyDown={mediaForm.onFormKeyDown} className='space-y-4' noValidate>
               <div
-                className={`relative overflow-hidden rounded-lg border border-border bg-muted ${kind === 'avatar' ? 'size-28' : 'aspect-[3/1] w-full'}`}
+                className={`relative overflow-hidden rounded-lg border border-border bg-muted ${kind === 'avatar' ? 'size-28' : 'aspect-3/1 w-full'}`}
               >
                 {previewUrl ? (
                   <Image
@@ -206,15 +203,21 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
                   </span>
                 )}
               </div>
-              <FormField htmlFor={`${kind}-upload`} label={kind === 'avatar' ? 'Profile image' : 'Banner image'}>
+              <FormField
+                htmlFor={`${kind}-upload`}
+                label={kind === 'avatar' ? 'Profile image' : 'Banner image'}
+                error={mediaForm.formState.errors[kind === 'avatar' ? 'avatar' : 'cover']?.message}
+              >
                 <Input
                   id={`${kind}-upload`}
-                  name={kind === 'avatar' ? 'avatar' : 'cover'}
                   type='file'
                   accept={IMAGE_ACCEPT}
                   required
                   disabled={savingMedia}
-                  onChange={event => previewMedia(kind, event.currentTarget.files?.[0])}
+                  {...mediaForm.register(kind === 'avatar' ? 'avatar' : 'cover', {
+                    required: 'Choose an image to upload.',
+                    onChange: event => previewMedia(kind, event.target.files?.[0]),
+                  })}
                 />
               </FormField>
               <DialogFooter>

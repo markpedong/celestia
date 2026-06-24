@@ -1,14 +1,14 @@
 import { z } from 'zod';
 import {
-    MAX_COMMENT_LENGTH,
-    MAX_COMMUNITY_DESCRIPTION_LENGTH,
-    MAX_COMMUNITY_NAME_LENGTH,
-    MAX_COMMUNITY_SLUG_LENGTH,
-    MAX_POST_BODY_LENGTH,
-    MAX_POST_TITLE_LENGTH,
-    MIN_COMMUNITY_NAME_LENGTH,
-    MIN_COMMUNITY_SLUG_LENGTH,
-    MIN_POST_TITLE_LENGTH,
+  MAX_COMMENT_LENGTH,
+  MAX_COMMUNITY_DESCRIPTION_LENGTH,
+  MAX_COMMUNITY_NAME_LENGTH,
+  MAX_COMMUNITY_SLUG_LENGTH,
+  MAX_POST_BODY_LENGTH,
+  MAX_POST_TITLE_LENGTH,
+  MIN_COMMUNITY_NAME_LENGTH,
+  MIN_COMMUNITY_SLUG_LENGTH,
+  MIN_POST_TITLE_LENGTH,
 } from '../constants';
 
 export const postSchema = z.object({
@@ -45,4 +45,43 @@ export const profileSettingsSchema = z.object({
     .regex(/^[a-z0-9_]+$/, 'Use lowercase letters, numbers, or underscores.'),
   displayName: z.string().trim().max(80, 'Display name must be 80 characters or fewer.'),
   bio: z.string().trim().max(500, 'About must be 500 characters or fewer.'),
+});
+
+export const passwordSchema = z.object({
+  password: z.string().min(1, 'Enter your password.'),
+});
+
+export const setPasswordSchema = z.object({
+  newPassword: z.string().min(6, 'Use at least 6 characters.'),
+  confirmPassword: z.string(),
+}).refine(values => values.newPassword === values.confirmPassword, {
+  message: 'Passwords do not match.',
+  path: ['confirmPassword'],
+});
+
+
+export const sensitiveSettingSchema = z.object({
+  value: z.string().trim(),
+});
+
+export const profileDetailsSchema = profileSettingsSchema.pick({ displayName: true, bio: true });
+
+export const profileMediaSchema = z.object({
+  avatar: z.custom<FileList>().optional(),
+  cover: z.custom<FileList>().optional(),
+}).refine(values => values.avatar?.length || values.cover?.length, 'Choose an image to upload.');
+
+export const passwordRecoverySchema = z
+  .object({
+    email: z.email().trim(),
+    password: z.string().min(6, 'Password must be at least 6 characters'),
+    confirmPassword: z.string(),
+  })
+  .refine(data => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
+
+export const deleteAccountSchema = z.object({
+  confirmation: z.literal('DELETE', 'Type DELETE to confirm.'),
 });

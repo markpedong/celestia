@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { getSessionUser } from '../auth';
 import { prisma } from '../prisma';
 import { createSupabaseAdminClient, createSupabaseServerClient } from '../supabase/server';
-import type { ErrorFormState } from '../types';
+import type { ChangePasswordValues, ErrorFormState } from '../types';
 
 type SecurityActionState = ErrorFormState<{ success?: string; codes?: string[] }>;
 type SensitiveSetting = 'email' | 'phone' | 'gender' | 'location';
@@ -42,7 +42,6 @@ const verifyVerificationToken = (token: string, userId: string, setting: Passwor
 
 const verifyCurrentPassword = async (password: string) => {
   const user = await getSessionUser();
-  if (!user?.email) return { error: 'A password is not available for this account.' as const };
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.auth.signInWithPassword({ email: user.email, password });
   if (error || data.user?.id !== user.id) return { error: 'Your current password is incorrect.' as const };
@@ -89,13 +88,8 @@ export const updateSensitiveAccountAction = async (formData: FormData): Promise<
   return { success: setting === 'email' ? 'Check your inbox to confirm your new email.' : 'Account details updated.' };
 };
 
-export const changePasswordAction = async (formData: FormData): Promise<ErrorFormState<{ success?: string }>> => {
-  const currentPassword = formData.get('currentPassword');
-  const newPassword = formData.get('newPassword');
-  const confirmPassword = formData.get('confirmPassword');
-  if (typeof currentPassword !== 'string' || !currentPassword) return { error: 'Enter your current password.' };
-  if (typeof newPassword !== 'string' || newPassword.length < 6) return { error: 'Your new password must be at least 6 characters.' };
-  if (newPassword !== confirmPassword) return { error: 'New passwords do not match.' };
+export const changePasswordAction = async (values: ChangePasswordValues): Promise<ErrorFormState<{ success?: string }>> => {
+  const { currentPassword, newPassword } = values;
   const verification = await verifyCurrentPassword(currentPassword);
   if ('error' in verification) return verification;
   const { error } = await verification.supabase.auth.updateUser({ password: newPassword });

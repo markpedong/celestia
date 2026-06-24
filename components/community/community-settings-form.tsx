@@ -7,7 +7,7 @@ import { communitySettingsSchema } from '@/lib/form-schemas';
 import { useServerActionForm } from '@/hooks/use-server-action-form';
 import { MAX_COMMUNITY_DESCRIPTION_LENGTH, MAX_COMMUNITY_NAME_LENGTH } from '@/constants';
 import { Button } from '../ui/button';
-import { FormField } from '../ui/form-field';
+import FormField from '../ui/form-field';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Save } from 'lucide-react';

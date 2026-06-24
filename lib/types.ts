@@ -27,12 +27,12 @@ export type ErrorFormState<T extends object = Record<never, never>> = (T & {
 export type User = {
   id: string;
   username: string;
-  displayName?: string;
-  bio?: string;
-  email?: string;
-  avatarUrl?: string;
-  coverUrl?: string;
-  createdAt?: string;
+  email: string;
+  displayName: string | null;
+  bio: string | null;
+  avatarUrl: string | null;
+  coverUrl: string | null;
+  createdAt: Date;
 };
 
 export type Tag = {
@@ -371,9 +371,11 @@ export type PostImageGalleryProps = {
 };
 
 export type FormFieldProps = Omit<React.ComponentProps<'input'>, 'id' | 'name'> & {
-  name: string;
+  name?: string;
   id?: string;
-  label: string;
+  htmlFor?: string;
+  label: React.ReactNode;
+  children?: React.ReactNode;
   wrapperClassName?: string;
   labelClassName?: string;
   error?: string;
@@ -387,3 +389,5 @@ export type PasswordRecoveryValues = {
   password: string;
   confirmPassword: string;
 };
+
+export type ChangePasswordValues = { currentPassword: string; newPassword: string; confirmPassword: string }; 

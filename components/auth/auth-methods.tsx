@@ -2,8 +2,7 @@
 
 import type { FC } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { FormField, PasswordField } from '@/components/ui/form-field';
+import FormField from '@/components/ui/form-field';
 import { useAuthForm } from '@/hooks/use-auth-form';
 import type { AuthMethodsProps } from '@/lib/types';
 import { Fingerprint, KeyRound, Mail } from 'lucide-react';
@@ -64,75 +63,56 @@ const AuthMethods: FC<AuthMethodsProps> = ({ mode }) => {
           Apple
         </button>
       </div>
-      {!isSignUp ? <button type='button' onClick={continueWithPasskey} disabled={pending} className='flex h-11 w-full items-center justify-center gap-2 rounded border border-border bg-background text-sm font-medium text-card-foreground transition-colors hover:bg-muted disabled:opacity-60'><Fingerprint className='size-4' /> Continue with passkey</button> : null}
+      {!isSignUp ? (
+        <button
+          type='button'
+          onClick={continueWithPasskey}
+          disabled={pending}
+          className='flex h-11 w-full items-center justify-center gap-2 rounded border border-border bg-background text-sm font-medium text-card-foreground transition-colors hover:bg-muted disabled:opacity-60'
+        >
+          <Fingerprint className='size-4' /> Continue with passkey
+        </button>
+      ) : null}
       <div className='flex items-center gap-3'>
         <span className='h-px flex-1 bg-border' />
         <span className='text-xs font-medium text-muted-foreground'>or continue with email</span>
         <span className='h-px flex-1 bg-border' />
       </div>
       <form onSubmit={handleSubmit(submit)} onKeyDown={onFormKeyDown} className='space-y-4' noValidate>
-        {isSignUp ? (
+        {isSignUp && (
           <FormField
-            htmlFor='username'
             label='Username'
             labelClassName='text-card-foreground'
             error={errors.username && (touchedFields.username || isSubmitted) ? errors.username.message : undefined}
-          >
-            <Input
-              id='username'
-              placeholder='your_username'
-              maxLength={20}
-              autoComplete='username'
-              aria-invalid={Boolean(errors.username && (touchedFields.username || isSubmitted))}
-              className='h-11 bg-background'
-              {...register('username')}
-            />
-          </FormField>
-        ) : null}
-        <FormField
-          htmlFor='email'
-          label={isSignUp ? 'Email' : 'Email or username'}
-          labelClassName='text-card-foreground'
-          error={errors.email && (touchedFields.email || isSubmitted) ? errors.email.message : undefined}
-        >
-          <Input
-            id='email'
-            type={isSignUp ? 'email' : 'text'}
-            autoComplete={isSignUp ? 'email' : 'username'}
-            placeholder={isSignUp ? 'you@example.com' : 'you@example.com or username'}
-            aria-invalid={Boolean(errors.email && (touchedFields.email || isSubmitted))}
-            className='h-11 bg-background'
-            {...register('email')}
+            maxLength={20}
+            {...register('username')}
           />
-        </FormField>
-        <PasswordField
-          id='password'
+        )}
+        <FormField
+          label={isSignUp ? 'Email' : 'Email or username'}
+          placeholder={isSignUp ? 'you@example.com' : 'you@example.com or username'}
+          error={errors.email && (touchedFields.email || isSubmitted) ? errors.email.message : undefined}
+          {...register('email')}
+        />
+        <FormField
           label='Password'
           labelClassName='text-card-foreground'
-          autoComplete={isSignUp ? 'new-password' : 'current-password'}
-          placeholder='At least 6 characters'
-          aria-invalid={Boolean(errors.password && (touchedFields.password || isSubmitted))}
-          className='h-11 bg-background'
+          type='password'
+          placeholder='Enter your password'
           error={errors.password && (touchedFields.password || isSubmitted) ? errors.password.message : undefined}
           {...register('password')}
         />
-        {isSignUp ? (
-          <PasswordField
-            id='confirmPassword'
+
+        {isSignUp && (
+          <FormField
             label='Confirm password'
             labelClassName='text-card-foreground'
-            autoComplete='new-password'
+            type='password'
             placeholder='Re-enter your password'
-            aria-invalid={Boolean(errors.confirmPassword && (touchedFields.confirmPassword || isSubmitted))}
-            className='h-11 bg-background'
-            error={
-              errors.confirmPassword && (touchedFields.confirmPassword || isSubmitted)
-                ? errors.confirmPassword.message
-                : undefined
-            }
+            error={errors.confirmPassword && (touchedFields.confirmPassword || isSubmitted) ? errors.confirmPassword.message : undefined}
             {...register('confirmPassword')}
           />
-        ) : null}
+        )}
         <Button
           type='submit'
           disabled={!isValid}

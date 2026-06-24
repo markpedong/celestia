@@ -8,10 +8,10 @@ import { Label } from './label';
 import type { FormFieldProps } from '@/lib/types';
 
 const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
-  ({ wrapperClassName, error, hint, label, labelClassName, type, id, name, className, ...inputProps }, ref) => {
+  ({ wrapperClassName, error, hint, label, labelClassName, type, id, name, htmlFor, className, children, ...inputProps }, ref) => {
     const [isVisible, setIsVisible] = useState(false);
 
-    const inputId = id ?? name;
+    const inputId = htmlFor ?? id ?? name;
     const isPassword = type === 'password';
 
     return (
@@ -20,19 +20,21 @@ const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
           {label}
         </Label>
 
-        <div className={cn(isPassword && 'relative')}>
-          <Input
-            ref={ref}
-            id={inputId}
-            name={name}
-            type={isPassword && isVisible ? 'text' : type}
-            aria-invalid={inputProps['aria-invalid'] ?? Boolean(error)}
-            className={cn(className, isPassword && 'pr-10')}
-            autoComplete='off'
-            {...inputProps}
-          />
+        <div className={cn(isPassword && !children && 'relative')}>
+          {children ?? (
+            <Input
+              ref={ref}
+              id={inputId}
+              name={name}
+              type={isPassword && isVisible ? 'text' : type}
+              aria-invalid={inputProps['aria-invalid'] ?? Boolean(error)}
+              className={cn(className, isPassword && 'pr-10')}
+              autoComplete='off'
+              {...inputProps}
+            />
+          )}
 
-          {isPassword ? (
+          {isPassword && !children ? (
             <button
               type='button'
               onClick={() => setIsVisible(visible => !visible)}
