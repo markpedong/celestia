@@ -3,7 +3,6 @@
 
   - You are about to drop the `community_memberships` table. If the table is not empty, all the data it contains will be lost.
   - You are about to drop the `tags` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `user_profiles` table. If the table is not empty, all the data it contains will be lost.
 
 */
 -- DropForeignKey
@@ -21,22 +20,11 @@ DROP TABLE "community_memberships";
 -- DropTable
 DROP TABLE "tags";
 
--- DropTable
-DROP TABLE "user_profiles";
+-- RenameTable
+ALTER TABLE "user_profiles" RENAME TO "users";
 
--- CreateTable
-CREATE TABLE "users" (
-    "id" TEXT NOT NULL,
-    "username" TEXT NOT NULL,
-    "display_name" TEXT,
-    "bio" TEXT,
-    "avatar_url" TEXT,
-    "cover_url" TEXT,
-    "email" TEXT NOT NULL,
-    "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "users_pkey" PRIMARY KEY ("id")
-);
+-- Match the renamed model's required email field without discarding existing profiles.
+ALTER TABLE "users" ALTER COLUMN "email" SET NOT NULL;
 
 -- CreateTable
 CREATE TABLE "community" (
@@ -59,8 +47,8 @@ CREATE TABLE "community_members" (
     CONSTRAINT "community_members_pkey" PRIMARY KEY ("user_id","community_slug")
 );
 
--- CreateIndex
-CREATE UNIQUE INDEX "users_username_key" ON "users"("username");
+-- RenameIndex
+ALTER INDEX "user_profiles_username_key" RENAME TO "users_username_key";
 
 -- CreateIndex
 CREATE INDEX "community_members_community_slug_joined_at_idx" ON "community_members"("community_slug", "joined_at");

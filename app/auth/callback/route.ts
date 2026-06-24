@@ -17,13 +17,13 @@ export const GET = async (request: Request) => {
   if (nextPath === '/auth/update-password') return redirectResponse(nextPath, origin);
 
   const { data: profile } = await supabase
-    .from('user_profiles')
+    .from('users')
     .select('display_name')
     .eq('id', data.user.id)
     .maybeSingle();
 
   const displayName = profile?.display_name ?? (await getInitialDisplayName());
-  const { error: profileError } = await supabase.from('user_profiles').upsert(
+  const { error: profileError } = await supabase.from('users').upsert(
     {
       id: data.user.id,
       username: data.user.email.split('@')[0],

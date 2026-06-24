@@ -91,7 +91,7 @@ export const useAuthForm = (mode: AuthMode) => {
       if (result.data.session && result.data.user) {
         const username = typeof result.data.user.user_metadata.username === 'string' ? result.data.user.user_metadata.username : values.username;
         const { error: profileError } = await supabase
-          .from('user_profiles')
+          .from('users')
           .upsert({
             id: result.data.user.id,
             username,
