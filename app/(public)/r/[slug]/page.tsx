@@ -97,7 +97,7 @@ const CommunityPage = async ({ params }: CommunityPageProps) => {
                 isSignedIn={isSignedIn}
                 ownerId={community.createdById}
               />
-              <Button asChild size='sm' className='celestia-primary-action rounded-full'>
+              <Button asChild size='sm' className='celestia-primary-action'>
                 <Link href={`/submit?community=${encodeURIComponent(community.slug)}`}>
                   <Plus className='size-3.5' />
                   Create Post

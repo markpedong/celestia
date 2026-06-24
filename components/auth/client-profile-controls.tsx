@@ -11,7 +11,7 @@ export const ClientProfileControls = ({ profileId }: { profileId: string }) => {
   return isSelf ? (
     null
   ) : (
-    <Button variant='outline' size='sm' className='rounded-full'>
+    <Button variant='outline' size='sm'>
       <AtSign className='size-3.5' />
       Follow
     </Button>

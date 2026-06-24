@@ -67,7 +67,7 @@ const AccountMenu: FC = () => {
           className='inline-flex size-8 shrink-0 items-center justify-center rounded-full outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-02 cursor-pointer'
         >
           <Avatar>
-            <AvatarImage src={avatarUrl} alt={name} />
+            <AvatarImage src={avatarUrl ?? undefined} alt={name} />
             <AvatarFallback>{getInitials(name, email)}</AvatarFallback>
           </Avatar>
           <span className='sr-only'>Open account menu</span>
@@ -77,7 +77,7 @@ const AccountMenu: FC = () => {
         <DropdownMenuLabel className='flex items-center gap-3'>
           <Link href={profileHref} onClick={() => setIsAccountMenuOpen(false)} className='flex gap-1 justify-start'>
             <Avatar className='size-10'>
-              <AvatarImage src={avatarUrl} alt={name} />
+              <AvatarImage src={avatarUrl ?? undefined} alt={name} />
               <AvatarFallback>{getInitials(name, email)}</AvatarFallback>
             </Avatar>
             <span className='min-w-0 space-y-1.5'>

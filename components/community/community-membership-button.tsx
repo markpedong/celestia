@@ -29,7 +29,7 @@ export const CommunityMembershipButton: FC<CommunityMembershipButtonProps> = ({
 
   if (!resolvedIsSignedIn) {
     return (
-      <Button asChild size='sm' className='celestia-primary-action rounded-full'>
+      <Button asChild size='sm' className='celestia-primary-action'>
         <Link href='/auth/sign-in'>Join community</Link>
       </Button>
     );
@@ -46,7 +46,7 @@ export const CommunityMembershipButton: FC<CommunityMembershipButtonProps> = ({
 
   if (resolvedIsOwner) {
     return (
-      <Button asChild type='button' variant='outline' size='sm' className='rounded-full'>
+      <Button asChild type='button' variant='outline' size='sm'>
         <Link href={`/r/${encodeURIComponent(slug)}/settings`}>
           <Check className='size-3.5' /> Manage
         </Link>
@@ -62,7 +62,7 @@ export const CommunityMembershipButton: FC<CommunityMembershipButtonProps> = ({
       onClick={toggleMembership}
       isLoading={pending}
       loadingText='Saving…'
-      className={optimisticMember ? 'rounded-full' : 'celestia-primary-action rounded-full'}
+      className={optimisticMember ? undefined : 'celestia-primary-action'}
     >
       {optimisticMember ? (
         <Check className='size-3.5' />

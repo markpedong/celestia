@@ -6,7 +6,6 @@ import FormField from '@/components/ui/form-field';
 import SettingsDialog from '@/components/ui/settings-dialog';
 import DialogActions from '@/components/ui/dialog-actions';
 import { changePasswordAction } from '@/lib/actions/security';
-import z from 'zod';
 import useFormValidate from '@/hooks/useFormValidate';
 import useFormSchema from '@/hooks/useFormSchema';
 
@@ -18,31 +17,12 @@ type ChangePasswordDialogProps = {
 export const ChangePasswordDialog = ({ open, onCloseAction }: ChangePasswordDialogProps) => {
   const [pending, startTransition] = useTransition();
   const { changePasswordSchema, changePasswordInital } = useFormSchema();
-  const { register, handleSubmit, onFormKeyDown } = useFormValidate({
+  const { register, handleSubmit, errors, onFormKeyDown } = useFormValidate({
     schema: changePasswordSchema,
     defaultValues: changePasswordInital,
   });
 
-  const submit = handleSubmit(({ currentPassword, newPassword, confirmPassword }) => {
-    const formData = new FormData();
-    formData.set('currentPassword', currentPassword);
-    formData.set('newPassword', newPassword);
-    formData.set('confirmPassword', confirmPassword);
-
-    startTransition(async () => {
-      const result = await changePasswordAction(formData);
-
-      if (result?.error) {
-        toast.error(result.error);
-        return;
-      }
-
-      onCloseAction();
-      toast.success(result?.success ?? 'Password updated.');
-    });
-  });
-
-  const onSubmit = async (values: z.infer<typeof changePasswordSchema>) => {
+  const onSubmit = async (values: typeof changePasswordInital) => {
     startTransition(async () => {
       const result = await changePasswordAction(values);
 
@@ -67,13 +47,13 @@ export const ChangePasswordDialog = ({ open, onCloseAction }: ChangePasswordDial
         <FormField
           label='Current password'
           type='password'
-          error={errors.currentPassword?.message}
+          error={errors('currentPassword')}
           {...register('currentPassword', { required: 'Enter your current password.' })}
         />
         <FormField
           label='New password'
           type='password'
-          error={errors.newPassword?.message}
+          error={errors('newPassword')}
           {...register('newPassword', {
             required: 'Enter a new password.',
             minLength: { value: 6, message: 'Use at least 6 characters.' },
@@ -82,7 +62,7 @@ export const ChangePasswordDialog = ({ open, onCloseAction }: ChangePasswordDial
         <FormField
           label='Confirm new password'
           type='password'
-          error={errors.confirmPassword?.message}
+          error={errors('confirmPassword')}
           {...register('confirmPassword')}
         />
 

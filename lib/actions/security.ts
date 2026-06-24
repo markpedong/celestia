@@ -42,6 +42,7 @@ const verifyVerificationToken = (token: string, userId: string, setting: Passwor
 
 const verifyCurrentPassword = async (password: string) => {
   const user = await getSessionUser();
+  if (!user) return { error: 'A password is not available for this account.' as const };
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.auth.signInWithPassword({ email: user.email, password });
   if (error || data.user?.id !== user.id) return { error: 'Your current password is incorrect.' as const };

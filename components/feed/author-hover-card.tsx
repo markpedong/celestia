@@ -13,8 +13,8 @@ type AuthorHoverCardProps = {
   authorStats?: UserStats;
 };
 
-const formatJoinDate = (iso: string) => {
-  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }).format(new Date(iso));
+const formatJoinDate = (date: Date) => {
+  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }).format(date);
 };
 
 export const AuthorHoverCard: FC<AuthorHoverCardProps> = ({ author, authorStats }) => {
@@ -55,10 +55,10 @@ export const AuthorHoverCard: FC<AuthorHoverCardProps> = ({ author, authorStats 
           </div>
         </div>
         <div className='mt-5 flex gap-2'>
-          <button type='button' disabled className='inline-flex h-9 items-center gap-2 rounded-full bg-primary/20 px-4 text-sm font-semibold text-primary-foreground opacity-70'>
+          <button type='button' disabled className='inline-flex h-9 items-center gap-2 rounded-lg bg-primary/20 px-4 text-sm font-semibold text-primary-foreground opacity-70'>
             <CirclePlus className='size-4' /> Follow
           </button>
-          <button type='button' disabled className='inline-flex h-9 items-center gap-2 rounded-full bg-muted px-4 text-sm font-semibold text-muted-foreground opacity-70'>
+          <button type='button' disabled className='inline-flex h-9 items-center gap-2 rounded-lg bg-muted px-4 text-sm font-semibold text-muted-foreground opacity-70'>
             <MessageCircle className='size-4' /> Start Chat
           </button>
         </div>

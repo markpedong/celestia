@@ -1,20 +1,20 @@
 import { nestCommentRows } from "../comment-tree";
 import { cache } from "react";
-import { Prisma, UserProfile } from "../generated/prisma/client";
+import { Prisma } from "../generated/prisma/client";
 import { PostModel } from "../generated/prisma/models";
 import { prisma } from "../prisma";
 import type { Comment, Community, CommunityStats, EnrichedCommentNode, FeedPostRow, FeedSort, Post, SearchPostSuggestion, SearchTagSuggestion, Tag, TagPostCount, User, UserCommentActivity, UserStats, VoteTarget } from "../types";
 
-export const batchAuthorsForIds = async (authorIds: string[]): Promise<UserProfile[]> => {
+export const batchAuthorsForIds = async (authorIds: string[]): Promise<Map<string, User>> => {
   const unique = [...new Set(authorIds)];
-  if (unique.length === 0) return [];
+  if (unique.length === 0) return new Map();
 
   const rows = await prisma.userProfile.findMany({
     where: { id: { in: unique } },
   });
 
-  return rows;
-}
+  return new Map(rows.map(row => [row.id, row]));
+};
 
 export const batchUserStatsForIds = async (userIds: string[]): Promise<Map<string, UserStats>> => {
   const unique = [...new Set(userIds)];
@@ -485,10 +485,8 @@ export const getCommentTree = async (
       : Promise.resolve(new Map<string, -1 | 0 | 1>()),
   ]);
 
-  const authorMap = new Map(authors.map(author => [author.id, author]));
-
   const enriched = flat.flatMap(comment => {
-    const author = authorMap.get(comment.authorId);
+    const author = authors.get(comment.authorId);
 
     if (!author) return [];
 

@@ -94,7 +94,7 @@ const UserPage = async ({ params, searchParams }: UserPageProps) => {
   })();
 
   return (
-    <ContentWithSidebar sidebar={<ProfileSidebar karma={stats.karma} joinedAt={profile.createdAt} />}>
+    <ContentWithSidebar sidebar={<ProfileSidebar karma={stats.karma} joinedAt={profile.createdAt.toISOString()} />}>
       <section className='celestia-card mb-4 overflow-hidden'>
         <div className='relative h-28 overflow-hidden border-b border-border/70 bg-[linear-gradient(135deg,var(--primary),var(--accent))]'>
           {profile.coverUrl ? <Image src={profile.coverUrl} alt='' fill unoptimized sizes='(max-width: 1280px) 100vw, 900px' className='object-cover' loading='eager' /> : null}

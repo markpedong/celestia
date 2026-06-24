@@ -8,7 +8,7 @@ export const UserAvatar: FC<UserAvatarProps> = ({ user, size = 'default', classN
 
   return (
     <Avatar size={size} className={className}>
-      <AvatarImage src={user.avatarUrl} alt={label} />
+      <AvatarImage src={user.avatarUrl ?? undefined} alt={label} />
       <AvatarFallback className={cn('bg-primary/15 font-semibold text-primary', size === 'lg' && 'text-base')}>
         {label.slice(0, 1).toUpperCase()}
       </AvatarFallback>
