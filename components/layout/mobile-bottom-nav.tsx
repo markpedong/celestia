@@ -3,19 +3,17 @@
 import { cn } from '@/lib/utils';
 import { Compass, House, PlusCircle, Radio, UserRound } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useSession } from '@/hooks/useSession';
 
 const MobileBottomNav = () => {
   const { user } = useSession();
   const isSignedIn = !!user;
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const sort = searchParams.get('sort');
   const items = [
-    { href: '/', label: 'Home', icon: House, active: pathname === '/' && !sort },
-    { href: '/?sort=hot', label: 'Explore', icon: Compass, active: pathname === '/' && sort === 'hot' },
-    { href: '/?sort=new', label: 'Latest', icon: Radio, active: pathname === '/' && sort === 'new' },
+    { href: '/', label: 'Home', icon: House, active: pathname === '/' },
+    { href: '/explore', label: 'Explore', icon: Compass, active: pathname === '/explore' },
+    { href: '/posts', label: 'Latest', icon: Radio, active: pathname === '/posts' },
     ...(isSignedIn
       ? [
           {

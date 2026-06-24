@@ -56,7 +56,7 @@ const Page = async ({ params }: PostPageProps) => {
               Related Posts
             </h3>
             <div className='space-y-3 text-xs text-muted-foreground'>
-              <Link href='/?sort=hot' className='celestia-hover-surface block rounded bg-muted/40 p-3 leading-5'>
+              <Link href='/explore' className='celestia-hover-surface block rounded bg-muted/40 p-3 leading-5'>
                 Explore the most active discussions right now.
               </Link>
               <Link href='/' className='celestia-hover-surface block rounded bg-muted/40 p-3 leading-5'>

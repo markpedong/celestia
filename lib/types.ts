@@ -179,6 +179,7 @@ export type FeedSortTabsProps = {
   tag: string;
   query: string;
   basePath?: string;
+  hotPath?: string;
 };
 
 export type PostCardProps = {

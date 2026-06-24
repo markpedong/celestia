@@ -4,18 +4,18 @@ import type { FC } from 'react';
 import { cn } from '@/lib/utils';
 import { BarChart2, Compass, Hash, Home, Radio } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import LeftTags from './left-tags';
 import JoinCtaCard from './join-cta';
 import { Tag } from '@/lib/types';
 import packageJson from '@/package.json';
 
 const nav = [
-  { href: '/', label: 'Home', icon: Home, match: 'home' as const },
-  { href: '/?sort=hot', label: 'Explore', icon: Compass, match: 'hot' as const },
-  { href: '/?sort=new', label: 'Posts', icon: Radio, match: 'new' as const },
-  { href: '/?sort=top', label: 'Top', icon: BarChart2, match: 'top' as const },
-  { href: '/communities/new', label: 'Start a community', icon: Hash, match: 'communities' as const },
+  { href: '/', label: 'Home', icon: Home },
+  { href: '/explore', label: 'Explore', icon: Compass },
+  { href: '/posts', label: 'Posts', icon: Radio },
+  { href: '/top', label: 'Top', icon: BarChart2 },
+  { href: '/communities/new', label: 'Start a community', icon: Hash },
 ];
 
 const LeftSidebar: FC<{
@@ -34,16 +34,12 @@ const LeftSidebar: FC<{
   communityLabel: string;
 }) => {
   const pathname = usePathname();
-  const params = useSearchParams();
-  const sort = params.get('sort');
 
   return (
     <aside className='sticky top-14 hidden h-[calc(100vh-3.5rem)] w-56 shrink-0 border-r border-border/80 bg-sidebar/50 lg:block'>
       <nav className='space-y-1 p-4'>
         {nav.map(item => {
-          const active =
-            pathname === '/' &&
-            (item.match === 'home' ? !['hot', 'new', 'top'].includes(sort || '') : sort === item.match);
+          const active = pathname === item.href;
 
           return (
             <Link

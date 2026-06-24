@@ -4,16 +4,23 @@ import { cn } from '@/lib/utils';
 import { BarChart2, Clock, Flame, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 
-const hrefFor = (sort: FeedSort, tag?: string, query?: string, basePath = '/') => {
+const rootPathFor = (sort: FeedSort, hotPath: string) => {
+  if (sort === 'new') return '/posts';
+  if (sort === 'top') return '/top';
+  return hotPath;
+};
+
+const hrefFor = (sort: FeedSort, tag?: string, query?: string, basePath = '/', hotPath = '/explore') => {
   const params = new URLSearchParams();
-  if (sort !== 'hot') params.set('sort', sort);
+  const path = basePath === '/' ? rootPathFor(sort, hotPath) : basePath;
+  if (basePath !== '/' && sort !== 'hot') params.set('sort', sort);
   if (tag && basePath === '/') params.set('tag', tag);
   if (query) params.set('q', query);
   const q = params.toString();
-  return q ? `${basePath}?${q}` : basePath;
+  return q ? `${path}?${q}` : path;
 }
 
-const FeedSortTabs: FC<FeedSortTabsProps> = ({ current, tag, query, basePath = '/' }) => {
+const FeedSortTabs: FC<FeedSortTabsProps> = ({ current, tag, query, basePath = '/', hotPath }) => {
   const activeSort = current ?? 'hot';
   const tabs: { id: FeedSort; label: string; icon: LucideIcon }[] = [
     { id: 'hot', label: 'Hot', icon: Flame },
@@ -33,7 +40,7 @@ const FeedSortTabs: FC<FeedSortTabsProps> = ({ current, tag, query, basePath = '
           return (
             <Link
               key={id}
-              href={hrefFor(id, tag, query, basePath)}
+              href={hrefFor(id, tag, query, basePath, hotPath)}
               className={cn(
                 'relative inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold transition-colors',
                 active ? 'text-primary' : 'text-muted-foreground hover:text-foreground'

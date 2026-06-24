@@ -25,7 +25,7 @@ export const RightTrending: FC<RightTrendingProps> = ({ items, communities }) =>
             {index === 0 ? <Flame className='size-3 text-amber-400' /> : index === 1 ? <TrendingUp className='size-3 text-success' /> : index === 2 ? <Sparkles className='size-3 text-primary' /> : <Minus className='size-3 text-muted-foreground' />}
           </Link>
         ))}
-        <Link href='/?sort=hot' className='inline-block px-2 pt-2 text-xs font-medium text-primary hover:text-primary-hover'>
+        <Link href='/explore' className='inline-block px-2 pt-2 text-xs font-medium text-primary hover:text-primary-hover'>
           View all
         </Link>
       </div>
