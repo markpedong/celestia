@@ -1,0 +1,2 @@
+-- Reserved migration directory. The account settings feature stores its non-profile
+-- preferences in Supabase Auth metadata, so it does not require a database change.
