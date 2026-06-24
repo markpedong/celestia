@@ -64,7 +64,7 @@ const CommunityPage = async ({ params }: CommunityPageProps) => {
               </div>
             </div>
             <div className='flex items-center gap-2'>
-              <CommunityMembershipButton ownerId={community.createdById ?? undefined} showCreatePost />
+              <CommunityMembershipButton ownerId={community.createdById ?? ''} />
             </div>
           </div>
           <p className='mt-4 max-w-2xl text-sm leading-6 text-muted-foreground'>

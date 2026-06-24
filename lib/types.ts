@@ -168,15 +168,6 @@ export type AuthMode = 'sign-in' | 'sign-up';
 export type AuthMethodsProps = {
   mode: AuthMode;
 };
-
-export type CommunityMembershipButtonProps = {
-  isMember?: boolean;
-  isSignedIn?: boolean;
-  isOwner?: boolean;
-  ownerId?: string;
-  showCreatePost?: boolean;
-};
-
 export type CommunitySettingsFormProps = {
   community: Community;
 };

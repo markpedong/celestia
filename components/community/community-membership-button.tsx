@@ -3,7 +3,6 @@
 import type { FC } from 'react';
 import { getCommunityMembershipAction, setCommunityMembershipAction } from '@/lib/actions/communities';
 import { Button } from '@/components/ui/button';
-import type { CommunityMembershipButtonProps } from '@/lib/types';
 import { Check, Plus, UserMinus } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState, useTransition } from 'react';
@@ -11,25 +10,19 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useSession } from '@/hooks/useSession';
 import { useGetProfile } from '@/hooks/useQueries';
 
-export const CommunityMembershipButton: FC<CommunityMembershipButtonProps> = ({
-  isMember = false,
-  isSignedIn = false,
-  isOwner = false,
-  ownerId,
-  showCreatePost = false,
-}) => {
-  const slug = usePathname().split('/').pop();
+export const CommunityMembershipButton: FC<{ ownerId: string }> = ({ ownerId }) => {
+  const slug = usePathname().split('/').pop() ?? '';
   const user = useGetProfile().data?.data;
   const router = useRouter();
   const session = useSession().session;
   const [pending, startTransition] = useTransition();
-  const [member, setMember] = useState(isMember);
+  const [member, setMember] = useState(false);
 
-  const resolvedIsOwner = isOwner || (Boolean(ownerId) && user?.id === ownerId);
-  const resolvedIsSignedIn = session === undefined ? isSignedIn : Boolean(session);
+  const resolvedIsOwner = Boolean(ownerId) && user?.id === ownerId;
+  const resolvedIsSignedIn = session === undefined ? !!user : Boolean(session);
 
   useEffect(() => {
-    if (session) void getCommunityMembershipAction(slug).then(({ isMember: nextMember }) => setMember(nextMember));
+    if (session && slug) void getCommunityMembershipAction(slug).then(({ isMember }) => setMember(isMember));
   }, [session, slug]);
 
   if (!resolvedIsSignedIn) {
@@ -77,14 +70,14 @@ export const CommunityMembershipButton: FC<CommunityMembershipButtonProps> = ({
         {member ? 'Joined' : 'Join'}
         {member ? <UserMinus /> : null}
       </Button>
-      {member && showCreatePost ? (
+      {member && (
         <Button asChild size='sm' className='celestia-primary-action'>
           <Link href={`/submit?community=${encodeURIComponent(slug)}`}>
             <Plus />
             Create Post
           </Link>
         </Button>
-      ) : null}
+      )}
     </div>
   );
 };
