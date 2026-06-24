@@ -7,20 +7,20 @@ import Link from 'next/link';
 import { useOptimistic, useTransition } from 'react';
 import { usePathname } from 'next/navigation';
 import { useSession } from '@/hooks/useSession';
-import { useCommunityJoin, useGetProfile } from '@/hooks/useQueries';
+import { useCommunityJoin, useGetCommunityMember, useGetProfile } from '@/hooks/useQueries';
 
 type CommunityMembershipButtonProps = {
   ownerID: string;
-  initialIsMember: boolean;
 };
 
-const CommunityMembershipButton: FC<CommunityMembershipButtonProps> = ({ ownerID, initialIsMember }) => {
+const CommunityMembershipButton: FC<CommunityMembershipButtonProps> = ({ ownerID }) => {
   const slug = usePathname().split('/').pop() ?? '';
   const user = useGetProfile().data?.data;
   const session = useSession().session;
   const [isTransitionPending, startTransition] = useTransition();
+  const initialIsMember = useGetCommunityMember(slug).data?.data?.isMember;
 
-  const [optimisticMember, setOptimisticMember] = useOptimistic(initialIsMember, (_current, next: boolean) => next);
+  const [optimisticMember, setOptimisticMember] = useOptimistic(initialIsMember);
 
   const { mutate, isPending } = useCommunityJoin();
 

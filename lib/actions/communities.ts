@@ -71,18 +71,6 @@ export const setCommunityMembershipAction = async (slug: string, shouldJoin: boo
   return { isMember: shouldJoin };
 };
 
-export const getCommunityMembershipAction = async (slug: string) => {
-  const userID = await getCurrentUserID();
-  if (!userID) return { isMember: false };
-
-  const membership = await prisma.communityMembers.findUnique({
-    where: { userID_communitySlug: { userID, communitySlug: slug.trim().toLowerCase() } },
-    select: { userID: true },
-  });
-
-  return { isMember: Boolean(membership) };
-};
-
 export const updateCommunityAction = async (
   _previousState: CommunitySettingsFormState,
   formData: FormData,

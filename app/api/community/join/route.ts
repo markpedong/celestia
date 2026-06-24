@@ -9,7 +9,7 @@ export const POST = async (req: Request) => {
   if (!userID) return generateErrorResponse(HTTP_MESSAGE.UNAUTHORIZED, 401);
 
   const { slug: communitySlug } = await req.json();
-  if (!communitySlug) return generateErrorResponse('Community slug is required.', 400);
+  if (!communitySlug) return generateErrorResponse(HTTP_MESSAGE.SLUG_REQUIRED, 400);
 
   const community = await prisma.community.findUnique({
     where: { slug: communitySlug },

@@ -33,7 +33,6 @@ export const getCommunityFeed = async (slug: string, sort: FeedSort) => {
     endpoint: API_ENDPOINT.COMMUNITY,
   });
 
-  console.log('response', response);
   return response.data;
 };
 
@@ -50,6 +49,15 @@ export const getCommunityStats = async (slug: string) => {
   const response = await __api<CommunityStats>({
     init: { body: { slug }, method: REQUEST_METHOD.POST },
     endpoint: API_ENDPOINT.COMMUNITY_STATS,
+  });
+
+  return response;
+};
+
+export const getCommunityMember = async (slug: string) => {
+  const response = await __api<{ isMember: boolean }>({
+    init: { body: { slug }, method: REQUEST_METHOD.POST },
+    endpoint: API_ENDPOINT.COMMUNITY_MEMBER,
   });
 
   return response;

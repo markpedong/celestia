@@ -4,6 +4,7 @@ export enum API_ENDPOINT {
   COMMUNITY = '/community',
   COMMUNITY_JOIN = '/community/join',
   COMMUNITY_STATS = '/community/stats',
+  COMMUNITY_MEMBER = '/community/member',
 }
 
 export enum REQUEST_METHOD {
@@ -15,4 +16,5 @@ export enum REQUEST_METHOD {
 export enum HTTP_MESSAGE {
   NOT_FOUND = 'NOT FOUND',
   UNAUTHORIZED = "USER NOT AUTHORIZED",
+  SLUG_REQUIRED = 'Community slug is required.',
 }

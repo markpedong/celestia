@@ -1,14 +1,11 @@
 import CommunityFeed from '@/components/feed/community-feed';
 import { ContentWithSidebar } from '@/components/layout/content-with-sidebar';
 import CommunityMembershipButton from '@/components/community/community-membership-button';
-import { StatGrid } from '@/components/ui/stat-grid';
-import { getCommunityBySlug, getCommunityMembership, listCommunity } from '@/lib/db/queries';
-import { getCurrentUserID } from '@/lib/auth';
-import type { CommunityPageProps, CommunityStats } from '@/lib/types';
-import { CakeSlice, Users } from 'lucide-react';
+import { getCommunityBySlug, listCommunity } from '@/lib/db/queries';
+import type { CommunityPageProps } from '@/lib/types';
 import { notFound } from 'next/navigation';
-import { getCommunityStats } from '@/services';
-import { formatCount } from '@/lib/utils';
+import CommunitySidebar from '@/components/community/community-sidebar';
+import CommunityStats from '@/components/community/community-stats';
 
 export const generateStaticParams = async () => {
   const communities = await listCommunity();
@@ -24,30 +21,8 @@ const CommunityPage = async ({ params }: CommunityPageProps) => {
     notFound();
   }
 
-  const [data, userID] = await Promise.all([getCommunityStats(slug), getCurrentUserID()]);
-  const stats = data.data as CommunityStats;
-  const initialIsMember = await getCommunityMembership(userID, slug);
-
   return (
-    <ContentWithSidebar
-      sidebar={
-        <section className='celestia-card p-4'>
-          <h2 className='mb-3 text-sm font-semibold'>About Community</h2>
-          <p className='text-xs leading-6 text-muted-foreground'>
-            r/{rawSlug} is a real community with membership. Join it to add it to your communities and create posts
-            there.
-          </p>
-          <div className='mt-4 space-y-2 text-xs text-muted-foreground'>
-            <p className='flex items-center gap-2'>
-              <Users className='size-3 text-primary' /> {formatCount(stats.memberCount)} members
-            </p>
-            <p className='flex items-center gap-2'>
-              <CakeSlice className='size-3 text-primary' /> Community discussions
-            </p>
-          </div>
-        </section>
-      }
-    >
+    <ContentWithSidebar sidebar={<CommunitySidebar />}>
       <section className='celestia-card mb-4 overflow-hidden'>
         <div
           className='h-24 border-b border-border/70'
@@ -68,21 +43,14 @@ const CommunityPage = async ({ params }: CommunityPageProps) => {
               </div>
             </div>
             <div className='flex items-center gap-2'>
-              <CommunityMembershipButton ownerID={community.createdByID ?? ''} initialIsMember={initialIsMember} />
+              <CommunityMembershipButton ownerID={community.createdByID ?? ''} />
             </div>
           </div>
           <p className='mt-4 max-w-2xl text-sm leading-6 text-muted-foreground'>
             {community.description ||
               'Browse community discussions, sort what is hot, and join to post or add this community to your list.'}
           </p>
-          <StatGrid
-            className='mt-4 max-w-lg'
-            stats={[
-              { label: 'Posts', value: formatCount(stats.postCount) },
-              { label: 'Members', value: formatCount(stats.memberCount) },
-              { label: 'Comments', value: formatCount(stats.commentCount) },
-            ]}
-          />
+          <CommunityStats />
         </div>
       </section>
 

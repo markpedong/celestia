@@ -1,7 +1,7 @@
 'use client';
 
 import { STALE_TIME } from '@/constants';
-import { getCommunityFeed, getProfileByUserName, joinCommunity } from '@/services';
+import { getCommunityFeed, getCommunityMember, getCommunityStats, getProfileByUserName, joinCommunity } from '@/services';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import type { Session } from '@supabase/supabase-js';
 import { useSession } from './useSession';
@@ -35,6 +35,14 @@ export const useCommunityFeed = (slug: string, sort: FeedSort) => {
   });
 };
 
+export const useGetCommunityStats = (slug: string) => {
+  return useQuery({
+    queryKey: ['community-stats', slug],
+    queryFn: () => getCommunityStats(slug),
+    staleTime: STALE_TIME,
+  });
+}
+
 export const useCommunityJoin = () => {
   const router = useRouter();
 
@@ -43,3 +51,11 @@ export const useCommunityJoin = () => {
     onSuccess: () => router.refresh(),
   });
 };
+
+export const useGetCommunityMember = (slug: string) => {
+  return useQuery({
+    queryKey: ['community-member', slug],
+    queryFn: () => getCommunityMember(slug),
+    staleTime: STALE_TIME,
+  })
+}
