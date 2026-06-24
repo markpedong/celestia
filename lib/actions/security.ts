@@ -6,6 +6,7 @@ import { getSessionUser } from '../auth';
 import { prisma } from '../prisma';
 import { createSupabaseAdminClient, createSupabaseServerClient } from '../supabase/server';
 import type { ChangePasswordValues, ErrorFormState } from '../types';
+import { deleteAccountSchema, setPasswordSchema } from '../form-schemas';
 
 type SecurityActionState = ErrorFormState<{ success?: string; codes?: string[] }>;
 type SensitiveSetting = 'email' | 'phone' | 'gender' | 'location';
@@ -89,7 +90,10 @@ export const changePasswordAction = async (values: ChangePasswordValues): Promis
   return { success: 'Password updated.' };
 };
 
-export const setPasswordAction = async ({ newPassword }: { newPassword: string; confirmPassword: string }): Promise<ErrorFormState<{ success?: string }>> => {
+export const setPasswordAction = async (values: { newPassword: string; confirmPassword: string }): Promise<ErrorFormState<{ success?: string }>> => {
+  const parsed = setPasswordSchema.safeParse(values);
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'Check your new password.' };
+  const { newPassword } = parsed.data;
   const supabase = await createSupabaseServerClient();
   const { data: { user }, error: userError } = await supabase.auth.getUser();
   if (userError || !user) return { error: 'You must be signed in to set a password.' };
@@ -114,7 +118,8 @@ export const generateBackupCodesAction = async (): Promise<SecurityActionState> 
 
 export const deleteAccountAction = async (_prev: SecurityActionState, { confirmation }: { confirmation: string }): Promise<SecurityActionState> => {
   void _prev;
-  void confirmation;
+  const parsed = deleteAccountSchema.safeParse({ confirmation });
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'Type DELETE to confirm account deletion.' };
   const user = await getSessionUser();
   if (!user) return { error: 'You must be signed in to delete your account.' };
   const admin = createSupabaseAdminClient();

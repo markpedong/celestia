@@ -53,7 +53,7 @@ export const useAuthForm = (mode: AuthMode) => {
   });
   const form = useFormValidate<AuthValues>({
     schema,
-    defaultValues: { username: '', email: '', password: '', confirmPassword: '' },
+    defaultValues: { username: isSignIn ? 'sign_in' : '', email: '', password: '', confirmPassword: '' },
   });
 
   const submit = (values: AuthValues) => {
@@ -68,6 +68,7 @@ export const useAuthForm = (mode: AuthMode) => {
           toast.error('That email, username, or password is incorrect. Check your details and try again.');
           return;
         }
+
       }
 
 
