@@ -277,7 +277,7 @@ export type CommentNodeProps = {
   postAuthorID: string;
   sessionUser: User | null;
   activeReplyID: string | null;
-  onReplyChange: (commentID: string | null) => void;
+  onReplyChangeAction: (commentID: string | null) => void;
 };
 
 export type CommentThreadProps = {

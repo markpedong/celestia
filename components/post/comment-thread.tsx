@@ -35,7 +35,7 @@ const CommentThread: FC<CommentThreadProps> = ({ tree, postAuthorID, sessionUser
             postAuthorID={postAuthorID}
             sessionUser={sessionUser}
             activeReplyID={activeReplyID}
-            onReplyChange={setActiveReplyID}
+            onReplyChangeAction={setActiveReplyID}
           />
         ))}
       </ul>

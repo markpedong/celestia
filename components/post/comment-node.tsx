@@ -17,7 +17,7 @@ export const CommentNode: FC<CommentNodeProps> = ({
   postAuthorID,
   sessionUser,
   activeReplyID,
-  onReplyChange,
+  onReplyChangeAction,
 }) => {
   const slug = usePathname().split('/').pop() ?? '';
   const isMember = useGetCommunityMember(slug).data?.data?.isMember;
@@ -73,7 +73,7 @@ export const CommentNode: FC<CommentNodeProps> = ({
         {viewer && isMember && !node.isPending ? (
           <button
             type='button'
-            onClick={() => onReplyChange(isReplying ? null : node.id)}
+            onClick={() => onReplyChangeAction(isReplying ? null : node.id)}
             className='inline-flex items-center gap-1 rounded-lg px-2 py-1 celestia-hover-surface'
           >
             <CornerDownRight className='size-3' />
@@ -101,7 +101,7 @@ export const CommentNode: FC<CommentNodeProps> = ({
               postAuthorID={postAuthorID}
               sessionUser={sessionUser}
               activeReplyID={activeReplyID}
-              onReplyChange={onReplyChange}
+              onReplyChangeAction={onReplyChangeAction}
             />
           ))}
         </ul>
