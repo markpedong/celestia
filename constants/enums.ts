@@ -9,3 +9,7 @@ export enum REQUEST_METHOD {
   GET = 'GET',
   POST = 'POST',
 }
+
+export enum HTTP_MESSAGE {
+  NOT_FOUND = 'NOT FOUND'
+}

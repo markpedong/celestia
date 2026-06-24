@@ -2,21 +2,14 @@ import CommunityFeed from '@/components/feed/community-feed';
 import { ContentWithSidebar } from '@/components/layout/content-with-sidebar';
 import { CommunityMembershipButton } from '@/components/community/community-membership-button';
 import { StatGrid } from '@/components/ui/stat-grid';
-import {
-  getCommunityBySlug,
-  getCommunityStats,
-  listTags,
-} from '@/lib/db/queries';
+import { getCommunityBySlug, getCommunityStats, listCommunity } from '@/lib/db/queries';
 import { formatCount } from '@/lib/format';
 import type { CommunityPageProps } from '@/lib/types';
 import { CakeSlice, Users } from 'lucide-react';
 import { notFound } from 'next/navigation';
 
-export const revalidate = 300;
-export const dynamicParams = true;
-
 export const generateStaticParams = async () => {
-  const communities = await listTags();
+  const communities = await listCommunity();
   return communities.map(({ slug }) => ({ slug }));
 };
 
@@ -29,7 +22,7 @@ const CommunityPage = async ({ params }: CommunityPageProps) => {
     notFound();
   }
 
-  const stats = await getCommunityStats(community.slug);
+  const stats = await getCommunityStats(rawSlug);
 
   return (
     <ContentWithSidebar
@@ -37,8 +30,8 @@ const CommunityPage = async ({ params }: CommunityPageProps) => {
         <section className='celestia-card p-4'>
           <h2 className='mb-3 text-sm font-semibold'>About Community</h2>
           <p className='text-xs leading-6 text-muted-foreground'>
-            r/{community.slug} is a real community with membership. Join it to add it to your communities and create
-            posts there.
+            r/{rawSlug} is a real community with membership. Join it to add it to your communities and create posts
+            there.
           </p>
           <div className='mt-4 space-y-2 text-xs text-muted-foreground'>
             <p className='flex items-center gap-2'>
@@ -66,16 +59,12 @@ const CommunityPage = async ({ params }: CommunityPageProps) => {
                 {community.label.slice(0, 1).toUpperCase()}
               </span>
               <div className='min-w-0 pb-1'>
-                <p className='text-sm font-semibold text-muted-foreground'>r/{community.slug}</p>
+                <p className='text-sm font-semibold text-muted-foreground'>r/{rawSlug}</p>
                 <h1 className='truncate text-2xl font-bold tracking-tight text-foreground'>{community.label}</h1>
               </div>
             </div>
             <div className='flex items-center gap-2'>
-              <CommunityMembershipButton
-                slug={community.slug}
-                ownerId={community.createdById ?? undefined}
-                showCreatePost
-              />
+              <CommunityMembershipButton ownerId={community.createdById ?? undefined} showCreatePost />
             </div>
           </div>
           <p className='mt-4 max-w-2xl text-sm leading-6 text-muted-foreground'>
@@ -93,7 +82,7 @@ const CommunityPage = async ({ params }: CommunityPageProps) => {
         </div>
       </section>
 
-      <CommunityFeed slug={community.slug} />
+      <CommunityFeed />
     </ContentWithSidebar>
   );
 };

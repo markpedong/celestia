@@ -148,7 +148,7 @@ export const getCommunityFeedData = async (
 ): Promise<CommunityData> => {
   const [rows, tags] = await Promise.all([
     listPostSorted(sort, slug, userId),
-    listTags(),
+    listCommunity(),
   ]);
   const authorIds = [...new Set(rows.map(({ post }) => post.authorId))];
   const [authorsById, authorStatsById] = await Promise.all([
@@ -205,7 +205,7 @@ const userVotesForPosts = async (
   return m;
 };
 
-export const listTags = cache(async (): Promise<Tag[]> => {
+export const listCommunity = cache(async (): Promise<Tag[]> => {
   const rows = await prisma.community.findMany({ orderBy: { slug: "asc" } });
   return rows.map((t) => ({
     slug: t.slug,
@@ -564,7 +564,7 @@ export const listCommentsForPost = async (postID: string): Promise<Comment[]> =>
 }
 
 export const tagsPostCounts = cache(async (): Promise<TagPostCount[]> => {
-  const allTags = await listTags();
+  const allTags = await listCommunity();
   const rows = await prisma.postTag.groupBy({
     by: ["tagSlug"],
     _count: { _all: true },

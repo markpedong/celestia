@@ -7,10 +7,7 @@ import { BarChart2, Clock, Flame, Hash, LoaderCircle } from 'lucide-react';
 import { useState } from 'react';
 import { PostList } from './post-list';
 import { EmptyState } from '../ui/empty-state';
-
-type CommunityFeedProps = {
-  slug: string;
-};
+import { usePathname } from 'next/navigation';
 
 const sortTabs = [
   { id: 'hot' as const, label: 'Hot', icon: Flame },
@@ -30,7 +27,8 @@ const CommunityFeedLoader = () => (
   </div>
 );
 
-const CommunityFeed = ({ slug }: CommunityFeedProps) => {
+const CommunityFeed = () => {
+  const slug = usePathname().split('/').pop();
   const [sort, setSort] = useState<FeedSort>('hot');
   const { data, error, isFetching, isLoading, refetch } = useCommunityFeed(slug, sort);
   const authorsById = new Map(data?.authors.map(author => [author.id, author]));

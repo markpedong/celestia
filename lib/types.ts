@@ -170,7 +170,6 @@ export type AuthMethodsProps = {
 };
 
 export type CommunityMembershipButtonProps = {
-  slug: string;
   isMember?: boolean;
   isSignedIn?: boolean;
   isOwner?: boolean;

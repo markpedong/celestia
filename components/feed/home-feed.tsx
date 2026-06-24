@@ -2,7 +2,7 @@ import FeedSortTabs from '@/components/feed/feed-sort-tabs';
 import { PostList } from '@/components/feed/post-list';
 import { RightTrending } from '@/components/layout/right-trending';
 import { EmptyState } from '@/components/ui/empty-state';
-import { batchAuthorsForIds, batchUserStatsForIds, listPostSorted, listTags, tagsPostCounts } from '@/lib/db/queries';
+import { batchAuthorsForIds, batchUserStatsForIds, listPostSorted, listCommunity, tagsPostCounts } from '@/lib/db/queries';
 import { trendingToday } from '@/lib/trending';
 import type { FeedSort, SearchParams } from '@/lib/types';
 import { FileQuestion } from 'lucide-react';
@@ -20,7 +20,7 @@ const HomeFeed = async ({ searchParams, sort, hotPath }: HomeFeedProps) => {
 
   const [rows, tags, tagCounts] = await Promise.all([
     listPostSorted(sort, tagFilter, undefined, cleanedSearchQuery),
-    listTags(),
+    listCommunity(),
     tagsPostCounts(),
   ]);
 

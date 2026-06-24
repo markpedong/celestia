@@ -12,7 +12,7 @@ import {
   getPostByID,
   getPostScore,
   listPostIds,
-  listTags,
+  listCommunity,
 } from '@/lib/db/queries';
 import type { PostPageProps } from '@/lib/types';
 import { MessageSquare, Radio, Users } from 'lucide-react';
@@ -35,7 +35,7 @@ const Page = async ({ params }: PostPageProps) => {
   const [author, score, tags] = await Promise.all([
     getAuthorByID(post.authorId),
     getPostScore(post.id),
-    listTags(),
+    listCommunity(),
   ]);
 
   const commentTree = await getCommentTree(post.id, undefined);

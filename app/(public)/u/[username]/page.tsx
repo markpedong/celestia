@@ -7,16 +7,16 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { StatGrid } from '@/components/ui/stat-grid';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import {
-  batchAuthorsForIds,
-  batchUserStatsForIds,
-  getUserByUsername,
-  getUserStats,
-  listCommentsByAuthor,
-  listPostsByAuthor,
-  listTags,
-  listUsernames,
-  listVotedCommentsByUser,
-  listVotedPostsByUser,
+    batchAuthorsForIds,
+    batchUserStatsForIds,
+    getUserByUsername,
+    getUserStats,
+    listCommentsByAuthor,
+    listPostsByAuthor,
+    listCommunity,
+    listUsernames,
+    listVotedCommentsByUser,
+    listVotedPostsByUser,
 } from '@/lib/db/queries';
 import { formatCount, formatRelativeTime } from '@/lib/format';
 import type { CommentsListProps, FeedPostRow, UserCommentActivity, UserPageProps } from '@/lib/types';
@@ -44,7 +44,7 @@ const UserPage = async ({ params }: UserPageProps) => {
   if (!profile) notFound();
 
   const [tags, stats, posts, comments, upvotedPosts, upvotedComments, downvotedPosts, downvotedComments] = await Promise.all([
-    listTags(),
+    listCommunity(),
     getUserStats(profile.id),
     listPostsByAuthor(profile.id, 'new', undefined),
     listCommentsByAuthor(profile.id),
@@ -112,7 +112,7 @@ const ProfileSidebar = ({ karma, joinedAt }: { karma: number; joinedAt?: string 
 
 const ProfileEmpty = ({ icon, title, description }: { icon: typeof AtSign; title: string; description: string }) => <EmptyState icon={icon} title={title} description={description} />;
 
-const OverviewActivityFeed = ({ items, authorsById, authorStatsById, tagsBySlug, isSignedIn }: { items: OverviewActivity[]; authorsById: Awaited<ReturnType<typeof batchAuthorsForIds>>; authorStatsById: Awaited<ReturnType<typeof batchUserStatsForIds>>; tagsBySlug: Map<string, Awaited<ReturnType<typeof listTags>>[number]>; isSignedIn: boolean }) => <div className='space-y-3'>{items.map(item => {
+const OverviewActivityFeed = ({ items, authorsById, authorStatsById, tagsBySlug, isSignedIn }: { items: OverviewActivity[]; authorsById: Awaited<ReturnType<typeof batchAuthorsForIds>>; authorStatsById: Awaited<ReturnType<typeof batchUserStatsForIds>>; tagsBySlug: Map<string, Awaited<ReturnType<typeof listCommunity>>[number]>; isSignedIn: boolean }) => <div className='space-y-3'>{items.map(item => {
   if ('row' in item) {
     const author = authorsById.get(item.row.post.authorId);
     if (!author) return null;

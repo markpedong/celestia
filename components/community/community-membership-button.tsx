@@ -7,18 +7,18 @@ import type { CommunityMembershipButtonProps } from '@/lib/types';
 import { Check, Plus, UserMinus } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useSession } from '@/hooks/useSession';
 import { useGetProfile } from '@/hooks/useQueries';
 
 export const CommunityMembershipButton: FC<CommunityMembershipButtonProps> = ({
-  slug,
   isMember = false,
   isSignedIn = false,
   isOwner = false,
   ownerId,
   showCreatePost = false,
 }) => {
+  const slug = usePathname().split('/').pop();
   const user = useGetProfile().data?.data;
   const router = useRouter();
   const session = useSession().session;
@@ -65,21 +65,24 @@ export const CommunityMembershipButton: FC<CommunityMembershipButtonProps> = ({
   return (
     <div className='flex items-center gap-2'>
       <Button
-      type='button'
-      variant={member ? 'outline' : 'default'}
-      size='sm'
-      onClick={toggleMembership}
-      isLoading={pending}
-      loadingText='Saving…'
-      className={member ? undefined : 'celestia-primary-action'}
-    >
-      {member ? <Check /> : <Plus />}
-      {member ? 'Joined' : 'Join'}
-      {member ? <UserMinus /> : null}
+        type='button'
+        variant={member ? 'outline' : 'default'}
+        size='sm'
+        onClick={toggleMembership}
+        isLoading={pending}
+        loadingText='Saving…'
+        className={member ? undefined : 'celestia-primary-action'}
+      >
+        {member ? <Check /> : <Plus />}
+        {member ? 'Joined' : 'Join'}
+        {member ? <UserMinus /> : null}
       </Button>
       {member && showCreatePost ? (
         <Button asChild size='sm' className='celestia-primary-action'>
-          <Link href={`/submit?community=${encodeURIComponent(slug)}`}><Plus />Create Post</Link>
+          <Link href={`/submit?community=${encodeURIComponent(slug)}`}>
+            <Plus />
+            Create Post
+          </Link>
         </Button>
       ) : null}
     </div>
