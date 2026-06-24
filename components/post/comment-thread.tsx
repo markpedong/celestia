@@ -7,27 +7,22 @@ import { createCommentAction } from '@/lib/actions/comments';
 import { CommentSubmissionContext, createPendingComment } from './comment-submission-context';
 import { useOptimistic, useState, useTransition } from 'react';
 
-const CommentThread: FC<CommentThreadProps> = ({
-  tree,
-  postAuthorID,
-  sessionUser,
-  canComment,
-  children,
-}) => {
+const CommentThread: FC<CommentThreadProps> = ({ tree, postAuthorID, sessionUser, children }) => {
   const [pending, startTransition] = useTransition();
   const [activeReplyID, setActiveReplyID] = useState<string | null>(null);
   const [optimisticTree, addOptimisticComment] = useOptimistic(
     tree,
-    (currentTree, pendingComment: EnrichedCommentNode) => appendComment(currentTree, pendingComment),
+    (currentTree, pendingComment: EnrichedCommentNode) => appendComment(currentTree, pendingComment)
   );
 
-  const submitComment = (pendingComment: PendingCommentInput) => new Promise<CommentSubmitResult>((resolve) => {
-    startTransition(async () => {
-      const result = await createCommentAction(pendingComment);
-      if (result?.ok) addOptimisticComment(createPendingComment(pendingComment));
-      resolve(result);
+  const submitComment = (pendingComment: PendingCommentInput) =>
+    new Promise<CommentSubmitResult>(resolve => {
+      startTransition(async () => {
+        const result = await createCommentAction(pendingComment);
+        if (result?.ok) addOptimisticComment(createPendingComment(pendingComment));
+        resolve(result);
+      });
     });
-  });
 
   return (
     <CommentSubmissionContext value={{ submitComment, pending }}>
@@ -39,7 +34,6 @@ const CommentThread: FC<CommentThreadProps> = ({
             node={node}
             postAuthorID={postAuthorID}
             sessionUser={sessionUser}
-            canComment={canComment}
             activeReplyID={activeReplyID}
             onReplyChange={setActiveReplyID}
           />
@@ -55,17 +49,15 @@ const appendComment = (tree: EnrichedCommentNode[], comment: EnrichedCommentNode
   for (let index = 0; index < tree.length; index += 1) {
     const node = tree[index];
     if (node.id === comment.parentID) {
-      return tree.map((candidate, candidateIndex) => candidateIndex === index
-        ? { ...candidate, children: [...candidate.children, comment] }
-        : candidate,
+      return tree.map((candidate, candidateIndex) =>
+        candidateIndex === index ? { ...candidate, children: [...candidate.children, comment] } : candidate
       );
     }
 
     const children = appendComment(node.children, comment);
     if (children !== node.children) {
-      return tree.map((candidate, candidateIndex) => candidateIndex === index
-        ? { ...candidate, children }
-        : candidate,
+      return tree.map((candidate, candidateIndex) =>
+        candidateIndex === index ? { ...candidate, children } : candidate
       );
     }
   }

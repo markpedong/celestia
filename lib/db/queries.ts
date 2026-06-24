@@ -214,17 +214,6 @@ export const listCommunity = cache(async (): Promise<Tag[]> => {
   }));
 });
 
-export const getCommunityMembership = async (userID: string | undefined, slug: string): Promise<boolean> => {
-  if (!userID) return false;
-
-  const membership = await prisma.communityMembers.findUnique({
-    where: { userID_communitySlug: { userID, communitySlug: slug.toLowerCase() } },
-    select: { userID: true },
-  });
-
-  return Boolean(membership);
-};
-
 export const listJoinedCommunities = async (userID: string): Promise<Community[]> => {
   const memberships = await prisma.communityMembers.findMany({
     where: { userID },

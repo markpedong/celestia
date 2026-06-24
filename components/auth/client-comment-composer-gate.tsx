@@ -4,18 +4,10 @@ import Link from 'next/link';
 import CommentComposer from '@/components/post/comment-composer';
 import { useGetProfile } from '@/hooks/useQueries';
 
-export const ClientCommentComposerGate = ({
-  postID,
-  communitySlug,
-  initialIsMember,
-}: {
-  postID: string;
-  communitySlug?: string;
-  initialIsMember: boolean;
-}) => {
+export const ClientCommentComposerGate = ({ postID, communitySlug }: { postID: string; communitySlug?: string }) => {
   const { data } = useGetProfile();
 
-  if (data?.data && initialIsMember)
+  if (data?.data)
     return (
       <div className='mb-8'>
         <CommentComposer postID={postID} user={data.data} />

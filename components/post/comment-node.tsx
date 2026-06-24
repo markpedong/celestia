@@ -8,17 +8,19 @@ import CommentComposer from './comment-composer';
 import { Clock, CornerDownRight, MinusCircle, PlusCircle, Share2 } from 'lucide-react';
 import Link from 'next/link';
 import { UserAvatar } from '../ui/user-avatar';
-import { useGetProfile } from '@/hooks/useQueries';
+import { useGetCommunityMember, useGetProfile } from '@/hooks/useQueries';
 import { formatTimeAgo } from '@/lib/utils';
+import { usePathname } from 'next/navigation';
 
 export const CommentNode: FC<CommentNodeProps> = ({
   node,
   postAuthorID,
   sessionUser,
-  canComment,
   activeReplyID,
   onReplyChange,
 }) => {
+  const slug = usePathname().split('/').pop() ?? '';
+  const isMember = useGetCommunityMember(slug).data?.data?.isMember;
   const viewer = useGetProfile().data?.data;
   const isOp = node.authorID === postAuthorID;
   const isReplying = activeReplyID === node.id;
@@ -68,7 +70,7 @@ export const CommentNode: FC<CommentNodeProps> = ({
             isSignedIn={Boolean(viewer)}
           />
         )}
-        {viewer && canComment && !node.isPending ? (
+        {viewer && isMember && !node.isPending ? (
           <button
             type='button'
             onClick={() => onReplyChange(isReplying ? null : node.id)}
@@ -98,7 +100,6 @@ export const CommentNode: FC<CommentNodeProps> = ({
               node={ch}
               postAuthorID={postAuthorID}
               sessionUser={sessionUser}
-              canComment={canComment}
               activeReplyID={activeReplyID}
               onReplyChange={onReplyChange}
             />

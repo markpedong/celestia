@@ -6,23 +6,11 @@ import { ContentWithSidebar } from '@/components/layout/content-with-sidebar';
 import CommentThread from '@/components/post/comment-thread';
 import { PostImageGallery } from '@/components/post/post-image-gallery';
 import { Separator } from '@/components/ui/separator';
-import {
-  getAuthorByID,
-  getCommentTree,
-  getPostByID,
-  getPostScore,
-  getCommunityMembership,
-  listPostIDs,
-  listCommunity,
-} from '@/lib/db/queries';
-import { getCurrentUserID } from '@/lib/auth';
+import { getAuthorByID, getCommentTree, getPostByID, getPostScore, listPostIDs, listCommunity } from '@/lib/db/queries';
 import type { PostPageProps } from '@/lib/types';
 import { MessageSquare, Radio, Users } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-
-export const revalidate = 300;
-export const dynamicParams = true;
 
 export const generateStaticParams = async () => {
   const postIDs = await listPostIDs();
@@ -34,18 +22,14 @@ const Page = async ({ params }: PostPageProps) => {
   const post = await getPostByID(id);
   if (!post) return notFound();
 
-  const [author, score, tags, userID] = await Promise.all([
+  const [author, score, tags] = await Promise.all([
     getAuthorByID(post.authorID),
     getPostScore(post.id),
     listCommunity(),
-    getCurrentUserID(),
   ]);
 
   const communitySlug = post.tagSlugs[0];
-  const [commentTree, initialIsMember] = await Promise.all([
-    getCommentTree(post.id, undefined),
-    getCommunityMembership(userID, communitySlug ?? ''),
-  ]);
+  const [commentTree] = await Promise.all([getCommentTree(post.id, undefined)]);
   const tagsBySlug = new Map(tags.map(tag => [tag.slug, tag]));
 
   return (
@@ -82,13 +66,7 @@ const Page = async ({ params }: PostPageProps) => {
       <article className='celestia-card overflow-hidden'>
         <div className='flex'>
           <div className='celestia-vote-rail flex min-w-14.5 flex-col items-center justify-start border-r border-border/70 px-3 py-6'>
-            <VoteButtons
-              target='post'
-              targetID={post.id}
-              score={score}
-              userVote={0}
-              isSignedIn={false}
-            />
+            <VoteButtons target='post' targetID={post.id} score={score} userVote={0} isSignedIn={false} />
           </div>
           <div className='min-w-0 flex-1 p-5 md:p-6'>
             <PostMeta author={author ?? undefined} post={post} tagsBySlug={tagsBySlug} className='mb-4' />
@@ -115,12 +93,8 @@ const Page = async ({ params }: PostPageProps) => {
         <div className='mb-4 flex flex-wrap items-center justify-between gap-3'>
           <h2 className='text-lg font-semibold'>{post.commentCount} Comments</h2>
         </div>
-        <CommentThread tree={commentTree} postAuthorID={post.authorID} sessionUser={null} canComment={initialIsMember}>
-          <ClientCommentComposerGate
-            postID={post.id}
-            communitySlug={communitySlug}
-            initialIsMember={initialIsMember}
-          />
+        <CommentThread tree={commentTree} postAuthorID={post.authorID} sessionUser={null}>
+          <ClientCommentComposerGate postID={post.id} communitySlug={communitySlug} />
         </CommentThread>
       </section>
     </ContentWithSidebar>
