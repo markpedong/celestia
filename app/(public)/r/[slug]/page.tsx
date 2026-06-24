@@ -4,11 +4,11 @@ import CommunityMembershipButton from '@/components/community/community-membersh
 import { StatGrid } from '@/components/ui/stat-grid';
 import { getCommunityBySlug, getCommunityMembership, listCommunity } from '@/lib/db/queries';
 import { getCurrentUserID } from '@/lib/auth';
-import { formatCount } from '@/lib/format';
 import type { CommunityPageProps, CommunityStats } from '@/lib/types';
 import { CakeSlice, Users } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { getCommunityStats } from '@/services';
+import { formatCount } from '@/lib/utils';
 
 export const generateStaticParams = async () => {
   const communities = await listCommunity();

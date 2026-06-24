@@ -3,13 +3,13 @@
 import { useState, type FC } from 'react';
 import type { CommentNodeProps } from '@/lib/types';
 import { Badge } from '../ui/badge';
-import { formatRelativeTime } from '@/lib/format';
 import VoteButtons from '../feed/vote-buttons';
 import CommentComposer from './comment-composer';
 import { Clock, CornerDownRight, MinusCircle, PlusCircle, Share2 } from 'lucide-react';
 import Link from 'next/link';
 import { UserAvatar } from '../ui/user-avatar';
 import { useGetProfile } from '@/hooks/useQueries';
+import { formatTimeAgo } from '@/lib/utils';
 
 export const CommentNode: FC<CommentNodeProps> = ({
   node,
@@ -47,7 +47,7 @@ export const CommentNode: FC<CommentNodeProps> = ({
             <span className='text-muted-foreground/40'>·</span>
             <span className='flex items-center gap-1 font-mono text-[11px]'>
               <Clock className='size-3' />
-              {formatRelativeTime(node.createdAt)}
+              {formatTimeAgo(node.createdAt)}
             </span>
           </div>
           <p className='whitespace-pre-wrap text-sm leading-7 text-card-foreground'>{node.body}</p>
@@ -86,13 +86,7 @@ export const CommentNode: FC<CommentNodeProps> = ({
 
       {viewer && isReplying && (
         <div className='mt-3 border-t border-border/70 pt-3'>
-          <CommentComposer
-            postID={node.postID}
-            user={viewer}
-            parentID={node.id}
-            placeholder='Write a reply…'
-            compact
-          />
+          <CommentComposer postID={node.postID} user={viewer} parentID={node.id} placeholder='Write a reply…' compact />
         </div>
       )}
 
