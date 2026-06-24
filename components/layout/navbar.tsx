@@ -2,15 +2,13 @@
 
 import { type FC } from 'react';
 import { Plus, Zap } from 'lucide-react';
-import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '../ui/button';
 import SearchBox from './search-box';
 import type { NavbarProps } from '@/lib/types';
 import { useGetProfile } from '@/hooks/useQueries';
-
-const AccountMenu = dynamic(() => import('@/components/auth/account-menu'));
+import { AccountMenuDynamic } from '@/components/dynamic-import';
 
 const Navbar: FC<NavbarProps> = ({ trending, communities }) => {
   const user = useGetProfile().data?.data;
@@ -39,7 +37,7 @@ const Navbar: FC<NavbarProps> = ({ trending, communities }) => {
               <Plus />
               New Post
             </Link>
-            <AccountMenu />
+            <AccountMenuDynamic />
           </div>
         ) : null}
 

@@ -390,4 +390,18 @@ export type PasswordRecoveryValues = {
   confirmPassword: string;
 };
 
-export type ChangePasswordValues = { currentPassword: string; newPassword: string; confirmPassword: string }; 
+export type ChangePasswordValues = { currentPassword: string; newPassword: string; confirmPassword: string };
+
+
+export type SensitiveSetting = 'email' | 'phone' | 'gender' | 'location' | 'passkey' | 'mfa' | 'backupCodes';
+export type EditableSetting = 'email' | 'phone' | 'gender' | 'location';
+
+export type AccountDialog =
+  | { type: 'verify'; setting: SensitiveSetting }
+  | { type: 'edit'; setting: EditableSetting; token: string }
+  | { type: 'changePassword' }
+  | { type: 'setPassword' }
+  | { type: 'mfa' }
+  | { type: 'backupCodes' }
+  | { type: 'deleteAccount' }
+  | null;

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist_Mono, Inter } from 'next/font/google';
 import type { RootLayoutProps } from '@/lib/types';
-import { Toaster } from '@/components/ui/sonner';
+import { ToasterDynamic } from '@/components/dynamic-import';
 import { ThemeProvider } from '@/components/theme-provider';
 import './globals.css';
 import './design.scss';
@@ -77,7 +77,7 @@ const RootLayout = ({ children }: RootLayoutProps) => {
         <ThemeProvider>
           <QueryProvider>
             {children}
-            <Toaster />
+            <ToasterDynamic />
           </QueryProvider>
         </ThemeProvider>
       </body>

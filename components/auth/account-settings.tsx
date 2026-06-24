@@ -9,26 +9,16 @@ import { useSession } from '@/hooks/useSession';
 import { Button } from '@/components/ui/button';
 import { SettingsOptionRow } from '@/components/ui/settings-option-row';
 import { deleteAccountAction } from '@/lib/actions/security';
-import { VerifyPasswordDialog } from '../dialogs/verify-password';
-import { SensitiveSettingDialog } from '../dialogs/sensitive-setting';
-import { ChangePasswordDialog } from '../dialogs/change-password';
-import { SetPasswordDialog } from '../dialogs/set-password';
-import { MfaDialog } from '../dialogs/mfa-dialog';
-import { BackupCodesDialog } from '../dialogs/backup-codes';
-import { DeleteAccountDialog } from '../dialogs/delete-account';
-
-type SensitiveSetting = 'email' | 'phone' | 'gender' | 'location' | 'passkey' | 'mfa' | 'backupCodes';
-type EditableSetting = 'email' | 'phone' | 'gender' | 'location';
-
-type AccountDialog =
-  | { type: 'verify'; setting: SensitiveSetting }
-  | { type: 'edit'; setting: EditableSetting; token: string }
-  | { type: 'changePassword' }
-  | { type: 'setPassword' }
-  | { type: 'mfa' }
-  | { type: 'backupCodes' }
-  | { type: 'deleteAccount' }
-  | null;
+import {
+  BackupCodesDialogDynamic,
+  ChangePasswordDialogDynamic,
+  DeleteAccountDialogDynamic,
+  MfaDialogDynamic,
+  SensitiveSettingDialogDynamic,
+  SetPasswordDialogDynamic,
+  VerifyPasswordDialogDynamic,
+} from '@/components/dynamic-import';
+import { AccountDialog, SensitiveSetting } from '@/lib/types';
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <section className='celestia-card space-y-5 p-5 md:p-6'>
@@ -432,76 +422,86 @@ export const AccountSettings = () => {
         </div>
       </Section>
 
-      <VerifyPasswordDialog
-        setting={dialog?.type === 'verify' ? dialog.setting : null}
-        onCloseAction={() => setDialog(null)}
-        onVerifiedAction={async result => {
-          toast.success(result.success);
+      {dialog?.type === 'verify' ? (
+        <VerifyPasswordDialogDynamic
+          setting={dialog.setting}
+          onCloseAction={() => setDialog(null)}
+          onVerifiedAction={async result => {
+            toast.success(result.success);
 
-          if (result.setting === 'passkey') {
+            if (result.setting === 'passkey') {
+              setDialog(null);
+              await registerPasskey();
+              return;
+            }
+
+            if (result.setting === 'mfa') {
+              setDialog({ type: 'mfa' });
+              await enrollMfa();
+              return;
+            }
+
+            if (result.setting === 'backupCodes') {
+              setDialog({ type: 'backupCodes' });
+              return;
+            }
+
+            setDialog({ type: 'edit', setting: result.setting, token: result.token });
+          }}
+        />
+      ) : null}
+
+      {dialog?.type === 'edit' ? (
+        <SensitiveSettingDialogDynamic dialog={dialog} user={user ?? null} onCloseAction={() => setDialog(null)} />
+      ) : null}
+
+      {dialog?.type === 'changePassword' ? (
+        <ChangePasswordDialogDynamic open onCloseAction={() => setDialog(null)} />
+      ) : null}
+
+      {dialog?.type === 'setPassword' ? (
+        <SetPasswordDialogDynamic
+          open
+          onCloseAction={() => setDialog(null)}
+          onSuccessAction={async () => {
+            setHasPasswordOverride(true);
+            await supabase.auth.refreshSession();
+          }}
+        />
+      ) : null}
+
+      {dialog?.type === 'mfa' ? (
+        <MfaDialogDynamic
+          open
+          enrollment={enrollment}
+          code={mfaCode}
+          pending={pending}
+          onCodeChangeAction={setMfaCode}
+          onVerifiedAction={() => void verifyMfa()}
+          onCancelAction={() => void cancelMfaEnrollment()}
+        />
+      ) : null}
+
+      {dialog?.type === 'backupCodes' ? (
+        <BackupCodesDialogDynamic
+          open
+          hasCodes={Boolean(backupCodes)}
+          onCloseAction={() => setDialog(null)}
+          onGeneratedAction={codes => {
+            setBackupCodes(codes);
             setDialog(null);
-            await registerPasskey();
-            return;
-          }
+          }}
+        />
+      ) : null}
 
-          if (result.setting === 'mfa') {
-            setDialog({ type: 'mfa' });
-            await enrollMfa();
-            return;
-          }
-
-          if (result.setting === 'backupCodes') {
-            setDialog({ type: 'backupCodes' });
-            return;
-          }
-
-          setDialog({ type: 'edit', setting: result.setting, token: result.token });
-        }}
-      />
-
-      <SensitiveSettingDialog
-        dialog={dialog?.type === 'edit' ? dialog : null}
-        user={user ?? null}
-        onCloseAction={() => setDialog(null)}
-      />
-
-      <ChangePasswordDialog open={dialog?.type === 'changePassword'} onCloseAction={() => setDialog(null)} />
-
-      <SetPasswordDialog
-        open={dialog?.type === 'setPassword'}
-        onCloseAction={() => setDialog(null)}
-        onSuccessAction={async () => {
-          setHasPasswordOverride(true);
-          await supabase.auth.refreshSession();
-        }}
-      />
-
-      <MfaDialog
-        open={dialog?.type === 'mfa'}
-        enrollment={enrollment}
-        code={mfaCode}
-        pending={pending}
-        onCodeChangeAction={setMfaCode}
-        onVerifiedAction={() => void verifyMfa()}
-        onCancelAction={() => void cancelMfaEnrollment()}
-      />
-
-      <BackupCodesDialog
-        open={dialog?.type === 'backupCodes'}
-        hasCodes={Boolean(backupCodes)}
-        onCloseAction={() => setDialog(null)}
-        onGeneratedAction={codes => {
-          setBackupCodes(codes);
-          setDialog(null);
-        }}
-      />
-
-      <DeleteAccountDialog
-        open={dialog?.type === 'deleteAccount'}
-        onCloseAction={() => setDialog(null)}
-        action={deleteAccount}
-        pending={deletingAccount}
-      />
+      {dialog?.type === 'deleteAccount' ? (
+        <DeleteAccountDialogDynamic
+          open
+          onCloseAction={() => setDialog(null)}
+          action={deleteAccount}
+          pending={deletingAccount}
+        />
+      ) : null}
     </div>
   );
 };

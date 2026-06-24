@@ -1,6 +1,6 @@
 import type { FC } from 'react';
 import Link from 'next/link';
-import { ActiveNow } from '@/components/presence/online-users';
+import { ActiveNowDynamic } from '@/components/dynamic-import';
 import type { RightTrendingProps } from '@/lib/types';
 import { Flame, Minus, Sparkles, TrendingUp, Users } from 'lucide-react';
 
@@ -30,7 +30,7 @@ export const RightTrending: FC<RightTrendingProps> = ({ items, communities }) =>
         </Link>
       </div>
     </section>
-    <ActiveNow />
+    <ActiveNowDynamic />
     <section className='celestia-card p-4'>
       <h3 className='mb-3 flex items-center gap-2 text-xs font-semibold text-foreground'>
         <Users className='size-3 text-accent' />
