@@ -1,6 +1,6 @@
 import { AccountSettings } from '@/components/auth/account-settings';
 import { SettingsTabs } from '@/components/auth/settings-tabs';
-import { ProfileSettingsForm } from '@/components/profile/profile-settings-form';
+import ProfileSettingsForm from '@/components/profile/profile-settings-form';
 import { getSessionUser } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 
@@ -14,7 +14,7 @@ const SettingsPage = async () => {
         <h1 className='text-2xl font-bold tracking-tight'>Settings</h1>
         <p className='mt-1 text-sm text-muted-foreground'>Manage your account, preferences, and public profile.</p>
       </header>
-      <SettingsTabs account={<AccountSettings />} profile={<ProfileSettingsForm profile={profile} />} />
+      <SettingsTabs account={<AccountSettings />} profile={<ProfileSettingsForm />} />
     </div>
   );
 };
