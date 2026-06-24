@@ -1,8 +1,6 @@
 'use client';
 
 import type { FC } from 'react';
-import { updateCommunityAction } from '@/lib/actions/communities';
-import { useServerActionForm } from '@/hooks/use-server-action-form';
 import useFormSchema from '@/hooks/useFormSchema';
 import { MAX_COMMUNITY_DESCRIPTION_LENGTH, MAX_COMMUNITY_NAME_LENGTH } from '@/constants';
 import { Button } from '../ui/button';
@@ -11,27 +9,35 @@ import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Save } from 'lucide-react';
 import { Community } from '@/lib/types';
+import useFormValidate from '@/hooks/useFormValidate';
+import z from 'zod';
+import { useUpdateCommunity } from '@/hooks/useQueries';
 
 const CommunitySettingsForm: FC<{ community: Community }> = ({ community }) => {
   const { communitySettingsSchema } = useFormSchema();
   const {
-    form: {
-      register,
-      formState: { errors, isSubmitted, isValid, touchedFields },
-    },
+    handleSubmit,
+    register,
+    formState: { errors, isSubmitted, isValid, touchedFields },
     onFormKeyDown,
-    onSubmit,
-    pending,
-  } = useServerActionForm(updateCommunityAction, null, communitySettingsSchema, {
-    label: community.label,
-    description: community.description,
-    hashColor: community.hashColor,
+  } = useFormValidate({
+    schema: communitySettingsSchema,
+    defaultValues: { label: community.label, description: community.description, hashColor: community.hashColor },
   });
+  const { mutate } = useUpdateCommunity();
 
-  console.log('community', community);
+  const onSubmit = (values: z.infer<typeof communitySettingsSchema>) => {
+    mutate({ ...values, slug: community.slug });
+  };
 
   return (
-    <form onSubmit={onSubmit} onKeyDown={onFormKeyDown} className='celestia-card space-y-5 p-5 md:p-6' noValidate>
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      onKeyDown={onFormKeyDown}
+      className='celestia-card space-y-5 p-5 md:p-6'
+      noValidate
+    >
+      <FormField label='Community slug' {...register('label')} />
       <input type='hidden' name='slug' value={community.slug} />
       <div className='rounded border border-border bg-secondary/50 px-4 py-3 text-sm text-muted-foreground'>
         Community URL: <span className='font-semibold text-foreground'>r/{community.slug}</span>. URLs stay fixed after
@@ -88,7 +94,6 @@ const CommunitySettingsForm: FC<{ community: Community }> = ({ community }) => {
       <Button
         type='submit'
         disabled={!isValid}
-        isLoading={pending}
         loadingText='Saving…'
         className='celestia-primary-action w-full rounded'
       >
