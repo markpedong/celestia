@@ -3,13 +3,13 @@ import { cache } from "react";
 import { Prisma } from "../generated/prisma/client";
 import { PostModel } from "../generated/prisma/models";
 import { prisma } from "../prisma";
-import type { Comment, Community, CommunityStats, EnrichedCommentNode, FeedPostRow, FeedSort, Post, SearchPostSuggestion, SearchTagSuggestion, Tag, TagPostCount, User, UserCommentActivity, UserStats, VoteTarget } from "../types";
+import type { Comment, Community, CommunityFeedData, CommunityStats, EnrichedCommentNode, FeedPostRow, FeedSort, Post, SearchPostSuggestion, SearchTagSuggestion, Tag, TagPostCount, User, UserCommentActivity, UserStats, VoteTarget } from "../types";
 
 export const batchAuthorsForIds = async (authorIds: string[]): Promise<Map<string, User>> => {
   const unique = [...new Set(authorIds)];
   if (unique.length === 0) return new Map();
 
-  const rows = await prisma.userProfile.findMany({
+  const rows = await prisma.users.findMany({
     where: { id: { in: unique } },
   });
 
@@ -141,6 +141,29 @@ export const listPostSorted = async (sort: FeedSort, tagFilter: string, userId: 
   return listEnrichedPosts(sort, where, userId);
 }
 
+export const getCommunityFeedData = async (
+  slug: string,
+  sort: FeedSort,
+  userId: string | undefined,
+): Promise<CommunityFeedData> => {
+  const [rows, tags] = await Promise.all([
+    listPostSorted(sort, slug, userId),
+    listTags(),
+  ]);
+  const authorIds = [...new Set(rows.map(({ post }) => post.authorId))];
+  const [authorsById, authorStatsById] = await Promise.all([
+    batchAuthorsForIds(authorIds),
+    batchUserStatsForIds(authorIds),
+  ]);
+
+  return {
+    rows,
+    authors: [...authorsById.values()],
+    authorStats: [...authorStatsById.entries()],
+    tags,
+  };
+};
+
 export const listPostsByAuthor = async (authorId: string, sort: FeedSort, userId: string | undefined): Promise<FeedPostRow[]> => {
   return listEnrichedPosts(sort, { authorId }, userId);
 }
@@ -183,7 +206,7 @@ const userVotesForPosts = async (
 };
 
 export const listTags = cache(async (): Promise<Tag[]> => {
-  const rows = await prisma.tag.findMany({ orderBy: { slug: "asc" } });
+  const rows = await prisma.community.findMany({ orderBy: { slug: "asc" } });
   return rows.map((t) => ({
     slug: t.slug,
     label: t.label,
@@ -191,23 +214,11 @@ export const listTags = cache(async (): Promise<Tag[]> => {
   }));
 });
 
-export const getTagBySlug = cache(async (slug: string): Promise<Community | undefined> => {
-  const row = await prisma.tag.findUnique({ where: { slug: slug.toLowerCase() } });
-  return row ? {
-    slug: row.slug,
-    label: row.label,
-    description: row.description,
-    hashColor: row.hashColor,
-    createdById: row.createdById ?? undefined,
-    createdAt: row.createdAt.toISOString(),
-  } : undefined;
-});
-
 export const getCommunityStats = async (slug: string): Promise<CommunityStats> => {
   const tagSlug = slug.toLowerCase();
   const [postCount, memberCount, commentRows] = await Promise.all([
     prisma.postTag.count({ where: { tagSlug } }),
-    prisma.communityMembership.count({ where: { communitySlug: tagSlug } }),
+    prisma.communityMembers.count({ where: { communitySlug: tagSlug } }),
     prisma.comment.count({
       where: { post: { postTags: { some: { tagSlug } } } },
     }),
@@ -223,7 +234,7 @@ export const getCommunityStats = async (slug: string): Promise<CommunityStats> =
 export const getCommunityMembership = async (userId: string | undefined, slug: string): Promise<boolean> => {
   if (!userId) return false;
 
-  const membership = await prisma.communityMembership.findUnique({
+  const membership = await prisma.communityMembers.findUnique({
     where: { userId_communitySlug: { userId, communitySlug: slug.toLowerCase() } },
     select: { userId: true },
   });
@@ -232,7 +243,7 @@ export const getCommunityMembership = async (userId: string | undefined, slug: s
 };
 
 export const listJoinedCommunities = async (userId: string): Promise<Community[]> => {
-  const memberships = await prisma.communityMembership.findMany({
+  const memberships = await prisma.communityMembers.findMany({
     where: { userId },
     orderBy: { joinedAt: 'asc' },
     include: { community: true },
@@ -261,7 +272,7 @@ export const searchSuggestions = async (searchQuery: string): Promise<{
       orderBy: { createdAt: 'desc' },
       take: 5,
     }),
-    prisma.tag.findMany({
+    prisma.community.findMany({
       where: {
         OR: [
           { slug: { contains: term.toLowerCase(), mode: 'insensitive' } },
@@ -386,24 +397,26 @@ export const listPostIds = cache(async () => {
 });
 
 export const listUsernames = cache(async () => {
-  const profiles = await prisma.userProfile.findMany({ select: { username: true } });
+  const profiles = await prisma.users.findMany({ select: { username: true } });
   return profiles.map(profile => profile.username);
 });
 
 export const getAuthorByID = async (authorID: string): Promise<User | null> => {
-  return prisma.userProfile.findUnique({
+  return prisma.users.findUnique({
     where: { id: authorID },
   });
 };
 
-export const getProfileSettingsByUserId = cache(async (userId: string) => prisma.userProfile.findUnique({
+export const getProfileSettingsByUserId = cache(async (userId: string) => prisma.users.findUnique({
   where: { id: userId },
   select: { username: true, displayName: true, bio: true, avatarUrl: true, coverUrl: true },
 }));
 
 export const getUserByUsername = cache(async (username: string): Promise<User | null> => {
-  return prisma.userProfile.findUnique({ where: { username } });
+  return prisma.users.findUnique({ where: { username } });
 });
+
+export const getCommunityBySlug = (slug: string) => prisma.community.findFirst({ where: { slug } });
 
 export const getUserStats = async (userId: string): Promise<UserStats> => {
   const posts = await prisma.post.findMany({

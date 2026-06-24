@@ -94,6 +94,12 @@ export const SubmitPostForm: FC<SubmitPostFormProps> = ({ communities, defaultCo
         </select>
       </FormField>
 
+      {communities.length === 0 ? (
+        <p className='rounded border border-dashed border-primary/25 bg-primary/5 px-3 py-2 text-sm text-muted-foreground'>
+          Join a community before creating a post.
+        </p>
+      ) : null}
+
       <div className='space-y-2'>
         <Label>
           Images <span className='text-muted-foreground'>(optional, up to 4)</span>

@@ -5,7 +5,7 @@ export const POST = async (request: Request) => {
   const { username } = await request.json();
   if (!username) return generateErrorResponse('Invalid credentials', 404);
 
-  const profile = await prisma.userProfile.findUnique({
+  const profile = await prisma.users.findUnique({
     where: { username },
     select: { email: true },
   });

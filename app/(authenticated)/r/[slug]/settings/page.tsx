@@ -1,13 +1,12 @@
-import { CommunitySettingsForm } from '@/components/community/community-settings-form';
 import { getSessionUser } from '@/lib/auth';
-import { getTagBySlug } from '@/lib/db/queries';
+import { getCommunityBySlug } from '@/lib/db/queries';
 import type { CommunitySettingsPageProps } from '@/lib/types';
 import { notFound, redirect } from 'next/navigation';
 
 const CommunitySettingsPage = async ({ params }: CommunitySettingsPageProps) => {
   const { slug: rawSlug } = await params;
   const [community, user] = await Promise.all([
-    getTagBySlug(decodeURIComponent(rawSlug).toLowerCase()),
+    getCommunityBySlug(decodeURIComponent(rawSlug).toLowerCase()),
     getSessionUser(),
   ]);
   if (!community) notFound();
@@ -20,7 +19,7 @@ const CommunitySettingsPage = async ({ params }: CommunitySettingsPageProps) => 
       <p className='text-sm font-medium text-primary'>Community owner tools</p>
       <h1 className='mt-1 text-3xl font-bold tracking-tight'>Manage r/{community.slug}</h1>
       <p className='mt-2 mb-6 text-sm leading-6 text-muted-foreground'>Update the public identity of your community. Only its creator can access these controls.</p>
-      <CommunitySettingsForm community={community} />
+      {/* <CommunitySettingsForm community={community} /> */}
     </main>
   );
 };

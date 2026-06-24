@@ -40,7 +40,6 @@ const Page = async ({ params }: PostPageProps) => {
     listTags(),
     getUserVote(sessionUser?.id, 'post', id),
   ]);
-  if (!author) return notFound();
 
   const commentTree = await getCommentTree(post.id, sessionUser?.id);
   const tagsBySlug = new Map(tags.map(tag => [tag.slug, tag]));
@@ -88,7 +87,7 @@ const Page = async ({ params }: PostPageProps) => {
             />
           </div>
           <div className='min-w-0 flex-1 p-5 md:p-6'>
-            <PostMeta author={author} post={post} tagsBySlug={tagsBySlug} className='mb-4' />
+            <PostMeta author={author ?? undefined} post={post} tagsBySlug={tagsBySlug} className='mb-4' />
             <h1 className='text-balance text-2xl font-bold leading-tight text-foreground md:text-3xl'>{post.title}</h1>
             {post.imageUrls.length > 0 ? (
               <PostImageGallery imageUrls={post.imageUrls} title={post.title} variant='gallery' />

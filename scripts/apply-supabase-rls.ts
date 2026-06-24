@@ -7,17 +7,17 @@ loadEnv();
 
 async function main() {
   const sql = `
-  alter table public.user_profiles enable row level security;
+  alter table public.users enable row level security;
 
   grant usage on schema public to anon, authenticated;
-  grant select, insert, update on public.user_profiles to authenticated;
+  grant select, insert, update on public.users to authenticated;
 
-  drop policy if exists "Users can read own profile" on public.user_profiles;
-  drop policy if exists "Users can insert own profile" on public.user_profiles;
-  drop policy if exists "Users can update own profile" on public.user_profiles;
+  drop policy if exists "Users can read own profile" on public.users;
+  drop policy if exists "Users can insert own profile" on public.users;
+  drop policy if exists "Users can update own profile" on public.users;
 
   create policy "Users can read own profile"
-  on public.user_profiles
+  on public.users
   for select
   to authenticated
   using (
@@ -25,7 +25,7 @@ async function main() {
   );
 
   create policy "Users can insert own profile"
-  on public.user_profiles
+  on public.users
   for insert
   to authenticated
   with check (
@@ -33,7 +33,7 @@ async function main() {
   );
 
   create policy "Users can update own profile"
-  on public.user_profiles
+  on public.users
   for update
   to authenticated
   using (
@@ -55,9 +55,9 @@ async function main() {
   end;
   $$;
 
-  drop trigger if exists user_profiles_username_immutable on public.user_profiles;
+  drop trigger if exists user_profiles_username_immutable on public.users;
   create trigger user_profiles_username_immutable
-  before update of username on public.user_profiles
+  before update of username on public.users
   for each row execute function public.prevent_username_change();
   `;
 

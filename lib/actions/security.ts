@@ -150,10 +150,10 @@ export const deleteAccountAction = async (_prev: SecurityActionState, { confirma
   await prisma.$transaction([
     prisma.backupCode.deleteMany({ where: { userId: user.id } }),
     prisma.vote.deleteMany({ where: { userId: user.id } }),
-    prisma.communityMembership.deleteMany({ where: { userId: user.id } }),
+    prisma.communityMembers.deleteMany({ where: { userId: user.id } }),
     prisma.comment.deleteMany({ where: { authorId: user.id } }),
     prisma.post.deleteMany({ where: { authorId: user.id } }),
-    prisma.userProfile.deleteMany({ where: { id: user.id } }),
+    prisma.users.deleteMany({ where: { id: user.id } }),
   ]);
   revalidatePath('/', 'layout');
   return { success: 'Account deleted.' };

@@ -1,22 +1,18 @@
-import FeedSortTabs from '@/components/feed/feed-sort-tabs';
-import { PostList } from '@/components/feed/post-list';
+import CommunityFeed from '@/components/feed/community-feed';
 import { ContentWithSidebar } from '@/components/layout/content-with-sidebar';
 import { Button } from '@/components/ui/button';
 import { CommunityMembershipButton } from '@/components/community/community-membership-button';
-import { EmptyState } from '@/components/ui/empty-state';
 import { StatGrid } from '@/components/ui/stat-grid';
 import {
-  batchAuthorsForIds,
-  batchUserStatsForIds,
+  getCommunityBySlug,
+  getCommunityFeedData,
   getCommunityMembership,
   getCommunityStats,
-  getTagBySlug,
-  listPostSorted,
   listTags,
 } from '@/lib/db/queries';
 import { formatCount } from '@/lib/format';
 import type { CommunityPageProps, FeedSort } from '@/lib/types';
-import { CakeSlice, Hash, Plus, Users } from 'lucide-react';
+import { CakeSlice, Plus, Users } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getSessionUser } from '@/lib/auth';
@@ -27,7 +23,7 @@ export const dynamicParams = true;
 const CommunityPage = async ({ params }: CommunityPageProps) => {
   const { slug: rawSlug } = await params;
   const slug = decodeURIComponent(rawSlug).toLowerCase();
-  const community = await getTagBySlug(slug);
+  const community = await getCommunityBySlug(slug);
   const sessionUser = await getSessionUser();
   const isSignedIn = Boolean(sessionUser);
 
@@ -36,19 +32,10 @@ const CommunityPage = async ({ params }: CommunityPageProps) => {
   }
 
   const sort: FeedSort = 'hot';
-  const cleanedSearchQuery = '';
-
-  const [rows, tags, stats, isMember] = await Promise.all([
-    listPostSorted(sort, community.slug, undefined, cleanedSearchQuery),
-    listTags(),
+  const [feed, stats, isMember] = await Promise.all([
+    getCommunityFeedData(community.slug, sort, sessionUser?.id),
     getCommunityStats(community.slug),
     getCommunityMembership(sessionUser?.id, community.slug),
-  ]);
-  const tagsMap = new Map(tags.map(tag => [tag.slug, tag]));
-  const authorIds = [...new Set(rows.map(row => row.post.authorId))];
-  const [authorById, authorStatsById] = await Promise.all([
-    batchAuthorsForIds(authorIds),
-    batchUserStatsForIds(authorIds),
   ]);
 
   return (
@@ -95,14 +82,17 @@ const CommunityPage = async ({ params }: CommunityPageProps) => {
                 slug={community.slug}
                 isMember={isMember}
                 isSignedIn={isSignedIn}
-                ownerId={community.createdById}
+                // ownerId={community.createdById}
+                ownerId={''}
               />
-              <Button asChild size='sm' className='celestia-primary-action'>
-                <Link href={`/submit?community=${encodeURIComponent(community.slug)}`}>
-                  <Plus />
-                  Create Post
-                </Link>
-              </Button>
+              {isMember && (
+                <Button asChild size='sm' className='celestia-primary-action'>
+                  <Link href={`/submit?community=${encodeURIComponent(community.slug)}`}>
+                    <Plus />
+                    Create Post
+                  </Link>
+                </Button>
+              )}
             </div>
           </div>
           <p className='mt-4 max-w-2xl text-sm leading-6 text-muted-foreground'>
@@ -120,29 +110,7 @@ const CommunityPage = async ({ params }: CommunityPageProps) => {
         </div>
       </section>
 
-      <FeedSortTabs current={sort} tag='' query={cleanedSearchQuery} basePath={`/r/${community.slug}`} />
-      {cleanedSearchQuery ? (
-        <div className='mb-4 rounded border border-border/80 bg-secondary/45 px-4 py-3 text-sm text-muted-foreground'>
-          Searching r/{community.slug} for{' '}
-          <span className='font-semibold text-foreground'>&quot;{cleanedSearchQuery}&quot;</span>
-        </div>
-      ) : null}
-      <div className='space-y-3'>
-        <PostList
-          rows={rows}
-          authorsById={authorById}
-          authorStatsById={authorStatsById}
-          tagsBySlug={tagsMap}
-          isSignedIn={isSignedIn}
-        />
-        {rows.length === 0 ? (
-          <EmptyState
-            icon={Hash}
-            title={`No posts in r/${community.slug} yet`}
-            description='Start the first thread for this community.'
-          />
-        ) : null}
-      </div>
+      <CommunityFeed slug={community.slug} initialData={feed} isSignedIn={isSignedIn} />
     </ContentWithSidebar>
   );
 };

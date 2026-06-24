@@ -14,7 +14,7 @@ export const getSessionUser = cache(async (): Promise<User | null> => {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const profile = await prisma.userProfile.findUnique({ where: { id: user.id } });
+  const profile = await prisma.users.findUnique({ where: { id: user.id } });
   const displayName =
     profile?.displayName ||
     (typeof user.user_metadata.display_name === 'string' && user.user_metadata.display_name) ||

@@ -7,7 +7,6 @@ export const PostList: FC<PostListProps> = ({ rows, authorsById, authorStatsById
     <>
       {rows.map(row => {
         const author = authorsById.get(row.post.authorId);
-        if (!author) return null;
 
         return (
           <PostCard

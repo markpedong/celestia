@@ -35,7 +35,7 @@ export const updateProfileMediaAction = async (
 
   if (!avatarUrl && !coverUrl) return { error: 'Choose a profile image or cover photo first.' };
 
-  await prisma.userProfile.update({
+  await prisma.users.update({
     where: { id: profile.id },
     data: {
       ...(avatarUrl ? { avatarUrl } : {}),
@@ -60,7 +60,7 @@ export const updateProfileSettingsAction = async (
   });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'Check your profile details.' };
 
-  await prisma.userProfile.update({
+  await prisma.users.update({
     where: { id: profile.id },
     data: {
       displayName: parsed.data.displayName || null,

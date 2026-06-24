@@ -12,7 +12,7 @@ datasource db {
   provider = "postgresql"
 }
 
-model UserProfile {
+model Users {
   id          String   @id
   username    String   @unique
   displayName String?  @map("display_name")
@@ -22,7 +22,7 @@ model UserProfile {
   email       String   @map("email")
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
-  @@map("user_profiles")
+  @@map("users")
 }
 
 model BackupCode {
@@ -52,7 +52,7 @@ model Post {
   @@map("posts")
 }
 
-model Tag {
+model Community {
   slug        String   @id
   label       String
   description String   @default("")
@@ -61,29 +61,29 @@ model Tag {
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   postTags    PostTag[]
-  memberships CommunityMembership[]
+  memberships CommunityMembers[]
 
-  @@map("tags")
+  @@map("community")
 }
 
-model CommunityMembership {
+model CommunityMembers {
   userId        String   @map("user_id")
   communitySlug String   @map("community_slug")
   joinedAt      DateTime @default(now()) @map("joined_at") @db.Timestamptz(6)
 
-  community Tag @relation(fields: [communitySlug], references: [slug], onDelete: Cascade)
+  community Community @relation(fields: [communitySlug], references: [slug], onDelete: Cascade)
 
   @@id([userId, communitySlug])
   @@index([communitySlug, joinedAt])
-  @@map("community_memberships")
+  @@map("community_members")
 }
 
 model PostTag {
   postId  String @map("post_id") @db.Uuid
   tagSlug String @map("tag_slug")
 
-  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-  tag  Tag  @relation(fields: [tagSlug], references: [slug])
+  post Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag  Community @relation(fields: [tagSlug], references: [slug])
 
   @@id([postId, tagSlug])
   @@index([tagSlug, postId])

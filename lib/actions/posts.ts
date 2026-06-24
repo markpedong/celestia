@@ -16,7 +16,7 @@ export const votePostAction = async (postId: string, value: VoteActionValue) => 
   }
 
   await toggleVote(userId, 'post', postId, value);
-  revalidatePath("/");
+  for (const path of ['/', '/explore', '/posts', '/top']) revalidatePath(path);
   revalidatePath(`/post/${postId}`);
 }
 
@@ -34,7 +34,7 @@ export const createPostAction = async (
   const communitySlug = String(formData.get("communitySlug") ?? "").trim().toLowerCase();
   const images = formData.getAll("images");
 
-  const membership = await prisma.communityMembership.findUnique({
+  const membership = await prisma.communityMembers.findUnique({
     where: { userId_communitySlug: { userId, communitySlug } },
     select: { userId: true },
   });
@@ -49,7 +49,7 @@ export const createPostAction = async (
     return { error: getUploadErrorMessage(error, 'We could not upload your images. Please try again.') };
   }
 
-  const community = await prisma.tag.findUnique({ where: { slug: communitySlug }, select: { slug: true } });
+  const community = await prisma.community.findUnique({ where: { slug: communitySlug }, select: { slug: true } });
   if (!community) throw new Error('Community not found.');
 
   // ponytail: creation only needs the new post id for the redirect.
@@ -59,7 +59,7 @@ export const createPostAction = async (
     return post;
   });
 
-  revalidatePath("/");
+  for (const path of ['/', '/explore', '/posts', '/top']) revalidatePath(path);
   revalidatePath("/submit");
   revalidatePath(`/r/${communitySlug}`);
   redirect(`/post/${post.id}`);

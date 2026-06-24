@@ -124,6 +124,17 @@ export type FeedPostRow = {
   userVote: VoteValue;
 };
 
+export type CommunityFeedData = {
+  rows: FeedPostRow[];
+  authors: User[];
+  authorStats: [string, UserStats][];
+  tags: Tag[];
+};
+
+export type CommunityFeedApiResponse = Omit<CommunityFeedData, 'authors'> & {
+  authors: (Omit<User, 'createdAt'> & { createdAt: string })[];
+};
+
 export type EnrichedCommentNode = {
   id: string;
   postId: string;
@@ -184,7 +195,7 @@ export type FeedSortTabsProps = {
 
 export type PostCardProps = {
   post: Post;
-  author: User;
+  author?: User;
   authorStats: UserStats;
   tagsBySlug: Map<string, Tag>;
   score: number;
@@ -201,7 +212,7 @@ export type PostListProps = {
 };
 
 export type PostMetaProps = WithClassName<{
-  author: User;
+  author?: User;
   authorStats?: UserStats;
   post: Pick<Post, 'createdAt' | 'tagSlugs'>;
   tagsBySlug: Map<string, Tag>;
