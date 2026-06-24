@@ -17,7 +17,7 @@ const SettingsDialog = ({ children, description, title, ...props }: SettingsDial
         {description ? <DialogDescription>{description}</DialogDescription> : null}
       </DialogHeader>
 
-      <div className='[&_input]:h-11 [&_input]:bg-background'>{children}</div>
+      <div className='[&_input]:bg-background'>{children}</div>
     </DialogContent>
   </Dialog>
 );

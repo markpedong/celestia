@@ -37,7 +37,7 @@ export const EditPostForm: FC<EditPostFormProps> = ({ post }) => {
         <Input
           id='title'
           maxLength={MAX_POST_TITLE_LENGTH}
-          className='h-11 bg-secondary/80'
+          className='bg-secondary/80'
           aria-invalid={Boolean(errors.title && (touchedFields.title || isSubmitted))}
           {...register('title')}
         />
@@ -62,8 +62,8 @@ export const EditPostForm: FC<EditPostFormProps> = ({ post }) => {
         </Label>
         <ImageUploadField initialImageUrls={post.imageUrls} name='images' multiple />
       </div>
-      <Button type='submit' disabled={!isValid} isLoading={pending} loadingText='Saving…' className='celestia-primary-action h-11 w-full rounded'>
-        <Save className='size-4' /> Save changes
+      <Button type='submit' disabled={!isValid} isLoading={pending} loadingText='Saving…' className='celestia-primary-action w-full rounded'>
+        <Save /> Save changes
       </Button>
     </form>
   );

@@ -12,7 +12,7 @@ export const ClientProfileControls = ({ profileId }: { profileId: string }) => {
     null
   ) : (
     <Button variant='outline' size='sm'>
-      <AtSign className='size-3.5' />
+      <AtSign />
       Follow
     </Button>
   );

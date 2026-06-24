@@ -97,9 +97,9 @@ const PasswordRecoveryForm: FC<{ mode: 'request' | 'update' }> = ({ mode }) => {
         type='submit'
         isLoading={pending}
         loadingText={isRequest ? 'Sending reset link...' : 'Updating password...'}
-        className='celestia-primary-action h-11 w-full rounded'
+        className='celestia-primary-action w-full rounded'
       >
-        {isRequest ? <Mail className='size-4' /> : <KeyRound className='size-4' />}
+        {isRequest ? <Mail /> : <KeyRound />}
         {isRequest ? 'Send reset link' : 'Update password'}
       </Button>
       <Button asChild variant='link' size='sm' className='w-full'>

@@ -108,7 +108,7 @@ export const SubmitPostForm: FC<SubmitPostFormProps> = ({ communities, defaultCo
         loadingText='Posting...'
         className='celestia-primary-action h-10 w-full rounded'
       >
-        <Send className='size-4' />
+        <Send />
         Create Post
       </Button>
     </form>

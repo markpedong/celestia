@@ -76,7 +76,7 @@ const AccountMenu: FC = () => {
       <DropdownMenuContent align='end' className='w-64 space-y-2 p-3'>
         <DropdownMenuLabel className='flex items-center gap-3'>
           <Link href={profileHref} onClick={() => setIsAccountMenuOpen(false)} className='flex gap-1 justify-start'>
-            <Avatar className='size-10'>
+            <Avatar size='lg'>
               <AvatarImage src={avatarUrl ?? undefined} alt={name} />
               <AvatarFallback>{getInitials(name, email)}</AvatarFallback>
             </Avatar>
@@ -89,20 +89,20 @@ const AccountMenu: FC = () => {
         <DropdownMenuSeparator className='mb-2' />
         <DropdownMenuItem asChild className='rounded-none py-2'>
           <Link href='/settings' onClick={() => setIsAccountMenuOpen(false)}>
-            <Settings className='size-4' />
+            <Settings />
             Settings
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSub>
           <DropdownMenuSubTrigger className='rounded-none py-2'>
-            <MonitorCog className='size-4' />
+            <MonitorCog />
             Display mode
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent className='w-40'>
             <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
               {displayModeOptions.map(({ value, label, icon: Icon }) => (
                 <DropdownMenuRadioItem key={value} value={value} className='py-2 pl-2 pr-8'>
-                  <Icon className='size-4' />
+                  <Icon />
                   {label}
                 </DropdownMenuRadioItem>
               ))}
@@ -111,7 +111,7 @@ const AccountMenu: FC = () => {
         </DropdownMenuSub>
         <DropdownMenuSeparator className='mb-2' />
         <DropdownMenuItem onSelect={handleSignOut} disabled={isSigningOut} className='gap-2 rounded-none'>
-          <LogOut className='size-4' />
+          <LogOut />
           {isSigningOut ? 'Signing out...' : 'Sign out'}
         </DropdownMenuItem>
       </DropdownMenuContent>

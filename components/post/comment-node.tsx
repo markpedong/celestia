@@ -45,7 +45,7 @@ export const CommentNode: FC<CommentNodeProps> = ({
             {isOp ? (
               <Badge
                 variant='secondary'
-                className='h-5 border-primary/20 bg-primary/10 px-1.5 text-[10px] font-semibold uppercase text-primary'
+                className='border-primary/20 bg-primary/10 px-1.5 text-[10px] font-semibold uppercase text-primary'
               >
                 OP
               </Badge>

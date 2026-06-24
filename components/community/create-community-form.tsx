@@ -38,7 +38,7 @@ export const CreateCommunityForm = () => {
           id='label'
           maxLength={MAX_COMMUNITY_NAME_LENGTH}
           placeholder='e.g. Indie Makers'
-          className='h-11 bg-secondary/80'
+          className='bg-secondary/80'
           aria-invalid={Boolean(errors.label && (touchedFields.label || isSubmitted))}
           {...register('label')}
         />
@@ -55,7 +55,7 @@ export const CreateCommunityForm = () => {
             id='slug'
             maxLength={MAX_COMMUNITY_SLUG_LENGTH}
             placeholder='indie_makers'
-            className='h-11 border-0 bg-transparent px-1 shadow-none focus-visible:ring-0'
+            className='border-0 bg-transparent px-1 shadow-none focus-visible:ring-0'
             aria-invalid={Boolean(errors.slug && (touchedFields.slug || isSubmitted))}
             {...register('slug')}
           />
@@ -95,8 +95,8 @@ export const CreateCommunityForm = () => {
           {...register('hashColor')}
         />
       </FormField>
-      <Button type='submit' disabled={!isValid} isLoading={pending} loadingText='Creating community…' className='celestia-primary-action h-11 w-full rounded'>
-        <Plus className='size-4' />
+      <Button type='submit' disabled={!isValid} isLoading={pending} loadingText='Creating community…' className='celestia-primary-action w-full rounded'>
+        <Plus />
         Create community
       </Button>
     </form>

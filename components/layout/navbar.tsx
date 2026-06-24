@@ -33,10 +33,10 @@ const Navbar: FC<NavbarProps> = ({ trending, communities }) => {
               href='/submit'
               className={cn(
                 buttonVariants({ variant: 'default', size: 'sm' }),
-                'celestia-primary-action hidden sm:inline-flex rounded-sm'
+                'celestia-primary-action hidden sm:inline-flex'
               )}
             >
-              <Plus className='size-3.5' />
+              <Plus />
               New Post
             </Link>
             <AccountMenu />

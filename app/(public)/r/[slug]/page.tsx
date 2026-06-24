@@ -99,7 +99,7 @@ const CommunityPage = async ({ params }: CommunityPageProps) => {
               />
               <Button asChild size='sm' className='celestia-primary-action'>
                 <Link href={`/submit?community=${encodeURIComponent(community.slug)}`}>
-                  <Plus className='size-3.5' />
+                  <Plus />
                   Create Post
                 </Link>
               </Button>

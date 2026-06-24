@@ -415,7 +415,7 @@ export const AccountSettings = () => {
             <p className='text-xs text-muted-foreground'>This permanently removes your account and data.</p>
           </div>
           <Button variant='destructive' size='sm' onClick={() => setDialog({ type: 'deleteAccount' })}>
-            <Trash2 className='size-3.5' /> Delete account
+            <Trash2 /> Delete account
           </Button>
         </div>
       </Section>

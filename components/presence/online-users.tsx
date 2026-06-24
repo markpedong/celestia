@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
@@ -27,15 +27,9 @@ export const ActiveNow = () => {
     };
   }, []);
 
-  const visibleUsers = useMemo(() => {
-    const count = Math.min(activeSessions, 5);
-
-    return Array.from({ length: count }, (_, index) => {
-      return {
-        image: `https://api.dicebear.com/9.x/thumbs/svg?seed=celestia-${index}`,
-      };
-    });
-  }, [activeSessions]);
+  const visibleUsers = Array.from({ length: Math.min(activeSessions, 5) }, (_, index) => ({
+    image: `https://api.dicebear.com/9.x/thumbs/svg?seed=celestia-${index}`,
+  }));
 
   return (
     <section className='celestia-card p-4'>
@@ -48,7 +42,7 @@ export const ActiveNow = () => {
           {visibleUsers.map((user, index) => (
             <Avatar
               key={`${user.image}-${index}`}
-              className='size-8 border-2 border-card bg-secondary shadow-sm'
+              className='border-2 border-card bg-secondary shadow-sm'
               style={{ marginLeft: index ? -8 : 0, zIndex: 10 - index }}
             >
               <AvatarImage src={user.image} alt={user.image} />

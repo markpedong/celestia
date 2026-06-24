@@ -43,7 +43,7 @@ export const CommunitySettingsForm: FC<CommunitySettingsFormProps> = ({ communit
         <Input
           id='label'
           maxLength={MAX_COMMUNITY_NAME_LENGTH}
-          className='h-11 bg-secondary/80'
+          className='bg-secondary/80'
           aria-invalid={Boolean(errors.label && (touchedFields.label || isSubmitted))}
           {...register('label')}
         />
@@ -72,7 +72,7 @@ export const CommunitySettingsForm: FC<CommunitySettingsFormProps> = ({ communit
         <div className='flex items-center gap-3'>
           <Input
             id='hashColor'
-            className='h-11 max-w-40 bg-secondary/80 font-mono'
+            className='max-w-40 bg-secondary/80 font-mono'
             aria-invalid={Boolean(errors.hashColor && (touchedFields.hashColor || isSubmitted))}
             {...register('hashColor')}
           />
@@ -83,8 +83,8 @@ export const CommunitySettingsForm: FC<CommunitySettingsFormProps> = ({ communit
           />
         </div>
       </FormField>
-      <Button type='submit' disabled={!isValid} isLoading={pending} loadingText='Saving…' className='celestia-primary-action h-11 w-full rounded'>
-        <Save className='size-4' /> Save community settings
+      <Button type='submit' disabled={!isValid} isLoading={pending} loadingText='Saving…' className='celestia-primary-action w-full rounded'>
+        <Save /> Save community settings
       </Button>
     </form>
   );

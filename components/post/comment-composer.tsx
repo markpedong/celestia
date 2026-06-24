@@ -47,7 +47,7 @@ const CommentComposer: FC<CommentComposerProps> = ({ postID, user, compact, pare
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} onKeyDown={onFormKeyDown} className='flex gap-3' noValidate>
-      <UserAvatar user={user} size={compact ? 'sm' : 'default'} className='mt-1 shrink-0' />
+      <UserAvatar user={user} size={compact ? 'sm' : 'default'} className='mt-1' />
       <div className='min-w-0 flex-1 space-y-2'>
         <Textarea
           placeholder={placeholder}

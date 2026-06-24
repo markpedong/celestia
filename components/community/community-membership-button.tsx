@@ -48,7 +48,7 @@ export const CommunityMembershipButton: FC<CommunityMembershipButtonProps> = ({
     return (
       <Button asChild type='button' variant='outline' size='sm'>
         <Link href={`/r/${encodeURIComponent(slug)}/settings`}>
-          <Check className='size-3.5' /> Manage
+          <Check /> Manage
         </Link>
       </Button>
     );
@@ -65,12 +65,12 @@ export const CommunityMembershipButton: FC<CommunityMembershipButtonProps> = ({
       className={optimisticMember ? undefined : 'celestia-primary-action'}
     >
       {optimisticMember ? (
-        <Check className='size-3.5' />
+        <Check />
       ) : (
-        <Plus className='size-3.5' />
+        <Plus />
       )}
       {optimisticMember ? 'Joined' : 'Join'}
-      {optimisticMember ? <UserMinus className='size-3.5' /> : null}
+      {optimisticMember ? <UserMinus /> : null}
     </Button>
   );
 };

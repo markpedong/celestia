@@ -19,7 +19,7 @@ const JoinCtaCard = () => {
         <Link
           href='/auth/sign-up'
           className={cn(
-            buttonVariants({ variant: 'default' }),
+            buttonVariants({ variant: 'default', size: 'lg' }),
             'celestia-primary-action w-full justify-center'
           )}
         >

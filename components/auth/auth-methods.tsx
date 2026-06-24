@@ -114,7 +114,7 @@ const AuthMethods: FC<AuthMethodsProps> = ({ mode }) => {
           loadingText={isSignUp ? 'Creating account...' : 'Signing in...'}
           className='celestia-primary-action w-full'
         >
-          {isSignUp ? <Mail className='size-4' /> : <KeyRound className='size-4' />}
+          {isSignUp ? <Mail /> : <KeyRound />}
           {isSignUp ? 'Create account' : 'Sign in'}
         </Button>
         <div className='flex items-center justify-between'>
