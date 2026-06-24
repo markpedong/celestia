@@ -6,7 +6,6 @@ import { ProfileActivityTabs } from '@/components/profile/profile-activity-tabs'
 import { EmptyState } from '@/components/ui/empty-state';
 import { StatGrid } from '@/components/ui/stat-grid';
 import { UserAvatar } from '@/components/ui/user-avatar';
-import { getSessionUser } from '@/lib/auth';
 import {
   batchAuthorsForIds,
   batchUserStatsForIds,
@@ -44,15 +43,14 @@ const UserPage = async ({ params }: UserPageProps) => {
   const profile = await getUserByUsername(username);
   if (!profile) notFound();
 
-  const sessionUser = await getSessionUser();
   const [tags, stats, posts, comments, upvotedPosts, upvotedComments, downvotedPosts, downvotedComments] = await Promise.all([
     listTags(),
     getUserStats(profile.id),
-    listPostsByAuthor(profile.id, 'new', sessionUser?.id),
+    listPostsByAuthor(profile.id, 'new', undefined),
     listCommentsByAuthor(profile.id),
-    listVotedPostsByUser(profile.id, 1, sessionUser?.id),
+    listVotedPostsByUser(profile.id, 1, undefined),
     listVotedCommentsByUser(profile.id, 1),
-    listVotedPostsByUser(profile.id, -1, sessionUser?.id),
+    listVotedPostsByUser(profile.id, -1, undefined),
     listVotedCommentsByUser(profile.id, -1),
   ]);
   const allRows = [...posts, ...upvotedPosts, ...downvotedPosts];
@@ -72,12 +70,12 @@ const UserPage = async ({ params }: UserPageProps) => {
   const renderPosts = (rows: typeof posts, title?: string) => rows.length ? (
     <section className='space-y-3'>
       {title ? <h2 className='flex items-center gap-2 text-sm font-semibold'>{title}</h2> : null}
-      <PostList rows={rows} authorsById={authorsById} authorStatsById={authorStatsById} tagsBySlug={tagsBySlug} isSignedIn={Boolean(sessionUser)} />
+      <PostList rows={rows} authorsById={authorsById} authorStatsById={authorStatsById} tagsBySlug={tagsBySlug} isSignedIn={false} />
     </section>
   ) : null;
 
   const content = [
-    hasActivity ? <OverviewActivityFeed key='overview' items={overviewActivity} authorsById={authorsById} authorStatsById={authorStatsById} tagsBySlug={tagsBySlug} isSignedIn={Boolean(sessionUser)} /> : <ProfileEmpty key='overview-empty' icon={AtSign} title='No activity yet' description={`Posts, comments, and votes from u/${profile.username} will show here.`} />,
+    hasActivity ? <OverviewActivityFeed key='overview' items={overviewActivity} authorsById={authorsById} authorStatsById={authorStatsById} tagsBySlug={tagsBySlug} isSignedIn={false} /> : <ProfileEmpty key='overview-empty' icon={AtSign} title='No activity yet' description={`Posts, comments, and votes from u/${profile.username} will show here.`} />,
     renderPosts(posts) ?? <ProfileEmpty key='posts-empty' icon={FileText} title='No posts yet' description={`Posts from u/${profile.username} will show here.`} />,
     comments.length ? <CommentsList key='comments' comments={comments} title='Comments' /> : <ProfileEmpty key='comments-empty' icon={MessageSquare} title='No comments yet' description={`Comments from u/${profile.username} will show here.`} />,
     <VotedActivity key='upvoted' posts={upvotedPosts} comments={upvotedComments} direction='up' emptyFor={profile.username} renderPosts={renderPosts} />,
@@ -100,7 +98,7 @@ const UserPage = async ({ params }: UserPageProps) => {
                 {profile.bio ? <p className='mt-3 max-w-2xl whitespace-pre-wrap text-sm leading-6 text-card-foreground'>{profile.bio}</p> : null}
               </div>
             </div>
-            {sessionUser?.id !== profile.id ? <ClientProfileControls profileId={profile.id} /> : null}
+            <ClientProfileControls profileId={profile.id} />
           </div>
           <StatGrid className='mt-4 max-w-xl' stats={[{ label: 'Post karma', value: formatCount(stats.karma) }, { label: 'Posts', value: formatCount(stats.postCount) }, { label: 'Comments', value: formatCount(stats.commentCount) }]} />
         </div>

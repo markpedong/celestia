@@ -1,18 +1,15 @@
 'use client';
 
 import { useCommunityFeed } from '@/hooks/useQueries';
-import { CommunityData, FeedSort } from '@/lib/types';
+import { FeedSort } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { BarChart2, Clock, Flame, Hash, LoaderCircle } from 'lucide-react';
-import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { PostList } from './post-list';
 import { EmptyState } from '../ui/empty-state';
 
 type CommunityFeedProps = {
   slug: string;
-  initialData: CommunityData;
-  isSignedIn: boolean;
 };
 
 const sortTabs = [
@@ -33,8 +30,7 @@ const CommunityFeedLoader = () => (
   </div>
 );
 
-const CommunityFeed = ({}: CommunityFeedProps) => {
-  const slug = usePathname().split('/').pop();
+const CommunityFeed = ({ slug }: CommunityFeedProps) => {
   const [sort, setSort] = useState<FeedSort>('hot');
   const { data, error, isFetching, isLoading, refetch } = useCommunityFeed(slug, sort);
   const authorsById = new Map(data?.authors.map(author => [author.id, author]));

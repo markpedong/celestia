@@ -11,11 +11,9 @@ import {
   getCommentTree,
   getPostByID,
   getPostScore,
-  getUserVote,
   listPostIds,
   listTags,
 } from '@/lib/db/queries';
-import { getSessionUser } from '@/lib/auth';
 import type { PostPageProps } from '@/lib/types';
 import { MessageSquare, Radio, Users } from 'lucide-react';
 import Link from 'next/link';
@@ -31,17 +29,16 @@ export const generateStaticParams = async () => {
 
 const Page = async ({ params }: PostPageProps) => {
   const { id } = await params;
-  const [post, sessionUser] = await Promise.all([getPostByID(id), getSessionUser()]);
+  const post = await getPostByID(id);
   if (!post) return notFound();
 
-  const [author, score, tags, userVote] = await Promise.all([
+  const [author, score, tags] = await Promise.all([
     getAuthorByID(post.authorId),
     getPostScore(post.id),
     listTags(),
-    getUserVote(sessionUser?.id, 'post', id),
   ]);
 
-  const commentTree = await getCommentTree(post.id, sessionUser?.id);
+  const commentTree = await getCommentTree(post.id, undefined);
   const tagsBySlug = new Map(tags.map(tag => [tag.slug, tag]));
 
   return (
@@ -82,8 +79,8 @@ const Page = async ({ params }: PostPageProps) => {
               target='post'
               targetID={post.id}
               score={score}
-              userVote={userVote}
-              isSignedIn={!!sessionUser?.id}
+              userVote={0}
+              isSignedIn={false}
             />
           </div>
           <div className='min-w-0 flex-1 p-5 md:p-6'>
@@ -111,7 +108,7 @@ const Page = async ({ params }: PostPageProps) => {
         <div className='mb-4 flex flex-wrap items-center justify-between gap-3'>
           <h2 className='text-lg font-semibold'>{post.commentCount} Comments</h2>
         </div>
-        <CommentThread tree={commentTree} postAuthorId={post.authorId} sessionUser={sessionUser}>
+        <CommentThread tree={commentTree} postAuthorId={post.authorId} sessionUser={null}>
           <ClientCommentComposerGate postId={post.id} />
         </CommentThread>
       </section>

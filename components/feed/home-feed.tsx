@@ -2,7 +2,6 @@ import FeedSortTabs from '@/components/feed/feed-sort-tabs';
 import { PostList } from '@/components/feed/post-list';
 import { RightTrending } from '@/components/layout/right-trending';
 import { EmptyState } from '@/components/ui/empty-state';
-import { getSessionUser } from '@/lib/auth';
 import { batchAuthorsForIds, batchUserStatsForIds, listPostSorted, listTags, tagsPostCounts } from '@/lib/db/queries';
 import { trendingToday } from '@/lib/trending';
 import type { FeedSort, SearchParams } from '@/lib/types';
@@ -15,12 +14,12 @@ type HomeFeedProps = {
 };
 
 const HomeFeed = async ({ searchParams, sort, hotPath }: HomeFeedProps) => {
-  const [sessionUser, query] = await Promise.all([getSessionUser(), searchParams]);
+  const query = await searchParams;
   const tagFilter = (Array.isArray(query.tag) ? query.tag[0] : query.tag)?.toLowerCase() ?? '';
   const cleanedSearchQuery = ((Array.isArray(query.q) ? query.q[0] : query.q) ?? '').trim();
 
   const [rows, tags, tagCounts] = await Promise.all([
-    listPostSorted(sort, tagFilter, sessionUser?.id, cleanedSearchQuery),
+    listPostSorted(sort, tagFilter, undefined, cleanedSearchQuery),
     listTags(),
     tagsPostCounts(),
   ]);
@@ -50,7 +49,7 @@ const HomeFeed = async ({ searchParams, sort, hotPath }: HomeFeedProps) => {
         )}
 
         <div className='w-full space-y-3'>
-          <PostList rows={rows} authorsById={authorById} authorStatsById={authorStatsById} tagsBySlug={tagsMap} isSignedIn={Boolean(sessionUser)} />
+          <PostList rows={rows} authorsById={authorById} authorStatsById={authorStatsById} tagsBySlug={tagsMap} isSignedIn={false} />
 
           {rows.length === 0 && (
             <EmptyState

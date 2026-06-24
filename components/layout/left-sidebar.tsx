@@ -9,6 +9,7 @@ import LeftTags from './left-tags';
 import JoinCtaCard from './join-cta';
 import { Tag } from '@/lib/types';
 import packageJson from '@/package.json';
+import { useSession } from '@/hooks/useSession';
 
 const nav = [
   { href: '/', label: 'Home', icon: Home },
@@ -19,14 +20,12 @@ const nav = [
 ];
 
 const LeftSidebar: FC<{
-  showCta: boolean;
   tags: {
     tag: Tag;
     count: number;
   }[];
   communityLabel: string;
-}> = ({ showCta, tags, communityLabel }: {
-  showCta: boolean;
+}> = ({ tags, communityLabel }: {
   tags: {
     tag: Tag;
     count: number;
@@ -34,6 +33,7 @@ const LeftSidebar: FC<{
   communityLabel: string;
 }) => {
   const pathname = usePathname();
+  const { session } = useSession();
 
   return (
     <aside className='sticky top-14 hidden h-[calc(100vh-3.5rem)] w-56 shrink-0 border-r border-border/80 bg-sidebar/50 lg:block'>
@@ -74,7 +74,7 @@ const LeftSidebar: FC<{
           emptyMessage={communityLabel === 'Joined Communities' ? 'Join communities to add them here.' : undefined}
         />
       </div>
-      {showCta && (
+      {session === null && (
         <div className='mt-8 px-4'>
           <JoinCtaCard />
         </div>

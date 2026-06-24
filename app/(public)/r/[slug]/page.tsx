@@ -1,42 +1,35 @@
 import CommunityFeed from '@/components/feed/community-feed';
 import { ContentWithSidebar } from '@/components/layout/content-with-sidebar';
-import { Button } from '@/components/ui/button';
 import { CommunityMembershipButton } from '@/components/community/community-membership-button';
 import { StatGrid } from '@/components/ui/stat-grid';
 import {
   getCommunityBySlug,
-  getCommunityFeedData,
-  getCommunityMembership,
   getCommunityStats,
   listTags,
 } from '@/lib/db/queries';
 import { formatCount } from '@/lib/format';
-import type { CommunityPageProps, FeedSort } from '@/lib/types';
-import { CakeSlice, Plus, Users } from 'lucide-react';
-import Link from 'next/link';
+import type { CommunityPageProps } from '@/lib/types';
+import { CakeSlice, Users } from 'lucide-react';
 import { notFound } from 'next/navigation';
-import { getSessionUser } from '@/lib/auth';
 
 export const revalidate = 300;
 export const dynamicParams = true;
+
+export const generateStaticParams = async () => {
+  const communities = await listTags();
+  return communities.map(({ slug }) => ({ slug }));
+};
 
 const CommunityPage = async ({ params }: CommunityPageProps) => {
   const { slug: rawSlug } = await params;
   const slug = decodeURIComponent(rawSlug).toLowerCase();
   const community = await getCommunityBySlug(slug);
-  const sessionUser = await getSessionUser();
-  const isSignedIn = Boolean(sessionUser);
 
   if (!community) {
     notFound();
   }
 
-  const sort: FeedSort = 'hot';
-  const [feed, stats, isMember] = await Promise.all([
-    getCommunityFeedData(community.slug, sort, sessionUser?.id),
-    getCommunityStats(community.slug),
-    getCommunityMembership(sessionUser?.id, community.slug),
-  ]);
+  const stats = await getCommunityStats(community.slug);
 
   return (
     <ContentWithSidebar
@@ -80,19 +73,9 @@ const CommunityPage = async ({ params }: CommunityPageProps) => {
             <div className='flex items-center gap-2'>
               <CommunityMembershipButton
                 slug={community.slug}
-                isMember={isMember}
-                isSignedIn={isSignedIn}
-                // ownerId={community.createdById}
-                ownerId={''}
+                ownerId={community.createdById ?? undefined}
+                showCreatePost
               />
-              {isMember && (
-                <Button asChild size='sm' className='celestia-primary-action'>
-                  <Link href={`/submit?community=${encodeURIComponent(community.slug)}`}>
-                    <Plus />
-                    Create Post
-                  </Link>
-                </Button>
-              )}
             </div>
           </div>
           <p className='mt-4 max-w-2xl text-sm leading-6 text-muted-foreground'>
@@ -110,14 +93,9 @@ const CommunityPage = async ({ params }: CommunityPageProps) => {
         </div>
       </section>
 
-      <CommunityFeed slug={community.slug} initialData={feed} isSignedIn={isSignedIn} />
+      <CommunityFeed slug={community.slug} />
     </ContentWithSidebar>
   );
-};
-
-export const generateStaticParams = async () => {
-  const communities = await listTags();
-  return communities.map(({ slug }) => ({ slug }));
 };
 
 export default CommunityPage;

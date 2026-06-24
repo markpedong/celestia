@@ -9,6 +9,7 @@ import CommentComposer from './comment-composer';
 import { Clock, CornerDownRight, MinusCircle, PlusCircle, Share2 } from 'lucide-react';
 import Link from 'next/link';
 import { UserAvatar } from '../ui/user-avatar';
+import { useGetProfile } from '@/hooks/useQueries';
 
 export const CommentNode: FC<CommentNodeProps> = ({
   node,
@@ -17,6 +18,7 @@ export const CommentNode: FC<CommentNodeProps> = ({
   activeReplyId,
   onReplyChange,
 }) => {
+  const viewer = useGetProfile().data?.data;
   const isOp = node.authorId === postAuthorId;
   const isReplying = activeReplyId === node.id;
   const [hideComments, setHideComments] = useState(false);
@@ -62,10 +64,10 @@ export const CommentNode: FC<CommentNodeProps> = ({
             targetID={node.id}
             score={node.score}
             userVote={node.userVote}
-            isSignedIn={Boolean(sessionUser)}
+            isSignedIn={Boolean(viewer)}
           />
         )}
-        {sessionUser && !node.isPending ? (
+        {viewer && !node.isPending ? (
           <button
             type='button'
             onClick={() => onReplyChange(isReplying ? null : node.id)}
@@ -81,11 +83,11 @@ export const CommentNode: FC<CommentNodeProps> = ({
         </button>
       </div>
 
-      {sessionUser && isReplying && (
+      {viewer && isReplying && (
         <div className='mt-3 border-t border-border/70 pt-3'>
           <CommentComposer
             postID={node.postId}
-            user={sessionUser}
+            user={viewer}
             parentId={node.id}
             placeholder='Write a reply…'
             compact
