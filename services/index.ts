@@ -1,6 +1,6 @@
 'use server';
 
-import { CommunityData, CommunityStats, FeedSort, User } from "@/lib/types";
+import { Community, CommunityFeed, CommunityStats, FeedSort, User } from "@/lib/types";
 import { __api } from "./request";
 import { API_ENDPOINT, REQUEST_METHOD } from "@/constants/enums";
 
@@ -27,10 +27,19 @@ export const getEmailByUserName = async (userName: string) => {
 };
 
 
-export const getCommunityFeed = async (slug: string, sort: FeedSort) => {
-  const response = await __api<CommunityData>({
-    init: { body: { slug, sort }, method: REQUEST_METHOD.POST },
+export const getCommunity = async (slug: string) => {
+  const response = await __api<Community>({
+    init: { body: { slug }, method: REQUEST_METHOD.POST },
     endpoint: API_ENDPOINT.COMMUNITY,
+  });
+
+  return response.data;
+};
+
+export const getCommunityFeed = async (slug: string, sort: FeedSort) => {
+  const response = await __api<CommunityFeed>({
+    init: { body: { slug, sort }, method: REQUEST_METHOD.POST },
+    endpoint: API_ENDPOINT.COMMUNITY_FEED,
   });
 
   return response.data;

@@ -2,7 +2,6 @@
 
 import type { FC } from 'react';
 import { updateCommunityAction } from '@/lib/actions/communities';
-import type { CommunitySettingsFormProps } from '@/lib/types';
 import { useServerActionForm } from '@/hooks/use-server-action-form';
 import useFormSchema from '@/hooks/useFormSchema';
 import { MAX_COMMUNITY_DESCRIPTION_LENGTH, MAX_COMMUNITY_NAME_LENGTH } from '@/constants';
@@ -11,8 +10,9 @@ import FormField from '../ui/form-field';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Save } from 'lucide-react';
+import { Community } from '@/lib/types';
 
-export const CommunitySettingsForm: FC<CommunitySettingsFormProps> = ({ community }) => {
+const CommunitySettingsForm: FC<{ community: Community }> = ({ community }) => {
   const { communitySettingsSchema } = useFormSchema();
   const {
     form: {
@@ -27,6 +27,8 @@ export const CommunitySettingsForm: FC<CommunitySettingsFormProps> = ({ communit
     description: community.description,
     hashColor: community.hashColor,
   });
+
+  console.log('community', community);
 
   return (
     <form onSubmit={onSubmit} onKeyDown={onFormKeyDown} className='celestia-card space-y-5 p-5 md:p-6' noValidate>
@@ -83,9 +85,17 @@ export const CommunitySettingsForm: FC<CommunitySettingsFormProps> = ({ communit
           />
         </div>
       </FormField>
-      <Button type='submit' disabled={!isValid} isLoading={pending} loadingText='Saving…' className='celestia-primary-action w-full rounded'>
+      <Button
+        type='submit'
+        disabled={!isValid}
+        isLoading={pending}
+        loadingText='Saving…'
+        className='celestia-primary-action w-full rounded'
+      >
         <Save /> Save community settings
       </Button>
     </form>
   );
 };
+
+export default CommunitySettingsForm;

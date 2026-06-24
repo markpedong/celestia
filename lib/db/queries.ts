@@ -3,7 +3,7 @@ import { cache } from "react";
 import { Prisma } from "../generated/prisma/client";
 import { PostModel } from "../generated/prisma/models";
 import { prisma } from "../prisma";
-import type { Comment, Community, CommunityData, EnrichedCommentNode, FeedPostRow, FeedSort, Post, SearchPostSuggestion, SearchTagSuggestion, Tag, TagPostCount, User, UserCommentActivity, UserStats, VoteTarget } from "../types";
+import type { Comment, Community, CommunityFeed, EnrichedCommentNode, FeedPostRow, FeedSort, Post, SearchPostSuggestion, SearchTagSuggestion, Tag, TagPostCount, User, UserCommentActivity, UserStats, VoteTarget } from "../types";
 
 export const batchAuthorsForIDs = async (authorIDs: string[]): Promise<Map<string, User>> => {
   const unique = [...new Set(authorIDs)];
@@ -145,7 +145,7 @@ export const getCommunityFeedData = async (
   slug: string,
   sort: FeedSort,
   userID: string | undefined,
-): Promise<CommunityData> => {
+): Promise<CommunityFeed> => {
   const [rows, tags] = await Promise.all([
     listPostSorted(sort, slug, userID),
     listCommunity(),
@@ -382,8 +382,6 @@ export const getAuthorByID = async (authorID: string): Promise<User | null> => {
 export const getUserByUserName = cache(async (userName: string): Promise<User | null> => {
   return prisma.users.findUnique({ where: { userName } });
 });
-
-export const getCommunityBySlug = (slug: string) => prisma.community.findFirst({ where: { slug } });
 
 export const getUserStats = async (userID: string): Promise<UserStats> => {
   const posts = await prisma.post.findMany({

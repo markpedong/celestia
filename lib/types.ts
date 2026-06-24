@@ -124,7 +124,7 @@ export type FeedPostRow = {
   userVote: VoteValue;
 };
 
-export type CommunityData = {
+export type CommunityFeed = {
   rows: FeedPostRow[];
   authors: User[];
   authorStats: [string, UserStats][];
@@ -167,9 +167,6 @@ export type AuthMode = 'sign-in' | 'sign-up';
 
 export type AuthMethodsProps = {
   mode: AuthMode;
-};
-export type CommunitySettingsFormProps = {
-  community: Community;
 };
 
 export type FeedSortTabsProps = {
