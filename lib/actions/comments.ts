@@ -12,6 +12,29 @@ export const createCommentAction = async ({ postID, parentID, body }: { postID: 
     return { error: "You must be signed in to comment." };
   }
 
+  const post = await prisma.post.findUnique({
+    where: { id: postID },
+    select: { postTags: { select: { tagSlug: true } } },
+  });
+  if (!post) return { error: 'Post not found.' };
+
+  const communitySlugs = post.postTags.map(({ tagSlug }) => tagSlug);
+  const membership = communitySlugs.length
+    ? await prisma.communityMembers.findFirst({
+      where: { userID, communitySlug: { in: communitySlugs } },
+      select: { userID: true },
+    })
+    : null;
+  if (!membership) return { error: 'Join this community before commenting.' };
+
+  if (parentID) {
+    const parent = await prisma.comment.findFirst({
+      where: { id: parentID, postID },
+      select: { id: true },
+    });
+    if (!parent) return { error: 'Reply target not found.' };
+  }
+
   const comment = await addComment({ postID, authorID: userID, parentID, body });
 
   revalidatePath(`/post/${postID}`);

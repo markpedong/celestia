@@ -11,6 +11,7 @@ const CommentThread: FC<CommentThreadProps> = ({
   tree,
   postAuthorID,
   sessionUser,
+  canComment,
   children,
 }) => {
   const [pending, startTransition] = useTransition();
@@ -22,8 +23,8 @@ const CommentThread: FC<CommentThreadProps> = ({
 
   const submitComment = (pendingComment: PendingCommentInput) => new Promise<CommentSubmitResult>((resolve) => {
     startTransition(async () => {
-      addOptimisticComment(createPendingComment(pendingComment));
       const result = await createCommentAction(pendingComment);
+      if (result?.ok) addOptimisticComment(createPendingComment(pendingComment));
       resolve(result);
     });
   });
@@ -38,6 +39,7 @@ const CommentThread: FC<CommentThreadProps> = ({
             node={node}
             postAuthorID={postAuthorID}
             sessionUser={sessionUser}
+            canComment={canComment}
             activeReplyID={activeReplyID}
             onReplyChange={setActiveReplyID}
           />

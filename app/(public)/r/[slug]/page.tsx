@@ -2,12 +2,13 @@ import CommunityFeed from '@/components/feed/community-feed';
 import { ContentWithSidebar } from '@/components/layout/content-with-sidebar';
 import CommunityMembershipButton from '@/components/community/community-membership-button';
 import { StatGrid } from '@/components/ui/stat-grid';
-import { getCommunityBySlug, getCommunityMembership, getCommunityStats, listCommunity } from '@/lib/db/queries';
+import { getCommunityBySlug, getCommunityMembership, listCommunity } from '@/lib/db/queries';
 import { getCurrentUserID } from '@/lib/auth';
 import { formatCount } from '@/lib/format';
-import type { CommunityPageProps } from '@/lib/types';
+import type { CommunityPageProps, CommunityStats } from '@/lib/types';
 import { CakeSlice, Users } from 'lucide-react';
 import { notFound } from 'next/navigation';
+import { getCommunityStats } from '@/services';
 
 export const generateStaticParams = async () => {
   const communities = await listCommunity();
@@ -23,7 +24,8 @@ const CommunityPage = async ({ params }: CommunityPageProps) => {
     notFound();
   }
 
-  const [stats, userID] = await Promise.all([getCommunityStats(slug), getCurrentUserID()]);
+  const [data, userID] = await Promise.all([getCommunityStats(slug), getCurrentUserID()]);
+  const stats = data.data as CommunityStats;
   const initialIsMember = await getCommunityMembership(userID, slug);
 
   return (
@@ -66,10 +68,7 @@ const CommunityPage = async ({ params }: CommunityPageProps) => {
               </div>
             </div>
             <div className='flex items-center gap-2'>
-              <CommunityMembershipButton
-                ownerID={community.createdByID ?? ''}
-                initialIsMember={initialIsMember}
-              />
+              <CommunityMembershipButton ownerID={community.createdByID ?? ''} initialIsMember={initialIsMember} />
             </div>
           </div>
           <p className='mt-4 max-w-2xl text-sm leading-6 text-muted-foreground'>

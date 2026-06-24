@@ -11,9 +11,11 @@ import {
   getCommentTree,
   getPostByID,
   getPostScore,
+  getCommunityMembership,
   listPostIDs,
   listCommunity,
 } from '@/lib/db/queries';
+import { getCurrentUserID } from '@/lib/auth';
 import type { PostPageProps } from '@/lib/types';
 import { MessageSquare, Radio, Users } from 'lucide-react';
 import Link from 'next/link';
@@ -32,13 +34,18 @@ const Page = async ({ params }: PostPageProps) => {
   const post = await getPostByID(id);
   if (!post) return notFound();
 
-  const [author, score, tags] = await Promise.all([
+  const [author, score, tags, userID] = await Promise.all([
     getAuthorByID(post.authorID),
     getPostScore(post.id),
     listCommunity(),
+    getCurrentUserID(),
   ]);
 
-  const commentTree = await getCommentTree(post.id, undefined);
+  const communitySlug = post.tagSlugs[0];
+  const [commentTree, initialIsMember] = await Promise.all([
+    getCommentTree(post.id, undefined),
+    getCommunityMembership(userID, communitySlug ?? ''),
+  ]);
   const tagsBySlug = new Map(tags.map(tag => [tag.slug, tag]));
 
   return (
@@ -108,8 +115,12 @@ const Page = async ({ params }: PostPageProps) => {
         <div className='mb-4 flex flex-wrap items-center justify-between gap-3'>
           <h2 className='text-lg font-semibold'>{post.commentCount} Comments</h2>
         </div>
-        <CommentThread tree={commentTree} postAuthorID={post.authorID} sessionUser={null}>
-          <ClientCommentComposerGate postID={post.id} />
+        <CommentThread tree={commentTree} postAuthorID={post.authorID} sessionUser={null} canComment={initialIsMember}>
+          <ClientCommentComposerGate
+            postID={post.id}
+            communitySlug={communitySlug}
+            initialIsMember={initialIsMember}
+          />
         </CommentThread>
       </section>
     </ContentWithSidebar>

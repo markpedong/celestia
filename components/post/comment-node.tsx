@@ -15,6 +15,7 @@ export const CommentNode: FC<CommentNodeProps> = ({
   node,
   postAuthorID,
   sessionUser,
+  canComment,
   activeReplyID,
   onReplyChange,
 }) => {
@@ -67,7 +68,7 @@ export const CommentNode: FC<CommentNodeProps> = ({
             isSignedIn={Boolean(viewer)}
           />
         )}
-        {viewer && !node.isPending ? (
+        {viewer && canComment && !node.isPending ? (
           <button
             type='button'
             onClick={() => onReplyChange(isReplying ? null : node.id)}
@@ -103,6 +104,7 @@ export const CommentNode: FC<CommentNodeProps> = ({
               node={ch}
               postAuthorID={postAuthorID}
               sessionUser={sessionUser}
+              canComment={canComment}
               activeReplyID={activeReplyID}
               onReplyChange={onReplyChange}
             />
