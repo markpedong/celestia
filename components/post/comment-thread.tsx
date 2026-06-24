@@ -9,12 +9,12 @@ import { useOptimistic, useState, useTransition } from 'react';
 
 const CommentThread: FC<CommentThreadProps> = ({
   tree,
-  postAuthorId,
+  postAuthorID,
   sessionUser,
   children,
 }) => {
   const [pending, startTransition] = useTransition();
-  const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
+  const [activeReplyID, setActiveReplyID] = useState<string | null>(null);
   const [optimisticTree, addOptimisticComment] = useOptimistic(
     tree,
     (currentTree, pendingComment: EnrichedCommentNode) => appendComment(currentTree, pendingComment),
@@ -36,10 +36,10 @@ const CommentThread: FC<CommentThreadProps> = ({
           <CommentNode
             key={node.id}
             node={node}
-            postAuthorId={postAuthorId}
+            postAuthorID={postAuthorID}
             sessionUser={sessionUser}
-            activeReplyId={activeReplyId}
-            onReplyChange={setActiveReplyId}
+            activeReplyID={activeReplyID}
+            onReplyChange={setActiveReplyID}
           />
         ))}
       </ul>
@@ -48,11 +48,11 @@ const CommentThread: FC<CommentThreadProps> = ({
 };
 
 const appendComment = (tree: EnrichedCommentNode[], comment: EnrichedCommentNode): EnrichedCommentNode[] => {
-  if (!comment.parentId) return [...tree, comment];
+  if (!comment.parentID) return [...tree, comment];
 
   for (let index = 0; index < tree.length; index += 1) {
     const node = tree[index];
-    if (node.id === comment.parentId) {
+    if (node.id === comment.parentID) {
       return tree.map((candidate, candidateIndex) => candidateIndex === index
         ? { ...candidate, children: [...candidate.children, comment] }
         : candidate,

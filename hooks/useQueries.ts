@@ -8,20 +8,20 @@ import { useSession } from './useSession';
 import type { FeedSort } from '@/lib/types';
 
 const getUserNameByAuth = (user?: Session['user']) => {
-  const username = user?.user_metadata.username;
-  return typeof username === 'string' ? username : user?.email?.split('@')[0] ?? '';
+  const userName = user?.user_metadata.userName;
+  return typeof userName === 'string' ? userName : user?.email?.split('@')[0] ?? '';
 };
 
-export const profileQueryKey = (username: string) => ['profile', username] as const;
+export const profileQueryKey = (userName: string) => ['profile', userName] as const;
 
 export const useGetProfile = () => {
   const { user: authUser } = useSession();
-  const username = getUserNameByAuth(authUser);
+  const userName = getUserNameByAuth(authUser);
 
   return useQuery({
-    queryKey: profileQueryKey(username),
-    queryFn: () => getProfileByUserName({ username }),
-    enabled: Boolean(username),
+    queryKey: profileQueryKey(userName),
+    queryFn: () => getProfileByUserName({ userName }),
+    enabled: Boolean(userName),
     staleTime: STALE_TIME,
   });
 };

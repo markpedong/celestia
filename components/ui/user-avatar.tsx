@@ -4,7 +4,7 @@ import type { UserAvatarProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 export const UserAvatar: FC<UserAvatarProps> = ({ user, size = 'default', className }) => {
-  const label = user.displayName ?? user.username;
+  const label = user.displayName ?? user.userName;
 
   return (
     <Avatar size={size} className={className}>

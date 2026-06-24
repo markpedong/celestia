@@ -4,18 +4,18 @@ import { CommunityData, FeedSort, User } from "@/lib/types";
 import { __api } from "./request";
 import { API_ENDPOINT, REQUEST_METHOD } from "@/constants/enums";
 
-export const getProfileByUserName = async ({ username }: { username: string }) => {
+export const getProfileByUserName = async ({ userName }: { userName: string }) => {
   const response = await __api<User>({
-    init: { body: { username } },
+    init: { body: { userName } },
     endpoint: API_ENDPOINT.USER,
   });
 
   return response;
 };
 
-export const getEmailByUsername = async (username: string) => {
+export const getEmailByUserName = async (userName: string) => {
   const response = await __api<{ email: string }>({
-    init: { body: { username } },
+    init: { body: { userName } },
     endpoint: API_ENDPOINT.USERNAME_LOGIN,
   });
 

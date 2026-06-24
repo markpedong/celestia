@@ -11,13 +11,13 @@ export const CommentSubmissionContext = createContext<CommentSubmissionContextVa
 
 export const useCommentSubmission = () => useContext(CommentSubmissionContext);
 
-export const createPendingComment = ({ postId, parentId, body, author }: PendingCommentInput): EnrichedCommentNode => ({
+export const createPendingComment = ({ postID, parentID, body, author }: PendingCommentInput): EnrichedCommentNode => ({
   id: `pending-${crypto.randomUUID()}`,
-  postId,
-  parentId,
+  postID,
+  parentID,
   body,
   createdAt: new Date().toISOString(),
-  authorId: author.id,
+  authorID: author.id,
   author,
   score: 0,
   userVote: 0,

@@ -22,15 +22,15 @@ export const getSessionUser = cache(async (): Promise<User | null> => {
     (typeof user.user_metadata.name === 'string' && user.user_metadata.name) ||
     user.email?.split('@')[0] ||
     'user';
-  const username =
-    profile?.username ||
-    (typeof user.user_metadata.username === 'string' && user.user_metadata.username) ||
+  const userName =
+    profile?.userName ||
+    (typeof user.user_metadata.userName === 'string' && user.user_metadata.userName) ||
     user.email?.split('@')[0] ||
     'user';
 
   return {
     id: user.id,
-    username,
+    userName,
     email: profile?.email ?? user.email ?? '',
     displayName,
     bio: profile?.bio ?? null,

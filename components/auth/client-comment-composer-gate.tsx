@@ -4,13 +4,13 @@ import Link from 'next/link';
 import CommentComposer from '@/components/post/comment-composer';
 import { useGetProfile } from '@/hooks/useQueries';
 
-export const ClientCommentComposerGate = ({ postId }: { postId: string }) => {
+export const ClientCommentComposerGate = ({ postID }: { postID: string }) => {
   const { data } = useGetProfile();
 
   if (data?.data)
     return (
       <div className='mb-8'>
-        <CommentComposer postID={postId} user={data.data} />
+        <CommentComposer postID={postID} user={data.data} />
       </div>
     );
 

@@ -9,23 +9,23 @@ import { prisma } from '../prisma';
 import { toggleVote } from '../db/votes';
 import { getUploadErrorMessage } from '../error-messages';
 
-export const votePostAction = async (postId: string, value: VoteActionValue) => {
-  const userId = await getCurrentUserID();
-  if (!userId) {
+export const votePostAction = async (postID: string, value: VoteActionValue) => {
+  const userID = await getCurrentUserID();
+  if (!userID) {
     return { error: "Sign in to vote." };
   }
 
-  await toggleVote(userId, 'post', postId, value);
+  await toggleVote(userID, 'post', postID, value);
   for (const path of ['/', '/explore', '/posts', '/top']) revalidatePath(path);
-  revalidatePath(`/post/${postId}`);
+  revalidatePath(`/post/${postID}`);
 }
 
 export const createPostAction = async (
   _prev: PostFormState,
   formData: FormData,
 ): Promise<PostFormState> => {
-  const userId = await getCurrentUserID();
-  if (!userId) {
+  const userID = await getCurrentUserID();
+  if (!userID) {
     return { error: "You must be signed in to post." };
   }
 
@@ -35,8 +35,8 @@ export const createPostAction = async (
   const images = formData.getAll("images");
 
   const membership = await prisma.communityMembers.findUnique({
-    where: { userId_communitySlug: { userId, communitySlug } },
-    select: { userId: true },
+    where: { userID_communitySlug: { userID, communitySlug } },
+    select: { userID: true },
   });
   if (!membership) {
     return { error: 'Join this community before posting.' };
@@ -44,7 +44,7 @@ export const createPostAction = async (
 
   let imageUrls: string[];
   try {
-    imageUrls = await uploadPostImages(images, userId);
+    imageUrls = await uploadPostImages(images, userID);
   } catch (error) {
     return { error: getUploadErrorMessage(error, 'We could not upload your images. Please try again.') };
   }
@@ -54,8 +54,8 @@ export const createPostAction = async (
 
   // ponytail: creation only needs the new post id for the redirect.
   const post = await prisma.$transaction(async tx => {
-    const post = await tx.post.create({ data: { authorId: userId, title, body, imageUrls } });
-    await tx.postTag.create({ data: { postId: post.id, tagSlug: community.slug } });
+    const post = await tx.post.create({ data: { authorID: userID, title, body, imageUrls } });
+    await tx.postTag.create({ data: { postID: post.id, tagSlug: community.slug } });
     return post;
   });
 
@@ -69,28 +69,28 @@ export const updatePostAction = async (
   _prev: PostFormState,
   formData: FormData,
 ): Promise<PostFormState> => {
-  const userId = await getCurrentUserID();
-  if (!userId) return { error: 'You must be signed in to edit a post.' };
+  const userID = await getCurrentUserID();
+  if (!userID) return { error: 'You must be signed in to edit a post.' };
 
-  const postId = String(formData.get('postId') ?? '');
+  const postID = String(formData.get('postID') ?? '');
   const title = String(formData.get('title') ?? '').trim();
   const body = String(formData.get('body') ?? '').trim();
   const removeImages = String(formData.get('removeImages') ?? '') === 'true';
   const images = formData.getAll('images');
 
-  if (!postId) return { error: 'Post not found.' };
+  if (!postID) return { error: 'Post not found.' };
   const existing = await prisma.post.findUnique({
-    where: { id: postId },
-    select: { authorId: true, imageUrls: true, postTags: { select: { tagSlug: true } } },
+    where: { id: postID },
+    select: { authorID: true, imageUrls: true, postTags: { select: { tagSlug: true } } },
   });
   if (!existing) return { error: 'Post not found.' };
-  if (existing.authorId !== userId) return { error: 'Only the post author can edit this post.' };
+  if (existing.authorID !== userID) return { error: 'Only the post author can edit this post.' };
 
   const existingImageUrls = existing.imageUrls;
   let imageUrls = removeImages ? [] : existingImageUrls;
   let replacesExistingImages = removeImages;
   try {
-    const uploadedImages = await uploadPostImages(images, userId);
+    const uploadedImages = await uploadPostImages(images, userID);
     if (uploadedImages.length > 0) {
       imageUrls = uploadedImages;
       replacesExistingImages = true;
@@ -100,7 +100,7 @@ export const updatePostAction = async (
   }
 
   await prisma.post.update({
-    where: { id: postId },
+    where: { id: postID },
     data: { title, body, imageUrls },
   });
 
@@ -114,7 +114,7 @@ export const updatePostAction = async (
 
   revalidatePath('/');
   revalidatePath('/submit');
-  revalidatePath(`/post/${postId}`);
+  revalidatePath(`/post/${postID}`);
   for (const { tagSlug } of existing.postTags) revalidatePath(`/r/${tagSlug}`);
-  redirect(`/post/${postId}`);
+  redirect(`/post/${postID}`);
 }

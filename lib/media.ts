@@ -17,13 +17,13 @@ const validateImage = (value: File) => {
 export const uploadImage = async (
   value: FormDataEntryValue | null,
   bucket: ImageBucket,
-  userId: string,
+  userID: string,
 ): Promise<string | undefined> => {
   if (!(value instanceof File) || value.size === 0) return undefined;
   validateImage(value);
 
   const supabase = await createSupabaseServerClient();
-  const path = `${userId}/${crypto.randomUUID()}.${extensionFor(value.type)}`;
+  const path = `${userID}/${crypto.randomUUID()}.${extensionFor(value.type)}`;
   const { error } = await supabase.storage.from(bucket).upload(path, value, {
     cacheControl: IMAGE_CACHE_CONTROL,
     contentType: value.type,
@@ -35,7 +35,7 @@ export const uploadImage = async (
   return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
 };
 
-export const uploadPostImages = async (values: FormDataEntryValue[], userId: string): Promise<string[]> => {
+export const uploadPostImages = async (values: FormDataEntryValue[], userID: string): Promise<string[]> => {
   const files = values.filter((value): value is File => value instanceof File && value.size > 0);
 
   if (files.length > MAX_POST_IMAGES) {
@@ -45,7 +45,7 @@ export const uploadPostImages = async (values: FormDataEntryValue[], userId: str
   files.forEach(validateImage);
 
   return Promise.all(files.map(async file => {
-    const imageUrl = await uploadImage(file, 'post-images', userId);
+    const imageUrl = await uploadImage(file, 'post-images', userID);
     if (!imageUrl) throw new Error('Unable to upload image.');
     return imageUrl;
   }));

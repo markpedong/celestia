@@ -32,7 +32,7 @@ const SubmitPage = async ({ searchParams }: SubmitPageProps) => {
           <span>Create Post</span>
         </h1>
         <p className='mt-1 text-sm text-muted-foreground'>
-          Signed in as {user.displayName ?? user.username}. Choose one of your communities, then add a title and body.
+          Signed in as {user.displayName ?? user.userName}. Choose one of your communities, then add a title and body.
         </p>
       </div>
       <SubmitPostForm communities={communities} defaultCommunitySlug={selectedCommunity} />

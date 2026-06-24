@@ -14,7 +14,7 @@ import useFormValidate from '@/hooks/useFormValidate';
 import useFormSchema from '@/hooks/useFormSchema';
 import { MAX_COMMENT_LENGTH } from '@/constants';
 
-const CommentComposer: FC<CommentComposerProps> = ({ postID, user, compact, parentId, placeholder }) => {
+const CommentComposer: FC<CommentComposerProps> = ({ postID, user, compact, parentID, placeholder }) => {
   const { commentSchema } = useFormSchema();
   const [pending, startTransition] = useTransition();
   const router = useRouter();
@@ -25,7 +25,7 @@ const CommentComposer: FC<CommentComposerProps> = ({ postID, user, compact, pare
   });
 
   const onSubmit = async ({ body }: { body: string }) => {
-    const pendingComment = { postId: postID, parentId: parentId ?? null, body: body.trim(), author: user };
+    const pendingComment = { postID: postID, parentID: parentID ?? null, body: body.trim(), author: user };
 
     if (commentSubmission) {
       const res = await commentSubmission.submitComment(pendingComment);
@@ -66,7 +66,7 @@ const CommentComposer: FC<CommentComposerProps> = ({ postID, user, compact, pare
           loadingText='Posting...'
           className='celestia-primary-action rounded'
         >
-          {parentId ? 'Reply' : 'Comment'}
+          {parentID ? 'Reply' : 'Comment'}
         </Button>
       </div>
     </form>

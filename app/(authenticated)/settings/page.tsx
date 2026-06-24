@@ -2,13 +2,13 @@ import { AccountSettings } from '@/components/auth/account-settings';
 import { SettingsTabs } from '@/components/auth/settings-tabs';
 import { ProfileSettingsForm } from '@/components/profile/profile-settings-form';
 import { getSessionUser } from '@/lib/auth';
-import { getProfileSettingsByUserId } from '@/lib/db/queries';
+import { getProfileSettingsByUserID } from '@/lib/db/queries';
 import { redirect } from 'next/navigation';
 
 const SettingsPage = async () => {
   const user = await getSessionUser();
   if (!user) redirect('/auth/sign-in');
-  const profile = await getProfileSettingsByUserId(user.id);
+  const profile = await getProfileSettingsByUserID(user.id);
   if (!profile) redirect('/');
 
   return (

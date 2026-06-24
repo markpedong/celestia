@@ -15,7 +15,7 @@ type AuthorHoverCardProps = {
 };
 
 export const AuthorHoverCard: FC<AuthorHoverCardProps> = ({ author, authorStats }) => {
-  const authorName = author.displayName ?? author.username;
+  const authorName = author.displayName ?? author.userName;
 
   return (
     <HoverCard>
@@ -32,7 +32,7 @@ export const AuthorHoverCard: FC<AuthorHoverCardProps> = ({ author, authorStats 
           <UserAvatar user={author} size='lg' className='size-14' />
           <div className='min-w-0'>
             <Link
-              href={`/u/${author.username}`}
+              href={`/u/${author.userName}`}
               className='block truncate text-lg font-bold leading-tight transition-colors hover:text-primary focus-visible:text-primary focus-visible:outline-none'
             >
               {authorName}

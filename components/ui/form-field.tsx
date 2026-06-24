@@ -11,12 +11,12 @@ const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
   ({ wrapperClassName, error, hint, label, labelClassName, type, id, name, htmlFor, className, children, ...inputProps }, ref) => {
     const [isVisible, setIsVisible] = useState(false);
 
-    const inputId = htmlFor ?? id ?? name;
+    const inputID = htmlFor ?? id ?? name;
     const isPassword = type === 'password';
 
     return (
       <div className={cn('space-y-2', wrapperClassName)}>
-        <Label htmlFor={inputId} className={labelClassName}>
+        <Label htmlFor={inputID} className={labelClassName}>
           {label}
         </Label>
 
@@ -24,7 +24,7 @@ const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
           {children ?? (
             <Input
               ref={ref}
-              id={inputId}
+              id={inputID}
               name={name}
               type={isPassword && isVisible ? 'text' : type}
               aria-invalid={inputProps['aria-invalid'] ?? Boolean(error)}

@@ -36,7 +36,7 @@ const AccountMenu: FC = () => {
   const [isSigningOut, setIsSigningOut] = useState(false);
 
   const user = userData?.data;
-  const name = user?.username;
+  const name = user?.userName;
   const profileHref = name ? `/u/${encodeURIComponent(name)}` : '/profile';
 
   const handleSignOut = async () => {

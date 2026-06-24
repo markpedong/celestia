@@ -12,7 +12,7 @@ export const PostMeta: FC<PostMetaProps> = ({ author, authorStats, post, tagsByS
   const primaryTag = primarySlug ? tagsBySlug.get(primarySlug) : undefined;
   const displayAuthor = author ?? {
     id: 'user-deleted',
-    username: 'user-deleted',
+    userName: 'user-deleted',
     email: '',
     displayName: 'u/user-deleted',
     bio: null,
@@ -29,8 +29,8 @@ export const PostMeta: FC<PostMetaProps> = ({ author, authorStats, post, tagsByS
       ) : compact ? (
         <AuthorHoverCard author={author} authorStats={authorStats} />
       ) : (
-        <Link href={`/u/${author.username}`} className='font-medium text-card-foreground hover:text-primary'>
-          {author.displayName ?? author.username}
+        <Link href={`/u/${author.userName}`} className='font-medium text-card-foreground hover:text-primary'>
+          {author.displayName ?? author.userName}
         </Link>
       )}
       <span className='text-muted-foreground/40'>·</span>

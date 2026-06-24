@@ -2,11 +2,11 @@ import { prisma } from '@/lib/prisma';
 import { generateErrorResponse, generateSuccessResponse } from '@/services/request';
 
 export const POST = async (request: Request) => {
-  const { username } = await request.json();
-  if (!username) return generateErrorResponse('Invalid credentials', 404);
+  const { userName } = await request.json();
+  if (!userName) return generateErrorResponse('Invalid credentials', 404);
 
   const profile = await prisma.users.findUnique({
-    where: { username },
+    where: { userName },
     select: { email: true },
   });
 

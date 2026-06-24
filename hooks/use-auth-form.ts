@@ -6,7 +6,7 @@ import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
-import { getEmailByUsername, getInitialDisplayName } from '@/services';
+import { getEmailByUserName, getInitialDisplayName } from '@/services';
 import type { AuthMode } from '@/lib/types';
 import { MAX_EMAIL_LENGTH, MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '@/constants';
 import useFormValidate from './useFormValidate';
@@ -20,8 +20,8 @@ const usernameSchema = z.string().trim()
   .regex(/^[a-z0-9_]+$/, 'Use lowercase letters, numbers, or underscores.');
 
 const authSchema = z.object({
-  username: usernameSchema,
-  email: z.string().trim().min(1, 'Enter your email or username.').max(MAX_EMAIL_LENGTH, 'Email address or username is too long.'),
+  userName: usernameSchema,
+  email: z.string().trim().min(1, 'Enter your email or userName.').max(MAX_EMAIL_LENGTH, 'Email address or userName is too long.'),
   password: z.string().min(MIN_PASSWORD_LENGTH, `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`).max(MAX_PASSWORD_LENGTH, `Password must be ${MAX_PASSWORD_LENGTH} characters or fewer.`),
   confirmPassword: z.string().optional(),
 });
@@ -37,8 +37,8 @@ export const useAuthForm = (mode: AuthMode) => {
   const schema = authSchema.superRefine((values, context) => {
     if (!isSignUp) return;
 
-    if (!usernameSchema.safeParse(values.username).success) {
-      context.addIssue({ code: 'custom', message: 'Use 3-20 lowercase letters, numbers, or underscores.', path: ['username'] });
+    if (!usernameSchema.safeParse(values.userName).success) {
+      context.addIssue({ code: 'custom', message: 'Use 3-20 lowercase letters, numbers, or underscores.', path: ['userName'] });
     }
 
     if (!z.string().email().safeParse(values.email).success) {
@@ -53,7 +53,7 @@ export const useAuthForm = (mode: AuthMode) => {
   });
   const form = useFormValidate<AuthValues>({
     schema,
-    defaultValues: { username: isSignIn ? 'sign_in' : '', email: '', password: '', confirmPassword: '' },
+    defaultValues: { userName: isSignIn ? 'sign_in' : '', email: '', password: '', confirmPassword: '' },
   });
 
   const submit = (values: AuthValues) => {
@@ -62,10 +62,10 @@ export const useAuthForm = (mode: AuthMode) => {
     startTransition(async () => {
       const email = values.email.trim().toLowerCase();
       if (isSignIn) {
-        const usernameEmail = await getEmailByUsername(email);
+        const userNameEmail = await getEmailByUserName(email);
 
-        if (!usernameEmail) {
-          toast.error('That email, username, or password is incorrect. Check your details and try again.');
+        if (!userNameEmail) {
+          toast.error('That email, userName, or password is incorrect. Check your details and try again.');
           return;
         }
 
@@ -78,7 +78,7 @@ export const useAuthForm = (mode: AuthMode) => {
           password: values.password,
           options: {
             emailRedirectTo: `${window.location.origin}/auth/sign-in`,
-            data: { display_name: await getInitialDisplayName(), username: values.username },
+            data: { display_name: await getInitialDisplayName(), userName: values.userName },
           },
         })
         : await supabase.auth.signInWithPassword({ email, password: values.password });
@@ -89,12 +89,12 @@ export const useAuthForm = (mode: AuthMode) => {
       }
 
       if (result.data.session && result.data.user) {
-        const username = typeof result.data.user.user_metadata.username === 'string' ? result.data.user.user_metadata.username : values.username;
+        const userName = typeof result.data.user.user_metadata.userName === 'string' ? result.data.user.user_metadata.userName : values.userName;
         const { error: profileError } = await supabase
           .from('users')
           .upsert({
             id: result.data.user.id,
-            username,
+            username: userName,
             email: result.data.user.email,
             display_name: result.data.user.user_metadata.display_name,
             avatar_url: `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(result.data.user.email ?? email)}`,

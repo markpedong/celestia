@@ -12,7 +12,7 @@ const CommunitySettingsPage = async ({ params }: CommunitySettingsPageProps) => 
   if (!community) notFound();
 
   if (!user) redirect('/auth/sign-in');
-  if (community.createdById !== user.id) redirect(`/r/${community.slug}`);
+  if (community.createdByID !== user.id) redirect(`/r/${community.slug}`);
 
   return (
     <main className='mx-auto w-full max-w-2xl px-4 py-8 md:py-12'>

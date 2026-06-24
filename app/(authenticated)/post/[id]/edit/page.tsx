@@ -11,7 +11,7 @@ const EditPostPage = async ({ params }: PostPageProps) => {
   const [post, user] = await Promise.all([getPostByID(id), getSessionUser()]);
   if (!post) notFound();
   if (!user) redirect('/auth/sign-in');
-  if (post.authorId !== user.id) redirect(`/post/${post.id}`);
+  if (post.authorID !== user.id) redirect(`/post/${post.id}`);
 
   return (
     <div className='mx-auto max-w-3xl'>

@@ -4,9 +4,9 @@ import { AtSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useGetProfile } from '@/hooks/useQueries';
 
-export const ClientProfileControls = ({ profileId }: { profileId: string }) => {
+export const ClientProfileControls = ({ profileID }: { profileID: string }) => {
   const user = useGetProfile().data?.data;
-  const isSelf = user?.id === profileId;
+  const isSelf = user?.id === profileID;
 
   return isSelf ? (
     null

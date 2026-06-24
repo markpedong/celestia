@@ -12,7 +12,7 @@ const revalidateProfilePaths = (...usernames: string[]) => {
   revalidatePath('/');
   revalidatePath('/profile');
   revalidatePath('/settings');
-  for (const username of new Set(usernames)) revalidatePath(`/u/${username}`);
+  for (const userName of new Set(usernames)) revalidatePath(`/u/${userName}`);
 };
 
 export const updateProfileMediaAction = async (
@@ -43,7 +43,7 @@ export const updateProfileMediaAction = async (
     },
   });
 
-  revalidateProfilePaths(profile.username);
+  revalidateProfilePaths(profile.userName);
   return { success: 'Profile media updated.' };
 };
 
@@ -54,7 +54,7 @@ export const updateProfileSettingsAction = async (
   if (!profile) return { error: 'You must be signed in to update your profile.' };
 
   const parsed = profileSettingsSchema.safeParse({
-    username: profile.username,
+    userName: profile.userName,
     displayName,
     bio,
   });
@@ -68,6 +68,6 @@ export const updateProfileSettingsAction = async (
     },
   });
 
-  revalidateProfilePaths(profile.username);
+  revalidateProfilePaths(profile.userName);
   return { success: 'Profile details updated.' };
 };

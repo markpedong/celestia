@@ -8,7 +8,7 @@ const ProfilePage = async () => {
     redirect('/auth/sign-in');
   }
 
-  redirect(`/u/${user.username}`);
+  redirect(`/u/${user.userName}`);
 };
 
 export default ProfilePage;

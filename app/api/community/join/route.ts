@@ -14,26 +14,26 @@ export const POST = async (req: Request) => {
 
   const community = await prisma.community.findUnique({
     where: { slug: communitySlug },
-    select: { createdById: true },
+    select: { createdByID: true },
   });
   if (!community) return generateErrorResponse('Community not found.', 404);
 
   const existingMembership = await prisma.communityMembers.findUnique({
-    where: { userId_communitySlug: { userId: userID, communitySlug }, },
-    select: { userId: true },
+    where: { userID_communitySlug: { userID, communitySlug }, },
+    select: { userID: true },
   });
 
   const isMember = Boolean(existingMembership);
 
   if (isMember) {
-    if (community.createdById === userID) {
+    if (community.createdByID === userID) {
       return generateErrorResponse('Community owners cannot leave their community.', 403);
     }
 
     await prisma.communityMembers.delete({
       where: {
-        userId_communitySlug: {
-          userId: userID,
+        userID_communitySlug: {
+          userID,
           communitySlug,
         },
       },
@@ -41,7 +41,7 @@ export const POST = async (req: Request) => {
   } else {
     await prisma.communityMembers.create({
       data: {
-        userId: userID,
+        userID,
         communitySlug,
       },
     });

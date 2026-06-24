@@ -1,14 +1,14 @@
-import { getUserByUsername } from '@/lib/db/queries';
+import { getUserByUserName } from '@/lib/db/queries';
 import { generateErrorResponse, generateSuccessResponse } from '@/services/request';
 
 export const POST = async (request: Request) => {
-  const { username } = await request.json();
+  const { userName } = await request.json();
 
-  if (!username) {
+  if (!userName) {
     return generateErrorResponse('Username is required');
   }
 
-  const profile = await getUserByUsername(username);
+  const profile = await getUserByUserName(userName);
 
   if (!profile) {
     return generateErrorResponse('User not found', 404);

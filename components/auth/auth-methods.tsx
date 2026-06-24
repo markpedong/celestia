@@ -75,14 +75,14 @@ const AuthMethods: FC<AuthMethodsProps> = ({ mode }) => {
             label='Username'
             labelClassName='text-card-foreground'
             placeholder='johndoe'
-            error={errors.username && (touchedFields.username || isSubmitted) ? errors.username.message : undefined}
+            error={errors.userName && (touchedFields.userName || isSubmitted) ? errors.userName.message : undefined}
             maxLength={20}
-            {...register('username')}
+            {...register('userName')}
           />
         )}
         <FormField
-          label={isSignUp ? 'Email' : 'Email or username'}
-          placeholder={isSignUp ? 'you@example.com' : 'you@example.com or username'}
+          label={isSignUp ? 'Email' : 'Email or userName'}
+          placeholder={isSignUp ? 'you@example.com' : 'you@example.com or userName'}
           error={errors.email && (touchedFields.email || isSubmitted) ? errors.email.message : undefined}
           {...register('email')}
         />

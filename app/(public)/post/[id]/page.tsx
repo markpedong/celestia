@@ -11,7 +11,7 @@ import {
   getCommentTree,
   getPostByID,
   getPostScore,
-  listPostIds,
+  listPostIDs,
   listCommunity,
 } from '@/lib/db/queries';
 import type { PostPageProps } from '@/lib/types';
@@ -23,8 +23,8 @@ export const revalidate = 300;
 export const dynamicParams = true;
 
 export const generateStaticParams = async () => {
-  const postIds = await listPostIds();
-  return postIds.map(id => ({ id }));
+  const postIDs = await listPostIDs();
+  return postIDs.map(id => ({ id }));
 };
 
 const Page = async ({ params }: PostPageProps) => {
@@ -33,7 +33,7 @@ const Page = async ({ params }: PostPageProps) => {
   if (!post) return notFound();
 
   const [author, score, tags] = await Promise.all([
-    getAuthorByID(post.authorId),
+    getAuthorByID(post.authorID),
     getPostScore(post.id),
     listCommunity(),
   ]);
@@ -98,7 +98,7 @@ const Page = async ({ params }: PostPageProps) => {
                   {post.commentCount}
                 </span>
               </div>
-              <ClientPostControls postId={post.id} authorId={post.authorId} />
+              <ClientPostControls postID={post.id} authorID={post.authorID} />
             </div>
           </div>
         </div>
@@ -108,8 +108,8 @@ const Page = async ({ params }: PostPageProps) => {
         <div className='mb-4 flex flex-wrap items-center justify-between gap-3'>
           <h2 className='text-lg font-semibold'>{post.commentCount} Comments</h2>
         </div>
-        <CommentThread tree={commentTree} postAuthorId={post.authorId} sessionUser={null}>
-          <ClientCommentComposerGate postId={post.id} />
+        <CommentThread tree={commentTree} postAuthorID={post.authorID} sessionUser={null}>
+          <ClientCommentComposerGate postID={post.id} />
         </CommentThread>
       </section>
     </ContentWithSidebar>

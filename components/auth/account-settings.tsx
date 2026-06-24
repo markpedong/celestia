@@ -133,15 +133,15 @@ export const AccountSettings = () => {
     }
   };
 
-  const removePasskey = async (passkeyId: string) => {
+  const removePasskey = async (passkeyID: string) => {
     if (passkeys.length === 1 && identities.length < 2) {
       toast.error('Add another sign-in method before removing your last passkey.');
       return;
     }
 
-    setPending(passkeyId);
+    setPending(passkeyID);
 
-    const { error } = await supabase.auth.passkey.delete({ passkeyId });
+    const { error } = await supabase.auth.passkey.delete({ passkeyId: passkeyID });
 
     setPending(null);
 
@@ -238,10 +238,10 @@ export const AccountSettings = () => {
     await refreshSecurity();
   };
 
-  const disableMfa = async (factorId: string) => {
-    setPending(factorId);
+  const disableMfa = async (factorID: string) => {
+    setPending(factorID);
 
-    const { error } = await supabase.auth.mfa.unenroll({ factorId });
+    const { error } = await supabase.auth.mfa.unenroll({ factorId: factorID });
 
     setPending(null);
 

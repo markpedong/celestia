@@ -13,14 +13,14 @@ import { useGetProfile } from '@/hooks/useQueries';
 
 export const CommentNode: FC<CommentNodeProps> = ({
   node,
-  postAuthorId,
+  postAuthorID,
   sessionUser,
-  activeReplyId,
+  activeReplyID,
   onReplyChange,
 }) => {
   const viewer = useGetProfile().data?.data;
-  const isOp = node.authorId === postAuthorId;
-  const isReplying = activeReplyId === node.id;
+  const isOp = node.authorID === postAuthorID;
+  const isReplying = activeReplyID === node.id;
   const [hideComments, setHideComments] = useState(false);
 
   const hasChildren = node.children.length > 0;
@@ -32,8 +32,8 @@ export const CommentNode: FC<CommentNodeProps> = ({
         <UserAvatar user={node.author} />
         <div className='flex flex-col'>
           <div className='mb-3 mt-[0.4rem] flex flex-wrap items-center gap-2 text-xs text-muted-foreground'>
-            <Link href={`/u/${node.author.username}`} className='font-medium text-muted-foreground hover:text-primary'>
-              {node.author.displayName ?? node.author.username}
+            <Link href={`/u/${node.author.userName}`} className='font-medium text-muted-foreground hover:text-primary'>
+              {node.author.displayName ?? node.author.userName}
             </Link>
             {isOp ? (
               <Badge
@@ -86,9 +86,9 @@ export const CommentNode: FC<CommentNodeProps> = ({
       {viewer && isReplying && (
         <div className='mt-3 border-t border-border/70 pt-3'>
           <CommentComposer
-            postID={node.postId}
+            postID={node.postID}
             user={viewer}
-            parentId={node.id}
+            parentID={node.id}
             placeholder='Write a reply…'
             compact
           />
@@ -101,9 +101,9 @@ export const CommentNode: FC<CommentNodeProps> = ({
             <CommentNode
               key={ch.id}
               node={ch}
-              postAuthorId={postAuthorId}
+              postAuthorID={postAuthorID}
               sessionUser={sessionUser}
-              activeReplyId={activeReplyId}
+              activeReplyID={activeReplyID}
               onReplyChange={onReplyChange}
             />
           ))}

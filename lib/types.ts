@@ -26,7 +26,7 @@ export type ErrorFormState<T extends object = Record<never, never>> = (T & {
 
 export type User = {
   id: string;
-  username: string;
+  userName: string;
   email: string;
   displayName: string | null;
   bio: string | null;
@@ -43,13 +43,13 @@ export type Tag = {
 
 export type Community = Tag & {
   description: string;
-  createdById?: string;
+  createdByID?: string;
   createdAt?: string;
 };
 
 export type Post = {
   id: string;
-  authorId: string;
+  authorID: string;
   title: string;
   body: string;
   imageUrls: string[];
@@ -60,9 +60,9 @@ export type Post = {
 
 export type Comment = {
   id: string;
-  postId: string;
-  authorId: string;
-  parentId: string | null;
+  postID: string;
+  authorID: string;
+  parentID: string | null;
   body: string;
   createdAt: string;
 };
@@ -97,7 +97,7 @@ export type UserStats = {
 
 export type UserCommentActivity = {
   id: string;
-  postId: string;
+  postID: string;
   postTitle: string;
   body: string;
   createdAt: string;
@@ -133,11 +133,11 @@ export type CommunityData = {
 
 export type EnrichedCommentNode = {
   id: string;
-  postId: string;
-  parentId: string | null;
+  postID: string;
+  parentID: string | null;
   body: string;
   createdAt: string;
-  authorId: string;
+  authorID: string;
   author: User;
   score: number;
   userVote: VoteValue;
@@ -192,8 +192,8 @@ export type PostCardProps = {
 
 export type PostListProps = {
   rows: FeedPostRow[];
-  authorsById: Map<string, User>;
-  authorStatsById: Map<string, UserStats>;
+  authorsByID: Map<string, User>;
+  authorStatsByID: Map<string, UserStats>;
   tagsBySlug: Map<string, Tag>;
   isSignedIn: boolean;
 };
@@ -253,14 +253,14 @@ export type RightTrendingProps = {
 export type CommentComposerProps = {
   postID: string;
   user: User;
-  parentId?: string | null;
+  parentID?: string | null;
   placeholder?: string;
   compact?: boolean;
 };
 
 export type PendingCommentInput = {
-  postId: string;
-  parentId: string | null;
+  postID: string;
+  parentID: string | null;
   body: string;
   author: User;
 };
@@ -274,15 +274,15 @@ export type CommentSubmissionContextValue = {
 
 export type CommentNodeProps = {
   node: EnrichedCommentNode;
-  postAuthorId: string;
+  postAuthorID: string;
   sessionUser: User | null;
-  activeReplyId: string | null;
-  onReplyChange: (commentId: string | null) => void;
+  activeReplyID: string | null;
+  onReplyChange: (commentID: string | null) => void;
 };
 
 export type CommentThreadProps = {
   tree: EnrichedCommentNode[];
-  postAuthorId: string;
+  postAuthorID: string;
   sessionUser: User | null;
   children: ReactNode;
 };

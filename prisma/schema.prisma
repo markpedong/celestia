@@ -14,7 +14,7 @@ datasource db {
 
 model Users {
   id          String   @id
-  username    String   @unique
+  userName    String   @unique @map("username")
   displayName String?  @map("display_name")
   bio         String?  @map("bio")
   avatarUrl   String?  @map("avatar_url")
@@ -27,18 +27,18 @@ model Users {
 
 model BackupCode {
   id        String    @id @default(uuid()) @db.Uuid
-  userId    String    @map("user_id")
+  userID    String    @map("user_id")
   codeHash  String    @map("code_hash")
   usedAt    DateTime? @map("used_at") @db.Timestamptz(6)
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
 
-  @@index([userId, createdAt])
+  @@index([userID, createdAt])
   @@map("backup_codes")
 }
 
 model Post {
   id        String   @id @default(uuid()) @db.Uuid
-  authorId  String   @map("author_id")
+  authorID  String   @map("author_id")
   title     String
   body      String
   imageUrls String[] @default([]) @map("image_urls")
@@ -48,7 +48,7 @@ model Post {
   comments Comment[]
 
   @@index([createdAt])
-  @@index([authorId, createdAt])
+  @@index([authorID, createdAt])
   @@map("posts")
 }
 
@@ -57,7 +57,7 @@ model Community {
   label       String
   description String   @default("")
   hashColor   String   @map("hash_color")
-  createdById String?  @map("created_by_id")
+  createdByID String?  @map("created_by_id")
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   postTags    PostTag[]
@@ -67,51 +67,51 @@ model Community {
 }
 
 model CommunityMembers {
-  userId        String   @map("user_id")
+  userID        String   @map("user_id")
   communitySlug String   @map("community_slug")
   joinedAt      DateTime @default(now()) @map("joined_at") @db.Timestamptz(6)
 
   community Community @relation(fields: [communitySlug], references: [slug], onDelete: Cascade)
 
-  @@id([userId, communitySlug])
+  @@id([userID, communitySlug])
   @@index([communitySlug, joinedAt])
   @@map("community_members")
 }
 
 model PostTag {
-  postId  String @map("post_id") @db.Uuid
+  postID  String @map("post_id") @db.Uuid
   tagSlug String @map("tag_slug")
 
-  post Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  post Post      @relation(fields: [postID], references: [id], onDelete: Cascade)
   tag  Community @relation(fields: [tagSlug], references: [slug])
 
-  @@id([postId, tagSlug])
-  @@index([tagSlug, postId])
+  @@id([postID, tagSlug])
+  @@index([tagSlug, postID])
   @@map("post_tags")
 }
 
 model Comment {
   id        String   @id @default(uuid()) @db.Uuid
-  postId    String   @map("post_id") @db.Uuid
-  authorId  String   @map("author_id")
-  parentId  String?  @map("parent_id") @db.Uuid
+  postID    String   @map("post_id") @db.Uuid
+  authorID  String   @map("author_id")
+  parentID  String?  @map("parent_id") @db.Uuid
   body      String
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
-  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postID], references: [id], onDelete: Cascade)
 
-  @@index([postId, createdAt])
-  @@index([authorId, createdAt])
+  @@index([postID, createdAt])
+  @@index([authorID, createdAt])
   @@map("comments")
 }
 
 model Vote {
-  userId     String @map("user_id")
+  userID     String @map("user_id")
   targetType String @map("target_type")
-  targetId   String @map("target_id") @db.Uuid
+  targetID   String @map("target_id") @db.Uuid
   value      Int    @db.SmallInt
 
-  @@id([userId, targetType, targetId]) // basically just a unique ID for each vote
-  @@index([targetType, targetId])
+  @@id([userID, targetType, targetID]) // basically just a unique ID for each vote
+  @@index([targetType, targetID])
   @@map("votes")
 }

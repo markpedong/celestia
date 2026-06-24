@@ -37,7 +37,7 @@ export const createCommunitySchema = z.object({
 export const communitySettingsSchema = z.object(communityFields);
 
 export const profileSettingsSchema = z.object({
-  username: z
+  userName: z
     .string()
     .trim()
     .min(3, 'Username must be at least 3 characters.')

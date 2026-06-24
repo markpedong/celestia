@@ -2,7 +2,7 @@ import FeedSortTabs from '@/components/feed/feed-sort-tabs';
 import { PostList } from '@/components/feed/post-list';
 import { RightTrending } from '@/components/layout/right-trending';
 import { EmptyState } from '@/components/ui/empty-state';
-import { batchAuthorsForIds, batchUserStatsForIds, listPostSorted, listCommunity, tagsPostCounts } from '@/lib/db/queries';
+import { batchAuthorsForIDs, batchUserStatsForIDs, listPostSorted, listCommunity, tagsPostCounts } from '@/lib/db/queries';
 import { trendingToday } from '@/lib/trending';
 import type { FeedSort, SearchParams } from '@/lib/types';
 import { FileQuestion } from 'lucide-react';
@@ -24,10 +24,10 @@ const HomeFeed = async ({ searchParams, sort, hotPath }: HomeFeedProps) => {
     tagsPostCounts(),
   ]);
 
-  const authorIds = [...new Set(rows.map(({ post }) => post.authorId))];
-  const [authorById, authorStatsById] = await Promise.all([
-    batchAuthorsForIds(authorIds),
-    batchUserStatsForIds(authorIds),
+  const authorIDs = [...new Set(rows.map(({ post }) => post.authorID))];
+  const [authorByID, authorStatsByID] = await Promise.all([
+    batchAuthorsForIDs(authorIDs),
+    batchUserStatsForIDs(authorIDs),
   ]);
 
   const tagsMap = new Map(tags.map(tag => [tag.slug, tag]));
@@ -49,7 +49,7 @@ const HomeFeed = async ({ searchParams, sort, hotPath }: HomeFeedProps) => {
         )}
 
         <div className='w-full space-y-3'>
-          <PostList rows={rows} authorsById={authorById} authorStatsById={authorStatsById} tagsBySlug={tagsMap} isSignedIn={false} />
+          <PostList rows={rows} authorsByID={authorByID} authorStatsByID={authorStatsByID} tagsBySlug={tagsMap} isSignedIn={false} />
 
           {rows.length === 0 && (
             <EmptyState

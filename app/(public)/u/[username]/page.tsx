@@ -7,14 +7,14 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { StatGrid } from '@/components/ui/stat-grid';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import {
-    batchAuthorsForIds,
-    batchUserStatsForIds,
-    getUserByUsername,
+    batchAuthorsForIDs,
+    batchUserStatsForIDs,
+    getUserByUserName,
     getUserStats,
     listCommentsByAuthor,
     listPostsByAuthor,
     listCommunity,
-    listUsernames,
+    listUserNames,
     listVotedCommentsByUser,
     listVotedPostsByUser,
 } from '@/lib/db/queries';
@@ -38,9 +38,9 @@ type OverviewActivity =
   | { kind: 'comment' | 'upvoted-comment' | 'downvoted-comment'; createdAt: string; comment: UserCommentActivity };
 
 const UserPage = async ({ params }: UserPageProps) => {
-  const { username: rawUsername } = await params;
-  const username = decodeURIComponent(rawUsername);
-  const profile = await getUserByUsername(username);
+  const { username: rawUserName } = await params;
+  const userName = decodeURIComponent(rawUserName);
+  const profile = await getUserByUserName(userName);
   if (!profile) notFound();
 
   const [tags, stats, posts, comments, upvotedPosts, upvotedComments, downvotedPosts, downvotedComments] = await Promise.all([
@@ -54,8 +54,8 @@ const UserPage = async ({ params }: UserPageProps) => {
     listVotedCommentsByUser(profile.id, -1),
   ]);
   const allRows = [...posts, ...upvotedPosts, ...downvotedPosts];
-  const authorIds = [...new Set(allRows.map(({ post }) => post.authorId).concat(profile.id))];
-  const [authorsById, authorStatsById] = await Promise.all([batchAuthorsForIds(authorIds), batchUserStatsForIds(authorIds)]);
+  const authorIDs = [...new Set(allRows.map(({ post }) => post.authorID).concat(profile.id))];
+  const [authorsByID, authorStatsByID] = await Promise.all([batchAuthorsForIDs(authorIDs), batchUserStatsForIDs(authorIDs)]);
   const tagsBySlug = new Map(tags.map(tag => [tag.slug, tag]));
   const hasActivity = posts.length + comments.length + upvotedPosts.length + upvotedComments.length + downvotedPosts.length + downvotedComments.length > 0;
   const overviewActivity: OverviewActivity[] = [
@@ -70,16 +70,16 @@ const UserPage = async ({ params }: UserPageProps) => {
   const renderPosts = (rows: typeof posts, title?: string) => rows.length ? (
     <section className='space-y-3'>
       {title ? <h2 className='flex items-center gap-2 text-sm font-semibold'>{title}</h2> : null}
-      <PostList rows={rows} authorsById={authorsById} authorStatsById={authorStatsById} tagsBySlug={tagsBySlug} isSignedIn={false} />
+      <PostList rows={rows} authorsByID={authorsByID} authorStatsByID={authorStatsByID} tagsBySlug={tagsBySlug} isSignedIn={false} />
     </section>
   ) : null;
 
   const content = [
-    hasActivity ? <OverviewActivityFeed key='overview' items={overviewActivity} authorsById={authorsById} authorStatsById={authorStatsById} tagsBySlug={tagsBySlug} isSignedIn={false} /> : <ProfileEmpty key='overview-empty' icon={AtSign} title='No activity yet' description={`Posts, comments, and votes from u/${profile.username} will show here.`} />,
-    renderPosts(posts) ?? <ProfileEmpty key='posts-empty' icon={FileText} title='No posts yet' description={`Posts from u/${profile.username} will show here.`} />,
-    comments.length ? <CommentsList key='comments' comments={comments} title='Comments' /> : <ProfileEmpty key='comments-empty' icon={MessageSquare} title='No comments yet' description={`Comments from u/${profile.username} will show here.`} />,
-    <VotedActivity key='upvoted' posts={upvotedPosts} comments={upvotedComments} direction='up' emptyFor={profile.username} renderPosts={renderPosts} />,
-    <VotedActivity key='downvoted' posts={downvotedPosts} comments={downvotedComments} direction='down' emptyFor={profile.username} renderPosts={renderPosts} />,
+    hasActivity ? <OverviewActivityFeed key='overview' items={overviewActivity} authorsByID={authorsByID} authorStatsByID={authorStatsByID} tagsBySlug={tagsBySlug} isSignedIn={false} /> : <ProfileEmpty key='overview-empty' icon={AtSign} title='No activity yet' description={`Posts, comments, and votes from u/${profile.userName} will show here.`} />,
+    renderPosts(posts) ?? <ProfileEmpty key='posts-empty' icon={FileText} title='No posts yet' description={`Posts from u/${profile.userName} will show here.`} />,
+    comments.length ? <CommentsList key='comments' comments={comments} title='Comments' /> : <ProfileEmpty key='comments-empty' icon={MessageSquare} title='No comments yet' description={`Comments from u/${profile.userName} will show here.`} />,
+    <VotedActivity key='upvoted' posts={upvotedPosts} comments={upvotedComments} direction='up' emptyFor={profile.userName} renderPosts={renderPosts} />,
+    <VotedActivity key='downvoted' posts={downvotedPosts} comments={downvotedComments} direction='down' emptyFor={profile.userName} renderPosts={renderPosts} />,
   ];
 
   return (
@@ -91,14 +91,14 @@ const UserPage = async ({ params }: UserPageProps) => {
         <div className='px-5 py-5'>
           <div className='flex flex-wrap items-start justify-between gap-5'>
             <div className='flex min-w-0 items-center gap-5'>
-              <UserAvatar user={authorsById.get(profile.id) ?? profile} size='lg' className='size-32 border-4 border-card shadow-lg' />
+              <UserAvatar user={authorsByID.get(profile.id) ?? profile} size='lg' className='size-32 border-4 border-card shadow-lg' />
               <div className='min-w-0'>
-                <h1 className='truncate text-2xl font-bold tracking-tight text-foreground'>{profile.displayName || profile.username}</h1>
-                <p className='mt-1 text-sm text-muted-foreground'>u/{profile.username}</p>
+                <h1 className='truncate text-2xl font-bold tracking-tight text-foreground'>{profile.displayName || profile.userName}</h1>
+                <p className='mt-1 text-sm text-muted-foreground'>u/{profile.userName}</p>
                 {profile.bio ? <p className='mt-3 max-w-2xl whitespace-pre-wrap text-sm leading-6 text-card-foreground'>{profile.bio}</p> : null}
               </div>
             </div>
-            <ClientProfileControls profileId={profile.id} />
+            <ClientProfileControls profileID={profile.id} />
           </div>
           <StatGrid className='mt-4 max-w-xl' stats={[{ label: 'Post karma', value: formatCount(stats.karma) }, { label: 'Posts', value: formatCount(stats.postCount) }, { label: 'Comments', value: formatCount(stats.commentCount) }]} />
         </div>
@@ -112,12 +112,12 @@ const ProfileSidebar = ({ karma, joinedAt }: { karma: number; joinedAt?: string 
 
 const ProfileEmpty = ({ icon, title, description }: { icon: typeof AtSign; title: string; description: string }) => <EmptyState icon={icon} title={title} description={description} />;
 
-const OverviewActivityFeed = ({ items, authorsById, authorStatsById, tagsBySlug, isSignedIn }: { items: OverviewActivity[]; authorsById: Awaited<ReturnType<typeof batchAuthorsForIds>>; authorStatsById: Awaited<ReturnType<typeof batchUserStatsForIds>>; tagsBySlug: Map<string, Awaited<ReturnType<typeof listCommunity>>[number]>; isSignedIn: boolean }) => <div className='space-y-3'>{items.map(item => {
+const OverviewActivityFeed = ({ items, authorsByID, authorStatsByID, tagsBySlug, isSignedIn }: { items: OverviewActivity[]; authorsByID: Awaited<ReturnType<typeof batchAuthorsForIDs>>; authorStatsByID: Awaited<ReturnType<typeof batchUserStatsForIDs>>; tagsBySlug: Map<string, Awaited<ReturnType<typeof listCommunity>>[number]>; isSignedIn: boolean }) => <div className='space-y-3'>{items.map(item => {
   if ('row' in item) {
-    const author = authorsById.get(item.row.post.authorId);
+    const author = authorsByID.get(item.row.post.authorID);
     if (!author) return null;
     const label = item.kind === 'upvoted-post' ? 'Upvoted post' : item.kind === 'downvoted-post' ? 'Downvoted post' : null;
-    return <div key={`${item.kind}-${item.row.post.id}`} className='space-y-1'>{label ? <p className='px-1 text-xs font-medium text-muted-foreground'>{label}</p> : null}<PostCard post={item.row.post} author={author} authorStats={authorStatsById.get(item.row.post.authorId) ?? { postCount: 0, commentCount: 0, karma: 0, commentKarma: 0 }} tagsBySlug={tagsBySlug} score={item.row.score} userVote={item.row.userVote} isSignedIn={isSignedIn} /></div>;
+    return <div key={`${item.kind}-${item.row.post.id}`} className='space-y-1'>{label ? <p className='px-1 text-xs font-medium text-muted-foreground'>{label}</p> : null}<PostCard post={item.row.post} author={author} authorStats={authorStatsByID.get(item.row.post.authorID) ?? { postCount: 0, commentCount: 0, karma: 0, commentKarma: 0 }} tagsBySlug={tagsBySlug} score={item.row.score} userVote={item.row.userVote} isSignedIn={isSignedIn} /></div>;
   }
   const label = item.kind === 'upvoted-comment' ? 'Upvoted comment on' : item.kind === 'downvoted-comment' ? 'Downvoted comment on' : 'Commented on';
   return <CommentActivityCard key={`${item.kind}-${item.comment.id}`} comment={item.comment} label={label} />;
@@ -131,10 +131,10 @@ const VotedActivity = ({ posts, comments, direction, emptyFor, renderPosts, comp
   return <section className='space-y-3'><h2 className='flex items-center gap-2 text-sm font-semibold'><Icon className='size-4 text-primary' /> {label}</h2>{renderPosts(posts)}{comments.length ? <CommentsList comments={comments} title={`${label} comments`} activityLabel={`${label} comment on`} /> : null}</section>;
 };
 
-const CommentActivityCard = ({ comment, label }: { comment: UserCommentActivity; label: string }) => <Link href={`/post/${comment.postId}`} className='block rounded border border-border bg-muted/35 p-3 celestia-hover-surface'><p className='mb-1 truncate text-xs font-semibold text-primary'>{label} {comment.postTitle}</p><p className='text-sm leading-6 text-card-foreground'>{excerpt(comment.body)}</p><p className='mt-2 font-mono text-[11px] text-muted-foreground'>{formatRelativeTime(comment.createdAt)}</p></Link>;
+const CommentActivityCard = ({ comment, label }: { comment: UserCommentActivity; label: string }) => <Link href={`/post/${comment.postID}`} className='block rounded border border-border bg-muted/35 p-3 celestia-hover-surface'><p className='mb-1 truncate text-xs font-semibold text-primary'>{label} {comment.postTitle}</p><p className='text-sm leading-6 text-card-foreground'>{excerpt(comment.body)}</p><p className='mt-2 font-mono text-[11px] text-muted-foreground'>{formatRelativeTime(comment.createdAt)}</p></Link>;
 
 const CommentsList = ({ comments, title, activityLabel = 'Commented on' }: CommentsListProps & { activityLabel?: string }) => <section className='celestia-card p-4'><h2 className='mb-3 flex items-center gap-2 text-sm font-semibold'><MessageSquare className='size-4 text-primary' />{title}</h2><div className='space-y-3'>{comments.map(comment => <CommentActivityCard key={comment.id} comment={comment} label={activityLabel} />)}</div></section>;
 
-export const generateStaticParams = async () => (await listUsernames()).map(username => ({ username }));
+export const generateStaticParams = async () => (await listUserNames()).map(userName => ({ username: userName }));
 
 export default UserPage;

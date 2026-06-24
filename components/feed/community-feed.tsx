@@ -31,8 +31,8 @@ const CommunityFeed = () => {
   const slug = usePathname().split('/').pop();
   const [sort, setSort] = useState<FeedSort>('hot');
   const { data, error, isFetching, isLoading, refetch } = useCommunityFeed(slug, sort);
-  const authorsById = new Map(data?.authors.map(author => [author.id, author]));
-  const authorStatsById = new Map(data?.authorStats);
+  const authorsByID = new Map(data?.authors.map(author => [author.id, author]));
+  const authorStatsByID = new Map(data?.authorStats);
   const tagsBySlug = new Map(data?.tags.map(tag => [tag.slug, tag]));
   const feed = data?.rows ?? [];
 
@@ -83,8 +83,8 @@ const CommunityFeed = () => {
         <div className='space-y-3'>
           <PostList
             rows={feed}
-            authorsById={authorsById}
-            authorStatsById={authorStatsById}
+            authorsByID={authorsByID}
+            authorStatsByID={authorStatsByID}
             tagsBySlug={tagsBySlug}
             isSignedIn={true}
           />

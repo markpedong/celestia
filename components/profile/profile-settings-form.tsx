@@ -18,7 +18,7 @@ import useFormSchema from '@/hooks/useFormSchema';
 
 type ProfileSettingsFormProps = {
   profile: {
-    username: string;
+    userName: string;
     displayName: string | null;
     bio: string | null;
     avatarUrl: string | null;

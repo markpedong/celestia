@@ -26,7 +26,7 @@ export const GET = async (request: Request) => {
   const { error: profileError } = await supabase.from('users').upsert(
     {
       id: data.user.id,
-      username: data.user.email.split('@')[0],
+      userName: data.user.email.split('@')[0],
       email: data.user.email,
       display_name: displayName,
       avatar_url: data.user.user_metadata.avatar_url ?? null,

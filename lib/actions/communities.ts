@@ -18,8 +18,8 @@ export const createCommunityAction = async (
   _previousState: CommunityFormState,
   formData: FormData,
 ): Promise<CommunityFormState> => {
-  const userId = await getCurrentUserID();
-  if (!userId) return { error: 'You must be signed in to create a community.' };
+  const userID = await getCurrentUserID();
+  if (!userID) return { error: 'You must be signed in to create a community.' };
 
   const label = String(formData.get('label') ?? '').trim();
   const slug = normalizeSlug(String(formData.get('slug') ?? ''));
@@ -33,9 +33,9 @@ export const createCommunityAction = async (
 
   await prisma.$transaction(async (tx) => {
     await tx.community.create({
-      data: { slug, label, description, hashColor, createdById: userId },
+      data: { slug, label, description, hashColor, createdByID: userID },
     });
-    await tx.communityMembers.create({ data: { userId, communitySlug: slug } });
+    await tx.communityMembers.create({ data: { userID, communitySlug: slug } });
   });
 
   revalidatePath('/');
@@ -44,25 +44,25 @@ export const createCommunityAction = async (
 };
 
 export const setCommunityMembershipAction = async (slug: string, shouldJoin: boolean) => {
-  const userId = await getCurrentUserID();
-  if (!userId) return { error: 'Sign in to join a community.' };
+  const userID = await getCurrentUserID();
+  if (!userID) return { error: 'Sign in to join a community.' };
 
   const communitySlug = slug.trim().toLowerCase();
-  const community = await prisma.community.findUnique({ where: { slug: communitySlug }, select: { slug: true, createdById: true } });
+  const community = await prisma.community.findUnique({ where: { slug: communitySlug }, select: { slug: true, createdByID: true } });
   if (!community) return { error: 'Community not found.' };
 
-  if (!shouldJoin && community.createdById === userId) {
+  if (!shouldJoin && community.createdByID === userID) {
     return { error: 'Community owners cannot leave their community.' };
   }
 
   if (shouldJoin) {
     await prisma.communityMembers.upsert({
-      where: { userId_communitySlug: { userId, communitySlug } },
-      create: { userId, communitySlug },
+      where: { userID_communitySlug: { userID, communitySlug } },
+      create: { userID, communitySlug },
       update: {},
     });
   } else {
-    await prisma.communityMembers.deleteMany({ where: { userId, communitySlug } });
+    await prisma.communityMembers.deleteMany({ where: { userID, communitySlug } });
   }
 
   revalidatePath('/');
@@ -72,12 +72,12 @@ export const setCommunityMembershipAction = async (slug: string, shouldJoin: boo
 };
 
 export const getCommunityMembershipAction = async (slug: string) => {
-  const userId = await getCurrentUserID();
-  if (!userId) return { isMember: false };
+  const userID = await getCurrentUserID();
+  if (!userID) return { isMember: false };
 
   const membership = await prisma.communityMembers.findUnique({
-    where: { userId_communitySlug: { userId, communitySlug: slug.trim().toLowerCase() } },
-    select: { userId: true },
+    where: { userID_communitySlug: { userID, communitySlug: slug.trim().toLowerCase() } },
+    select: { userID: true },
   });
 
   return { isMember: Boolean(membership) };
@@ -87,8 +87,8 @@ export const updateCommunityAction = async (
   _previousState: CommunitySettingsFormState,
   formData: FormData,
 ): Promise<CommunitySettingsFormState> => {
-  const userId = await getCurrentUserID();
-  if (!userId) return { error: 'You must be signed in to manage a community.' };
+  const userID = await getCurrentUserID();
+  if (!userID) return { error: 'You must be signed in to manage a community.' };
 
   const slug = String(formData.get('slug') ?? '').trim().toLowerCase();
   const label = String(formData.get('label') ?? '').trim();
@@ -96,9 +96,9 @@ export const updateCommunityAction = async (
   const hashColor = String(formData.get('hashColor') ?? '').trim();
 
 
-  const community = await prisma.community.findUnique({ where: { slug }, select: { createdById: true } });
+  const community = await prisma.community.findUnique({ where: { slug }, select: { createdByID: true } });
   if (!community) return { error: 'Community not found.' };
-  if (community.createdById !== userId) return { error: 'Only the community owner can change these settings.' };
+  if (community.createdByID !== userID) return { error: 'Only the community owner can change these settings.' };
 
   await prisma.community.update({ where: { slug }, data: { label, description, hashColor } });
   revalidatePath('/');

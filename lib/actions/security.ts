@@ -27,22 +27,22 @@ const makeCode = () => randomBytes(9).toString('base64url').toUpperCase();
 
 const verificationSecret = () => process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-const createVerificationToken = (userId: string, setting: PasswordVerificationSetting) => {
+const createVerificationToken = (userID: string, setting: PasswordVerificationSetting) => {
   const secret = verificationSecret();
   if (!secret) throw new Error('Password verification is not configured.');
-  const payload = Buffer.from(JSON.stringify({ userId, setting, expiresAt: Date.now() + verificationLifetime })).toString('base64url');
+  const payload = Buffer.from(JSON.stringify({ userID, setting, expiresAt: Date.now() + verificationLifetime })).toString('base64url');
   return `${payload}.${createHmac('sha256', secret).update(payload).digest('base64url')}`;
 };
 
-const verifyVerificationToken = (token: string, userId: string, setting: PasswordVerificationSetting) => {
+const verifyVerificationToken = (token: string, userID: string, setting: PasswordVerificationSetting) => {
   const secret = verificationSecret();
   const [payload, signature] = token.split('.');
   if (!secret || !payload || !signature) return false;
   const expected = createHmac('sha256', secret).update(payload).digest('base64url');
   if (signature.length !== expected.length || !timingSafeEqual(Buffer.from(signature), Buffer.from(expected))) return false;
   try {
-    const data = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')) as { userId?: string; setting?: string; expiresAt?: number };
-    return data.userId === userId && data.setting === setting && typeof data.expiresAt === 'number' && data.expiresAt > Date.now();
+    const data = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')) as { userID?: string; setting?: string; expiresAt?: number };
+    return data.userID === userID && data.setting === setting && typeof data.expiresAt === 'number' && data.expiresAt > Date.now();
   } catch { return false; }
 };
 
@@ -131,8 +131,8 @@ export const generateBackupCodesAction = async (): Promise<SecurityActionState> 
   if (!user) return { error: 'You must be signed in to generate backup codes.' };
   const codes = Array.from({ length: 10 }, makeCode);
   await prisma.$transaction([
-    prisma.backupCode.deleteMany({ where: { userId: user.id } }),
-    prisma.backupCode.createMany({ data: codes.map(code => ({ userId: user.id, codeHash: hashCode(code) })) }),
+    prisma.backupCode.deleteMany({ where: { userID: user.id } }),
+    prisma.backupCode.createMany({ data: codes.map(code => ({ userID: user.id, codeHash: hashCode(code) })) }),
   ]);
   revalidatePath('/settings');
   return { success: 'New backup codes generated. Save them now; they will not be shown again.', codes };
@@ -148,11 +148,11 @@ export const deleteAccountAction = async (_prev: SecurityActionState, { confirma
   const { error } = await admin.auth.admin.deleteUser(user.id);
   if (error) return { error: error.message };
   await prisma.$transaction([
-    prisma.backupCode.deleteMany({ where: { userId: user.id } }),
-    prisma.vote.deleteMany({ where: { userId: user.id } }),
-    prisma.communityMembers.deleteMany({ where: { userId: user.id } }),
-    prisma.comment.deleteMany({ where: { authorId: user.id } }),
-    prisma.post.deleteMany({ where: { authorId: user.id } }),
+    prisma.backupCode.deleteMany({ where: { userID: user.id } }),
+    prisma.vote.deleteMany({ where: { userID: user.id } }),
+    prisma.communityMembers.deleteMany({ where: { userID: user.id } }),
+    prisma.comment.deleteMany({ where: { authorID: user.id } }),
+    prisma.post.deleteMany({ where: { authorID: user.id } }),
     prisma.users.deleteMany({ where: { id: user.id } }),
   ]);
   revalidatePath('/', 'layout');

@@ -7,11 +7,11 @@ export const nestCommentRows = (
   for (const c of flat) {
     map.set(c.id, {
       id: c.id,
-      postId: c.postId,
-      parentId: c.parentId,
+      postID: c.postID,
+      parentID: c.parentID,
       body: c.body,
       createdAt: c.createdAt,
-      authorId: c.authorId,
+      authorID: c.authorID,
       author: c.author,
       score: c.score,
       userVote: c.userVote,
@@ -23,8 +23,8 @@ export const nestCommentRows = (
   for (const c of flat) {
     const node = map.get(c.id);
     if (!node) continue;
-    if (c.parentId && map.has(c.parentId)) {
-      map.get(c.parentId)?.children.push(node);
+    if (c.parentID && map.has(c.parentID)) {
+      map.get(c.parentID)?.children.push(node);
     } else {
       roots.push(node);
     }

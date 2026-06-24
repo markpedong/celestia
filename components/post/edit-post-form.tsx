@@ -28,7 +28,7 @@ export const EditPostForm: FC<EditPostFormProps> = ({ post }) => {
 
   return (
     <form onSubmit={onSubmit} onKeyDown={onFormKeyDown} className='celestia-card space-y-5 p-5 md:p-6' noValidate>
-      <input type='hidden' name='postId' value={post.id} />
+      <input type='hidden' name='postID' value={post.id} />
       <FormField
         htmlFor='title'
         label='Post title'
