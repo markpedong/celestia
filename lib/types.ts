@@ -269,7 +269,7 @@ export type PendingCommentInput = {
 export type CommentSubmitResult = ErrorFormState;
 
 export type CommentSubmissionContextValue = {
-  submitComment: (formData: FormData, pendingComment: PendingCommentInput) => Promise<CommentSubmitResult>;
+  submitComment: (pendingComment: PendingCommentInput) => Promise<CommentSubmitResult>;
   pending: boolean;
 };
 

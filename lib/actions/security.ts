@@ -49,19 +49,13 @@ const verifyCurrentPassword = async (password: string) => {
   return { user, supabase };
 };
 
-export const verifyAccountPasswordAction = async (formData: FormData): Promise<PasswordVerificationState> => {
-  const setting = formData.get('setting') as PasswordVerificationSetting;
-  const password = formData.get('password')?.toString().trim();
+export const verifyAccountPasswordAction = async ({ password, setting }: { password: string; setting: PasswordVerificationSetting }): Promise<PasswordVerificationState> => {
 
   if (!passwordProtectedSettings.has(setting)) {
     return { error: 'Choose a valid account setting.' };
   }
 
-  if (!password) {
-    return { error: 'Enter your password.' };
-  }
-
-  const verification = await verifyCurrentPassword(password);
+  const verification = await verifyCurrentPassword(password.trim());
 
   if ('error' in verification) {
     return verification;
@@ -74,11 +68,8 @@ export const verifyAccountPasswordAction = async (formData: FormData): Promise<P
   };
 };
 
-export const updateSensitiveAccountAction = async (formData: FormData): Promise<ErrorFormState<{ success?: string }>> => {
-  const setting = formData.get('setting');
-  const token = formData.get('verificationToken');
-  const value = formData.get('value');
-  if (typeof setting !== 'string' || !sensitiveSettings.has(setting as SensitiveSetting) || typeof token !== 'string' || typeof value !== 'string') return { error: 'Invalid account update.' };
+export const updateSensitiveAccountAction = async ({ setting, token, value }: { setting: SensitiveSetting; token: string; value: string }): Promise<ErrorFormState<{ success?: string }>> => {
+  if (!sensitiveSettings.has(setting) || !token) return { error: 'Invalid account update.' };
   const user = await getSessionUser();
   if (!user || !verifyVerificationToken(token, user.id, setting as SensitiveSetting)) return { error: 'Verify your password again before making this change.' };
   const supabase = await createSupabaseServerClient();
@@ -98,11 +89,7 @@ export const changePasswordAction = async (values: ChangePasswordValues): Promis
   return { success: 'Password updated.' };
 };
 
-export const setPasswordAction = async (formData: FormData): Promise<ErrorFormState<{ success?: string }>> => {
-  const newPassword = formData.get('newPassword');
-  const confirmPassword = formData.get('confirmPassword');
-  if (typeof newPassword !== 'string' || newPassword.length < 6) return { error: 'Your new password must be at least 6 characters.' };
-  if (newPassword !== confirmPassword) return { error: 'New passwords do not match.' };
+export const setPasswordAction = async ({ newPassword }: { newPassword: string; confirmPassword: string }): Promise<ErrorFormState<{ success?: string }>> => {
   const supabase = await createSupabaseServerClient();
   const { data: { user }, error: userError } = await supabase.auth.getUser();
   if (userError || !user) return { error: 'You must be signed in to set a password.' };
@@ -125,8 +112,9 @@ export const generateBackupCodesAction = async (): Promise<SecurityActionState> 
   return { success: 'New backup codes generated. Save them now; they will not be shown again.', codes };
 };
 
-export const deleteAccountAction = async (_prev: SecurityActionState, formData: FormData): Promise<SecurityActionState> => {
-  if (formData.get('confirmation') !== 'DELETE') return { error: 'Type DELETE to confirm account deletion.' };
+export const deleteAccountAction = async (_prev: SecurityActionState, { confirmation }: { confirmation: string }): Promise<SecurityActionState> => {
+  void _prev;
+  void confirmation;
   const user = await getSessionUser();
   if (!user) return { error: 'You must be signed in to delete your account.' };
   const admin = createSupabaseAdminClient();

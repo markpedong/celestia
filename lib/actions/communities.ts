@@ -5,7 +5,7 @@ import { prisma } from '../prisma';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import type { CommunityFormState, CommunitySettingsFormState } from '../types';
-import { MAX_COMMUNITY_DESCRIPTION_LENGTH, MAX_COMMUNITY_NAME_LENGTH, MAX_COMMUNITY_SLUG_LENGTH, MIN_COMMUNITY_NAME_LENGTH, MIN_COMMUNITY_SLUG_LENGTH, RESERVED_COMMUNITY_SLUGS } from '../../constants';
+import { MAX_COMMUNITY_SLUG_LENGTH, MIN_COMMUNITY_SLUG_LENGTH, RESERVED_COMMUNITY_SLUGS } from '../../constants';
 
 const normalizeSlug = (value: string) => value
   .trim()
@@ -26,10 +26,7 @@ export const createCommunityAction = async (
   const description = String(formData.get('description') ?? '').trim();
   const hashColor = String(formData.get('hashColor') ?? '').trim();
 
-  if (label.length < MIN_COMMUNITY_NAME_LENGTH || label.length > MAX_COMMUNITY_NAME_LENGTH) return { error: `Community name must be ${MIN_COMMUNITY_NAME_LENGTH}–${MAX_COMMUNITY_NAME_LENGTH} characters.` };
   if (slug.length < MIN_COMMUNITY_SLUG_LENGTH || RESERVED_COMMUNITY_SLUGS.has(slug)) return { error: 'Choose a different community URL.' };
-  if (description.length > MAX_COMMUNITY_DESCRIPTION_LENGTH) return { error: `Description must be ${MAX_COMMUNITY_DESCRIPTION_LENGTH} characters or fewer.` };
-  if (!/^#[0-9a-f]{6}$/i.test(hashColor)) return { error: 'Choose a valid community color.' };
 
   const existing = await prisma.tag.findUnique({ where: { slug }, select: { slug: true } });
   if (existing) return { error: 'That community URL is already taken.' };
@@ -86,9 +83,6 @@ export const updateCommunityAction = async (
   const description = String(formData.get('description') ?? '').trim();
   const hashColor = String(formData.get('hashColor') ?? '').trim();
 
-  if (label.length < MIN_COMMUNITY_NAME_LENGTH || label.length > MAX_COMMUNITY_NAME_LENGTH) return { error: `Community name must be ${MIN_COMMUNITY_NAME_LENGTH}–${MAX_COMMUNITY_NAME_LENGTH} characters.` };
-  if (description.length > MAX_COMMUNITY_DESCRIPTION_LENGTH) return { error: `Description must be ${MAX_COMMUNITY_DESCRIPTION_LENGTH} characters or fewer.` };
-  if (!/^#[0-9a-f]{6}$/i.test(hashColor)) return { error: 'Choose a valid community color.' };
 
   const community = await prisma.tag.findUnique({ where: { slug }, select: { createdById: true } });
   if (!community) return { error: 'Community not found.' };

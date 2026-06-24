@@ -4,7 +4,6 @@ import type { FC } from 'react';
 import { createCommentAction } from '@/lib/actions/comments';
 import type { CommentComposerProps } from '@/lib/types';
 import { useRouter } from 'next/navigation';
-import type { FormEventHandler } from 'react';
 import { useTransition } from 'react';
 import { toast } from 'sonner';
 import { Textarea } from '../ui/textarea';
@@ -25,23 +24,18 @@ const CommentComposer: FC<CommentComposerProps> = ({ postID, user, compact, pare
     defaultValues: { body: '' },
   });
 
-  const submitValid = async (fd: FormData) => {
-    const body = String(fd.get('body') ?? '').trim();
+  const onSubmit = async ({ body }: { body: string }) => {
+    const pendingComment = { postId: postID, parentId: parentId ?? null, body: body.trim(), author: user };
 
     if (commentSubmission) {
-      const res = await commentSubmission.submitComment(fd, {
-        postId: postID,
-        parentId: parentId ?? null,
-        body,
-        author: user,
-      });
+      const res = await commentSubmission.submitComment(pendingComment);
       if (res?.error) toast.error(res.error);
       else reset();
       return;
     }
 
     startTransition(async () => {
-      const res = await createCommentAction(null, fd);
+      const res = await createCommentAction(pendingComment);
       if (res?.error) {
         toast.error(res.error);
         return;
@@ -51,15 +45,8 @@ const CommentComposer: FC<CommentComposerProps> = ({ postID, user, compact, pare
     });
   };
 
-  const onSubmit: FormEventHandler<HTMLFormElement> = event => {
-    const formData = new FormData(event.currentTarget);
-    void handleSubmit(() => submitValid(formData))(event);
-  };
-
   return (
-    <form onSubmit={onSubmit} onKeyDown={onFormKeyDown} className='flex gap-3' noValidate>
-      <input type='hidden' name='postId' value={postID} />
-      <input type='hidden' name='parentId' value={parentId ?? ''} />
+    <form onSubmit={handleSubmit(onSubmit)} onKeyDown={onFormKeyDown} className='flex gap-3' noValidate>
       <UserAvatar user={user} size={compact ? 'sm' : 'default'} className='mt-1 shrink-0' />
       <div className='min-w-0 flex-1 space-y-2'>
         <Textarea

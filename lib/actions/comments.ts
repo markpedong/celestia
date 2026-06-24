@@ -5,25 +5,12 @@ import { getCurrentUserID } from "../auth";
 import { prisma } from "../prisma";
 import type { Comment, CommentFormState, VoteActionValue } from "../types";
 import { toggleVote } from '../db/votes';
-import { MAX_COMMENT_LENGTH } from '../../constants';
 
-export const createCommentAction = async (_prev: CommentFormState, formData: FormData): Promise<CommentFormState> => {
+export const createCommentAction = async ({ postId, parentId, body }: { postId: string; parentId: string | null; body: string }): Promise<CommentFormState> => {
   const userId = await getCurrentUserID();
   if (!userId) {
     return { error: "You must be signed in to comment." };
   }
-
-  const postId = String(formData.get("postId") ?? "");
-  const parentIdRaw = String(formData.get("parentId") ?? "");
-  const body = String(formData.get("body") ?? "");
-
-  const trimmedBody = body.trim();
-  if (!postId || trimmedBody.length < 1) {
-    return { error: "Comment cannot be empty." };
-  }
-  if (trimmedBody.length > MAX_COMMENT_LENGTH) return { error: `Comment must be ${MAX_COMMENT_LENGTH.toLocaleString()} characters or fewer.` };
-
-  const parentId = parentIdRaw && parentIdRaw !== "null" ? parentIdRaw : null;
 
   const comment = await addComment({ postId, authorId: userId, parentId, body });
 

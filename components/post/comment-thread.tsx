@@ -20,10 +20,10 @@ const CommentThread: FC<CommentThreadProps> = ({
     (currentTree, pendingComment: EnrichedCommentNode) => appendComment(currentTree, pendingComment),
   );
 
-  const submitComment = (formData: FormData, pendingComment: PendingCommentInput) => new Promise<CommentSubmitResult>((resolve) => {
+  const submitComment = (pendingComment: PendingCommentInput) => new Promise<CommentSubmitResult>((resolve) => {
     startTransition(async () => {
       addOptimisticComment(createPendingComment(pendingComment));
-      const result = await createCommentAction(null, formData);
+      const result = await createCommentAction(pendingComment);
       resolve(result);
     });
   });

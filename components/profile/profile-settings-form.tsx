@@ -66,12 +66,9 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
     });
   };
 
-  const submitDetails = detailsForm.handleSubmit(({ displayName, bio }) => {
-    const formData = new FormData();
-    formData.set('displayName', displayName);
-    formData.set('bio', bio);
+  const submitDetails = async ({ displayName, bio }: { displayName: string; bio: string }) => {
     startSavingDetails(async () => {
-      const result = await updateProfileSettingsAction(null, formData);
+      const result = await updateProfileSettingsAction({ displayName, bio });
       if (result?.error) {
         toast.error(result.error);
         return;
@@ -80,14 +77,11 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
       void queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast.success(result?.success ?? 'Profile details updated.');
     });
-  });
+  };
 
-  const submitMedia = mediaForm.handleSubmit(({ avatar, cover }) => {
-    const formData = new FormData();
-    if (avatar?.[0]) formData.set('avatar', avatar[0]);
-    if (cover?.[0]) formData.set('cover', cover[0]);
+  const submitMedia = async ({ avatar, cover }: { avatar?: FileList; cover?: FileList }) => {
     startSavingMedia(async () => {
-      const result = await updateProfileMediaAction(null, formData);
+      const result = await updateProfileMediaAction({ avatar, cover });
       if (result?.error) {
         toast.error(result.error);
         return;
@@ -96,7 +90,7 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
       void queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast.success(result?.success ?? 'Profile media updated.');
     });
-  });
+  };
 
   return (
     <div className='space-y-5'>
@@ -143,7 +137,7 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
         title='Display Name'
         description='This is the name shown across Celestia.'
       >
-        <form onSubmit={submitDetails} onKeyDown={detailsForm.onFormKeyDown} className='space-y-4' noValidate>
+        <form onSubmit={detailsForm.handleSubmit(submitDetails)} onKeyDown={detailsForm.onFormKeyDown} className='space-y-4' noValidate>
           <FormField htmlFor='displayName' label='Display Name'>
             <Input id='displayName' maxLength={80} {...detailsForm.register('displayName')} />
           </FormField>
@@ -165,7 +159,7 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
         title='About / Bio'
         description='Tell people a little about yourself.'
       >
-        <form onSubmit={submitDetails} onKeyDown={detailsForm.onFormKeyDown} className='space-y-4' noValidate>
+        <form onSubmit={detailsForm.handleSubmit(submitDetails)} onKeyDown={detailsForm.onFormKeyDown} className='space-y-4' noValidate>
           <FormField htmlFor='bio' label='About / Bio'>
             <Textarea id='bio' maxLength={500} rows={5} className='resize-y' {...detailsForm.register('bio')} />
           </FormField>
@@ -192,7 +186,7 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
             title={kind === 'avatar' ? 'Avatar' : 'Banner'}
             description='Upload an image to update your public profile.'
           >
-            <form onSubmit={submitMedia} onKeyDown={mediaForm.onFormKeyDown} className='space-y-4' noValidate>
+            <form onSubmit={mediaForm.handleSubmit(submitMedia)} onKeyDown={mediaForm.onFormKeyDown} className='space-y-4' noValidate>
               <div
                 className={`relative overflow-hidden rounded-lg border border-border bg-muted ${kind === 'avatar' ? 'size-28' : 'aspect-3/1 w-full'}`}
               >

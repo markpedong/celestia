@@ -16,8 +16,7 @@ const revalidateProfilePaths = (...usernames: string[]) => {
 };
 
 export const updateProfileMediaAction = async (
-  _prev: ProfileMediaFormState,
-  formData: FormData,
+  { avatar, cover }: { avatar?: FileList; cover?: FileList },
 ): Promise<ProfileMediaFormState> => {
   const profile = await getSessionUser();
   if (!profile) return { error: 'You must be signed in to update your profile.' };
@@ -27,8 +26,8 @@ export const updateProfileMediaAction = async (
 
   try {
     [avatarUrl, coverUrl] = await Promise.all([
-      uploadImage(formData.get('avatar'), 'profile-avatars', profile.id),
-      uploadImage(formData.get('cover'), 'profile-covers', profile.id),
+      uploadImage(avatar?.[0] ?? null, 'profile-avatars', profile.id),
+      uploadImage(cover?.[0] ?? null, 'profile-covers', profile.id),
     ]);
   } catch (error) {
     return { error: getUploadErrorMessage(error, 'We could not upload your image. Please try again.') };
@@ -49,16 +48,15 @@ export const updateProfileMediaAction = async (
 };
 
 export const updateProfileSettingsAction = async (
-  _prev: ProfileMediaFormState,
-  formData: FormData,
+  { displayName, bio }: { displayName: string; bio: string },
 ): Promise<ProfileMediaFormState> => {
   const profile = await getSessionUser();
   if (!profile) return { error: 'You must be signed in to update your profile.' };
 
   const parsed = profileSettingsSchema.safeParse({
     username: profile.username,
-    displayName: formData.get('displayName'),
-    bio: formData.get('bio'),
+    displayName,
+    bio,
   });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'Check your profile details.' };
 
