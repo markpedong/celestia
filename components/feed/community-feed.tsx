@@ -3,11 +3,12 @@
 import { useCommunityFeed } from '@/hooks/useQueries';
 import { FeedSort } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { BarChart2, Clock, Flame, Hash, LoaderCircle } from 'lucide-react';
+import { BarChart2, Clock, Flame, Hash } from 'lucide-react';
 import { useState } from 'react';
 import { PostList } from './post-list';
 import { EmptyState } from '../ui/empty-state';
 import { usePathname } from 'next/navigation';
+import { CelestiaSignalLoader } from '../ui/celestia-signal-loader';
 
 const sortTabs = [
   { id: 'hot' as const, label: 'Hot', icon: Flame },
@@ -17,6 +18,13 @@ const sortTabs = [
 
 const CommunityFeedLoader = () => (
   <div className='space-y-3' aria-label='Loading posts' role='status'>
+    <div className='celestia-card flex items-center gap-3 p-4'>
+      <CelestiaSignalLoader size='sm' className='shrink-0' />
+      <div>
+        <p className='text-sm font-semibold text-foreground'>Receiving community posts</p>
+        <p className='mt-0.5 text-xs text-muted-foreground'>A few signals are on their way.</p>
+      </div>
+    </div>
     {[0, 1, 2].map(index => (
       <div key={index} className='celestia-card animate-pulse p-4'>
         <div className='h-3 w-28 rounded bg-muted' />
@@ -61,8 +69,11 @@ const CommunityFeed = () => {
               </button>
             );
           })}
-          {isFetching ? (
-            <LoaderCircle className='ml-auto size-4 animate-spin text-muted-foreground' aria-label='Updating posts' />
+          {isFetching && !isLoading ? (
+            <div className='ml-auto flex items-center gap-1.5 text-xs font-medium text-muted-foreground' role='status' aria-live='polite'>
+              <CelestiaSignalLoader size='sm' className='shrink-0' />
+              <span>Refreshing posts</span>
+            </div>
           ) : null}
         </div>
       </div>

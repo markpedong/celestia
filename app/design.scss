@@ -87,3 +87,187 @@
   @include glass-panel;
   @apply rounded-2xl;
 }
+
+.celestia-post-loader-stage {
+  @apply relative grid min-h-[25rem] place-items-center p-6 md:p-10;
+  background:
+    radial-gradient(circle at 50% 46%, color-mix(in srgb, var(--primary) 16%, transparent), transparent 29%),
+    radial-gradient(circle at 54% 58%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 43%),
+    linear-gradient(135deg, color-mix(in srgb, var(--card) 95%, var(--primary)) 0%, var(--card) 68%);
+}
+
+.celestia-post-loader-glow {
+  position: absolute;
+  inset: 0;
+  opacity: 0.75;
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--accent) 70%, transparent) 0 1px, transparent 1.5px);
+  background-size: 38px 38px;
+  mask-image: radial-gradient(circle at center, black, transparent 68%);
+}
+
+.celestia-signal-loader {
+  position: relative;
+  display: grid;
+  width: 10.5em;
+  height: 10.5em;
+  place-items: center;
+  font-size: 1rem;
+}
+
+.celestia-signal-loader-sm {
+  font-size: 0.45rem;
+}
+
+.celestia-signal-loader-mark {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  width: 4em;
+  height: 4em;
+  place-items: center;
+  animation: celestia-loader-mark 1.8s ease-in-out infinite;
+}
+
+.celestia-signal-loader-bolt {
+  width: 2em;
+  height: 2em;
+}
+
+.celestia-signal-loader-orbit,
+.celestia-signal-loader-pulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border-radius: 9999px;
+  transform: translate(-50%, -50%);
+}
+
+.celestia-signal-loader-orbit {
+  border: 1px solid color-mix(in srgb, var(--primary) 42%, transparent);
+}
+
+.celestia-signal-loader-orbit-outer {
+  width: 8.8em;
+  height: 8.8em;
+  border-color: color-mix(in srgb, var(--accent) 38%, transparent);
+  animation: celestia-loader-orbit 2.4s ease-in-out infinite;
+}
+
+.celestia-signal-loader-orbit-inner {
+  width: 6.8em;
+  height: 6.8em;
+  border-style: dashed;
+  opacity: 0.8;
+  animation: celestia-loader-orbit 2.4s ease-in-out 0.35s infinite reverse;
+}
+
+.celestia-signal-loader-pulse {
+  width: 4.4em;
+  height: 4.4em;
+  border: 1px solid color-mix(in srgb, var(--primary) 70%, transparent);
+  opacity: 0;
+  animation: celestia-loader-signal 2.4s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+}
+
+.celestia-signal-loader-pulse-two {
+  border-color: color-mix(in srgb, var(--accent) 68%, transparent);
+  animation-delay: 1.2s;
+}
+
+.celestia-signal-loader-star {
+  position: absolute;
+  z-index: 1;
+  width: 0.35em;
+  height: 0.35em;
+  border-radius: 9999px;
+  background: var(--accent);
+  box-shadow: 0 0 12px var(--accent);
+  animation: celestia-loader-star 1.8s ease-in-out infinite;
+}
+
+.celestia-signal-loader-star-one {
+  top: 1.65em;
+  right: 1.7em;
+}
+
+.celestia-signal-loader-star-two {
+  bottom: 1.5em;
+  left: 1.45em;
+  width: 0.25em;
+  height: 0.25em;
+  animation-delay: 0.55s;
+}
+
+.celestia-signal-loader-star-three {
+  top: 4.7em;
+  left: 0.45em;
+  width: 0.2em;
+  height: 0.2em;
+  background: var(--primary);
+  box-shadow: 0 0 11px var(--primary);
+  animation-delay: 1.1s;
+}
+
+@keyframes celestia-loader-mark {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 22px color-mix(in srgb, var(--primary) 52%, transparent);
+  }
+  42% {
+    transform: scale(1.09) translateY(-0.18rem);
+    box-shadow: 0 0 38px color-mix(in srgb, var(--accent) 56%, transparent);
+  }
+  56% {
+    transform: scale(0.98);
+  }
+}
+
+@keyframes celestia-loader-orbit {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: translate(-50%, -50%) scale(0.96);
+  }
+  50% {
+    opacity: 0.95;
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+}
+
+@keyframes celestia-loader-signal {
+  0% {
+    opacity: 0.9;
+    transform: translate(-50%, -50%) scale(0.65);
+  }
+  72%,
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(2.2);
+  }
+}
+
+@keyframes celestia-loader-star {
+  0%,
+  100% {
+    opacity: 0.24;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.65);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .celestia-signal-loader-mark,
+  .celestia-signal-loader-orbit,
+  .celestia-signal-loader-pulse,
+  .celestia-signal-loader-star {
+    animation: none;
+  }
+
+  .celestia-signal-loader-pulse {
+    display: none;
+  }
+}
