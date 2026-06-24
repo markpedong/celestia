@@ -3,8 +3,8 @@
 import type { FC } from 'react';
 import { updateCommunityAction } from '@/lib/actions/communities';
 import type { CommunitySettingsFormProps } from '@/lib/types';
-import { communitySettingsSchema } from '@/lib/form-schemas';
 import { useServerActionForm } from '@/hooks/use-server-action-form';
+import useFormSchema from '@/hooks/useFormSchema';
 import { MAX_COMMUNITY_DESCRIPTION_LENGTH, MAX_COMMUNITY_NAME_LENGTH } from '@/constants';
 import { Button } from '../ui/button';
 import FormField from '../ui/form-field';
@@ -13,6 +13,7 @@ import { Textarea } from '../ui/textarea';
 import { Save } from 'lucide-react';
 
 export const CommunitySettingsForm: FC<CommunitySettingsFormProps> = ({ community }) => {
+  const { communitySettingsSchema } = useFormSchema();
   const {
     form: {
       register,

@@ -1,4 +1,18 @@
 import * as z from 'zod';
+import {
+  commentSchema,
+  communitySettingsSchema,
+  createCommunitySchema,
+  deleteAccountSchema,
+  editPostSchema,
+  passwordRecoverySchema,
+  passwordSchema,
+  postSchema,
+  profileDetailsSchema,
+  profileMediaSchema,
+  sensitiveSettingSchema,
+  setPasswordSchema,
+} from '@/lib/form-schemas';
 
 const useFormSchema = () => {
 
@@ -13,15 +27,27 @@ const useFormSchema = () => {
       path: ['confirmPassword'],
     });
 
-  const changePasswordInital = {
+  const changePasswordInitial = {
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
   };
 
   return {
+    commentSchema,
+    communitySettingsSchema,
+    createCommunitySchema,
     changePasswordSchema,
-    changePasswordInital
+    changePasswordInitial,
+    deleteAccountSchema,
+    editPostSchema,
+    passwordRecoverySchema,
+    passwordSchema,
+    postSchema,
+    profileDetailsSchema,
+    profileMediaSchema,
+    sensitiveSettingSchema,
+    setPasswordSchema,
   };
 };
 

@@ -9,7 +9,7 @@ import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { getEmailByUsername, getInitialDisplayName } from '@/services';
 import type { AuthMode } from '@/lib/types';
 import { MAX_EMAIL_LENGTH, MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '@/constants';
-import { useZodForm } from './use-zod-form';
+import useFormValidate from './useFormValidate';
 import { ENTER_VALID_EMAIL } from '@/constants/messages';
 
 const supabase = createSupabaseBrowserClient();
@@ -51,7 +51,10 @@ export const useAuthForm = (mode: AuthMode) => {
       context.addIssue({ code: 'custom', message: 'Passwords do not match.', path: ['confirmPassword'] });
     }
   });
-  const form = useZodForm<AuthValues>(schema, { username: '', email: '', password: '', confirmPassword: '' });
+  const form = useFormValidate<AuthValues>({
+    schema,
+    defaultValues: { username: '', email: '', password: '', confirmPassword: '' },
+  });
 
   const submit = (values: AuthValues) => {
     setMessage(null);

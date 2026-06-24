@@ -16,13 +16,13 @@ type ChangePasswordDialogProps = {
 
 export const ChangePasswordDialog = ({ open, onCloseAction }: ChangePasswordDialogProps) => {
   const [pending, startTransition] = useTransition();
-  const { changePasswordSchema, changePasswordInital } = useFormSchema();
+  const { changePasswordSchema, changePasswordInitial } = useFormSchema();
   const { register, handleSubmit, errors, onFormKeyDown } = useFormValidate({
     schema: changePasswordSchema,
-    defaultValues: changePasswordInital,
+    defaultValues: changePasswordInitial,
   });
 
-  const onSubmit = async (values: typeof changePasswordInital) => {
+  const onSubmit = async (values: typeof changePasswordInitial) => {
     startTransition(async () => {
       const result = await changePasswordAction(values);
 

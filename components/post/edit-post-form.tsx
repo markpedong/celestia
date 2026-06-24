@@ -3,8 +3,8 @@
 import type { FC } from 'react';
 import { updatePostAction } from '@/lib/actions/posts';
 import type { EditPostFormProps } from '@/lib/types';
-import { editPostSchema } from '@/lib/form-schemas';
 import { useServerActionForm } from '@/hooks/use-server-action-form';
+import useFormSchema from '@/hooks/useFormSchema';
 import { Button } from '../ui/button';
 import FormField from '../ui/form-field';
 import { Input } from '../ui/input';
@@ -15,6 +15,7 @@ import { Save } from 'lucide-react';
 import { MAX_POST_BODY_LENGTH, MAX_POST_TITLE_LENGTH } from '@/constants';
 
 export const EditPostForm: FC<EditPostFormProps> = ({ post }) => {
+  const { editPostSchema } = useFormSchema();
   const {
     form: {
       register,

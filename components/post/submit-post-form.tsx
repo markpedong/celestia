@@ -1,8 +1,8 @@
 'use client';
 import type { FC } from 'react';
 import { createPostAction } from '@/lib/actions/posts';
-import { postSchema } from '@/lib/form-schemas';
 import { useServerActionForm } from '@/hooks/use-server-action-form';
+import useFormSchema from '@/hooks/useFormSchema';
 import { Label } from '../ui/label';
 import FormField from '../ui/form-field';
 import { Input } from '../ui/input';
@@ -14,6 +14,7 @@ import { ImageUploadField } from './image-upload-field';
 import { MAX_POST_BODY_LENGTH, MAX_POST_TITLE_LENGTH } from '@/constants';
 
 export const SubmitPostForm: FC<SubmitPostFormProps> = ({ communities, defaultCommunitySlug }) => {
+  const { postSchema } = useFormSchema();
   const selectedCommunity =
     defaultCommunitySlug && communities.some(community => community.slug === defaultCommunitySlug)
       ? defaultCommunitySlug

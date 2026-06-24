@@ -13,8 +13,8 @@ import { DialogClose, DialogFooter } from '@/components/ui/dialog';
 import SettingsDialog from '@/components/ui/settings-dialog';
 import { SettingsOptionRow } from '@/components/ui/settings-option-row';
 import { IMAGE_ACCEPT } from '@/constants';
-import { profileDetailsSchema, profileMediaSchema } from '@/lib/form-schemas';
-import { useZodForm } from '@/hooks/use-zod-form';
+import useFormValidate from '@/hooks/useFormValidate';
+import useFormSchema from '@/hooks/useFormSchema';
 
 type ProfileSettingsFormProps = {
   profile: {
@@ -27,13 +27,20 @@ type ProfileSettingsFormProps = {
 };
 
 export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
+  const { profileDetailsSchema, profileMediaSchema } = useFormSchema();
   const queryClient = useQueryClient();
   const [savingDetails, startSavingDetails] = useTransition();
   const [savingMedia, startSavingMedia] = useTransition();
   const [activeEditor, setActiveEditor] = useState<'displayName' | 'bio' | 'avatar' | 'banner' | null>(null);
   const [mediaPreview, setMediaPreview] = useState<{ kind: 'avatar' | 'banner'; url: string } | null>(null);
-  const detailsForm = useZodForm(profileDetailsSchema, { displayName: profile.displayName ?? '', bio: profile.bio ?? '' });
-  const mediaForm = useZodForm(profileMediaSchema, { avatar: undefined, cover: undefined });
+  const detailsForm = useFormValidate({
+    schema: profileDetailsSchema,
+    defaultValues: { displayName: profile.displayName ?? '', bio: profile.bio ?? '' },
+  });
+  const mediaForm = useFormValidate({
+    schema: profileMediaSchema,
+    defaultValues: { avatar: undefined, cover: undefined },
+  });
 
   const clearMediaPreview = () =>
     setMediaPreview(current => {

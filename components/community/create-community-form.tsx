@@ -5,12 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import FormField from '@/components/ui/form-field';
 import { Textarea } from '@/components/ui/textarea';
-import { createCommunitySchema } from '@/lib/form-schemas';
 import { useServerActionForm } from '@/hooks/use-server-action-form';
+import useFormSchema from '@/hooks/useFormSchema';
 import { MAX_COMMUNITY_DESCRIPTION_LENGTH, MAX_COMMUNITY_NAME_LENGTH, MAX_COMMUNITY_SLUG_LENGTH } from '@/constants';
 import { Plus } from 'lucide-react';
 
 export const CreateCommunityForm = () => {
+  const { createCommunitySchema } = useFormSchema();
   const {
     form: {
       register,

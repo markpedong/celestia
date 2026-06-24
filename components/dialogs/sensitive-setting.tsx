@@ -7,8 +7,8 @@ import FormField from '@/components/ui/form-field';
 import SettingsDialog from '@/components/ui/settings-dialog';
 import DialogActions from '@/components/ui/dialog-actions';
 import { updateSensitiveAccountAction } from '@/lib/actions/security';
-import { sensitiveSettingSchema } from '@/lib/form-schemas';
-import { useZodForm } from '@/hooks/use-zod-form';
+import useFormValidate from '@/hooks/useFormValidate';
+import useFormSchema from '@/hooks/useFormSchema';
 
 type EditableSetting = 'email' | 'phone' | 'gender' | 'location';
 
@@ -20,7 +20,11 @@ type SensitiveSettingDialogProps = {
 
 export const SensitiveSettingDialog = ({ dialog, user, onCloseAction }: SensitiveSettingDialogProps) => {
   const [pending, startTransition] = useTransition();
-  const { register, handleSubmit, reset, onFormKeyDown, formState: { errors } } = useZodForm(sensitiveSettingSchema, { value: '' });
+  const { sensitiveSettingSchema } = useFormSchema();
+  const { register, handleSubmit, reset, onFormKeyDown, formState: { errors } } = useFormValidate({
+    schema: sensitiveSettingSchema,
+    defaultValues: { value: '' },
+  });
 
   const config = dialog
     ? {
@@ -72,16 +76,11 @@ export const SensitiveSettingDialog = ({ dialog, user, onCloseAction }: Sensitiv
     reset({ value: config?.defaultValue ?? '' });
   }, [config?.defaultValue, reset]);
 
-  const submit = handleSubmit(({ value }) => {
+  const onSubmit = async ({ value }: { value: string }) => {
     if (!dialog) return;
 
-    const formData = new FormData();
-    formData.set('value', value);
-    formData.set('setting', dialog.setting);
-    formData.set('verificationToken', dialog.token);
-
     startTransition(async () => {
-      const result = await updateSensitiveAccountAction(formData);
+      const result = await updateSensitiveAccountAction({ value, setting: dialog.setting, token: dialog.token });
 
       if (result?.error) {
         toast.error(result.error);
@@ -91,7 +90,7 @@ export const SensitiveSettingDialog = ({ dialog, user, onCloseAction }: Sensitiv
       onCloseAction();
       toast.success(result?.success ?? 'Account details updated.');
     });
-  });
+  };
 
   if (!dialog || !config) return null;
 
@@ -102,7 +101,7 @@ export const SensitiveSettingDialog = ({ dialog, user, onCloseAction }: Sensitiv
       title={config.title}
       description={config.description}
     >
-      <form onSubmit={submit} onKeyDown={onFormKeyDown} className='space-y-4' noValidate>
+      <form onSubmit={handleSubmit(onSubmit)} onKeyDown={onFormKeyDown} className='space-y-4' noValidate>
         <FormField
           label={config.label}
           type={config.type}

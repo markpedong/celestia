@@ -21,10 +21,12 @@ const useFormValidate = <TForm extends FieldValues>({ schema, defaultValues }: I
     handleSubmit,
     register,
     watch,
-    formState: { errors: errorsList, isValid, isSubmitting, isSubmitted, dirtyFields },
+    formState: { errors: errorsList, isValid, isSubmitting, isSubmitted, dirtyFields, touchedFields },
   } = useForm<TForm>({
     defaultValues,
     resolver: schema ? zodResolver(schema) : undefined,
+    mode: 'onChange',
+    reValidateMode: 'onChange',
   });
 
   const onChangeValue = useCallback(
@@ -40,10 +42,6 @@ const useFormValidate = <TForm extends FieldValues>({ schema, defaultValues }: I
     },
     [errorsList],
   );
-
-  const handleSetError = (field: FieldPath<TForm>, message: string) => {
-    setError(field, { message } as unknown as Parameters<typeof setError>[1]);
-  };
 
   const handleErrors = (err: FieldErrors<TForm>) => {
     const nonEmptyError = Object.values(err).find(error =>
@@ -77,14 +75,15 @@ const useFormValidate = <TForm extends FieldValues>({ schema, defaultValues }: I
     handleErrors,
     loading: isSubmitting,
     isSubmitted,
-    setError: handleSetError,
+    setError,
     clearErrors,
     watch,
     reset,
     resetField,
     register,
     dirtyFields,
-    onFormKeyDown
+    onFormKeyDown,
+    formState: { errors: errorsList, isValid, isSubmitting, isSubmitted, dirtyFields, touchedFields },
   };
 };
 

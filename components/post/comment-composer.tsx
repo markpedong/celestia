@@ -11,15 +11,19 @@ import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
 import { UserAvatar } from '../ui/user-avatar';
 import { useCommentSubmission } from './comment-submission-context';
-import { commentSchema } from '@/lib/form-schemas';
-import { useZodForm } from '@/hooks/use-zod-form';
+import useFormValidate from '@/hooks/useFormValidate';
+import useFormSchema from '@/hooks/useFormSchema';
 import { MAX_COMMENT_LENGTH } from '@/constants';
 
 const CommentComposer: FC<CommentComposerProps> = ({ postID, user, compact, parentId, placeholder }) => {
+  const { commentSchema } = useFormSchema();
   const [pending, startTransition] = useTransition();
   const router = useRouter();
   const commentSubmission = useCommentSubmission();
-  const { register, handleSubmit, onFormKeyDown, reset, formState: { errors, isSubmitted, isValid, touchedFields } } = useZodForm(commentSchema, { body: '' });
+  const { register, handleSubmit, onFormKeyDown, reset, formState: { errors, isSubmitted, isValid, touchedFields } } = useFormValidate({
+    schema: commentSchema,
+    defaultValues: { body: '' },
+  });
 
   const submitValid = async (fd: FormData) => {
     const body = String(fd.get('body') ?? '').trim();

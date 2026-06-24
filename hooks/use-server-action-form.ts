@@ -5,7 +5,7 @@ import { useState, useTransition } from 'react';
 import type { DefaultValues, FieldValues } from 'react-hook-form';
 import type { z } from 'zod';
 import { toast } from 'sonner';
-import { useZodForm } from './use-zod-form';
+import useFormValidate from './useFormValidate';
 
 type ServerFormAction<TState> = (previousState: TState, formData: FormData) => TState | Promise<TState>;
 
@@ -15,7 +15,10 @@ export const useServerActionForm = <TValues extends FieldValues, TState>(
   schema: z.ZodType<TValues>,
   defaultValues: DefaultValues<TValues>,
 ) => {
-  const form = useZodForm(schema, defaultValues);
+  const form = useFormValidate({
+    schema: schema as z.ZodType<TValues, TValues>,
+    defaultValues,
+  });
   const [state, setState] = useState(initialState);
   const [pending, startTransition] = useTransition();
 

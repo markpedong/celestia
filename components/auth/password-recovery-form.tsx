@@ -7,20 +7,22 @@ import { Button } from '@/components/ui/button';
 import FormField from '@/components/ui/form-field';
 import { REDIRECT_FORGOT, MIN_PASSWORD_LENGTH, PASSWORD_RECOVERY } from '@/constants';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
-import { passwordRecoverySchema } from '@/lib/form-schemas';
-import { useZodForm } from '@/hooks/use-zod-form';
+import useFormValidate from '@/hooks/useFormValidate';
+import useFormSchema from '@/hooks/useFormSchema';
 
 const PasswordRecoveryForm: FC<{ mode: 'request' | 'update' }> = ({ mode }) => {
   const [message, setMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const isRequest = mode === 'request';
+  const { passwordRecoverySchema } = useFormSchema();
 
   const {
     register,
     handleSubmit,
     setError,
+    onFormKeyDown,
     formState: { errors },
-  } = useZodForm(passwordRecoverySchema, PASSWORD_RECOVERY);
+  } = useFormValidate({ schema: passwordRecoverySchema, defaultValues: PASSWORD_RECOVERY });
 
   const onSubmit = handleSubmit(values => {
     if (isRequest && !/^\S+@\S+\.\S+$/.test(values.email)) {
@@ -61,7 +63,7 @@ const PasswordRecoveryForm: FC<{ mode: 'request' | 'update' }> = ({ mode }) => {
   });
 
   return (
-    <form onSubmit={onSubmit} className='space-y-4' noValidate autoComplete={isRequest ? undefined : 'off'}>
+    <form onSubmit={onSubmit} onKeyDown={onFormKeyDown} className='space-y-4' noValidate autoComplete={isRequest ? undefined : 'off'}>
       {isRequest ? (
         <FormField
           type='email'
