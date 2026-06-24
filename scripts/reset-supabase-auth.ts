@@ -1,5 +1,5 @@
 import { config } from 'dotenv';
-import { createSupabaseAdminClient } from '../lib/supabase/server';
+import { createSupabaseAdminClient } from '../lib/supabase/admin';
 
 config({ path: '.env' });
 
