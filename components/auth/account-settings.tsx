@@ -53,8 +53,11 @@ export const AccountSettings = () => {
   const identities = user?.identities ?? [];
   const hasProvider = (provider: 'google' | 'apple') => identities.some(identity => identity.provider === provider);
 
+  // OAuth identities stay OAuth identities after a password is added. The
+  // server-owned flag is therefore the reliable source for linked accounts.
   const hasPassword =
     hasPasswordOverride ||
+    user?.app_metadata.has_password === true ||
     identities.some(identity => identity.provider === 'email') ||
     (Array.isArray(user?.app_metadata.providers) && user.app_metadata.providers.includes('email'));
 
@@ -467,7 +470,10 @@ export const AccountSettings = () => {
       <SetPasswordDialog
         open={dialog?.type === 'setPassword'}
         onCloseAction={() => setDialog(null)}
-        onSuccessAction={() => setHasPasswordOverride(true)}
+        onSuccessAction={async () => {
+          setHasPasswordOverride(true);
+          await supabase.auth.refreshSession();
+        }}
       />
 
       <MfaDialog

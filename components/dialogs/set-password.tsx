@@ -12,7 +12,7 @@ import useFormSchema from '@/hooks/useFormSchema';
 type SetPasswordDialogProps = {
   open: boolean;
   onCloseAction: () => void;
-  onSuccessAction: () => void;
+  onSuccessAction: () => void | Promise<void>;
 };
 
 export const SetPasswordDialog = ({ open, onCloseAction, onSuccessAction }: SetPasswordDialogProps) => {
@@ -32,7 +32,7 @@ export const SetPasswordDialog = ({ open, onCloseAction, onSuccessAction }: SetP
         return;
       }
 
-      onSuccessAction();
+      await onSuccessAction();
       onCloseAction();
       toast.success(result?.success ?? 'Password set.');
     });

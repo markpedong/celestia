@@ -17,6 +17,11 @@ const sensitiveSettings = new Set<SensitiveSetting>(['email', 'phone', 'gender',
 const passwordProtectedSettings = new Set<PasswordVerificationSetting>(['email', 'phone', 'gender', 'location', 'passkey', 'mfa', 'backupCodes']);
 const verificationLifetime = 5 * 60 * 1000;
 
+const hasAccountPassword = (appMetadata: Record<string, unknown> | undefined, identities?: { provider?: string }[]) =>
+  appMetadata?.has_password === true ||
+  identities?.some(identity => identity.provider === 'email') === true ||
+  appMetadata?.providers instanceof Array && appMetadata.providers.includes('email');
+
 const hashCode = (code: string) => createHash('sha256').update(code).digest('hex');
 const makeCode = () => randomBytes(9).toString('base64url').toUpperCase();
 
@@ -97,10 +102,17 @@ export const setPasswordAction = async (values: { newPassword: string; confirmPa
   const supabase = await createSupabaseServerClient();
   const { data: { user }, error: userError } = await supabase.auth.getUser();
   if (userError || !user) return { error: 'You must be signed in to set a password.' };
-  const hasPassword = user.identities?.some(identity => identity.provider === 'email') || user.app_metadata.providers?.includes('email');
+  const hasPassword = hasAccountPassword(user.app_metadata, user.identities);
   if (hasPassword) return { error: 'A password is already set. Use Change Password instead.' };
   const { error } = await supabase.auth.updateUser({ password: newPassword });
   if (error) return { error: error.message };
+
+  const admin = createSupabaseAdminClient();
+  const { error: metadataError } = await admin.auth.admin.updateUserById(user.id, {
+    app_metadata: { ...user.app_metadata, has_password: true },
+  });
+  if (metadataError) return { error: `Password was set, but the account status could not be saved: ${metadataError.message}` };
+
   return { success: 'Password set. You can now sign in with email and password.' };
 };
 
