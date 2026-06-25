@@ -8,8 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "db:push": "prisma db push && prisma generate",
-    "db:reset": "tsx scripts/confirm-db-reset.ts && prisma migrate reset --force && tsx scripts/apply-supabase-rls.ts && tsx scripts/reset-supabase-auth.ts && tsx scripts/empty-supabase-storage.ts",
-    "supabase:storage": "tsx scripts/setup-supabase-storage.ts"
+    "db:reset": "tsx scripts/confirm-db-reset.ts && prisma migrate reset --force && tsx scripts/apply-supabase-rls.ts && tsx scripts/reset-supabase-auth.ts && tsx scripts/empty-supabase-storage.ts && tsx scripts/setup-supabase-storage.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
