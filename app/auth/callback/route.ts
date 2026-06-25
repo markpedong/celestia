@@ -13,7 +13,7 @@ export const GET = async (request: Request) => {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
-  if (error || !data.user?.email) return redirectResponse('/auth/sign-in?error=oauth', origin);;
+  if (error || !data.user?.email) return redirectResponse('/auth/sign-in?error=oauth', origin);
   if (nextPath === '/auth/update-password') return redirectResponse(nextPath, origin);
 
   const { data: profile } = await supabase
@@ -23,18 +23,23 @@ export const GET = async (request: Request) => {
     .maybeSingle();
 
   const displayName = profile?.display_name ?? (await getInitialDisplayName());
-  const { error: profileError } = await supabase.from('users').upsert(
-    {
-      id: data.user.id,
-      userName: data.user.email.split('@')[0],
-      email: data.user.email,
-      display_name: displayName,
-      avatar_url: data.user.user_metadata.avatar_url ?? null,
-    },
-    { onConflict: 'id' },
-  );
+  const avatarUrl = data.user.user_metadata.avatar_url ?? null;
+  const { error: profileError } = profile
+    ? await supabase
+      .from('users')
+      .update({ email: data.user.email, display_name: displayName, avatar_url: avatarUrl })
+      .eq('id', data.user.id)
+    : await supabase
+      .from('users')
+      .insert({
+        id: data.user.id,
+        username: data.user.email.split('@')[0],
+        email: data.user.email,
+        display_name: displayName,
+        avatar_url: avatarUrl,
+      });
 
-  if (profileError) return redirectResponse('/auth/sign-in?error=oauth', origin);;
+  if (profileError) return redirectResponse('/auth/sign-in?error=oauth', origin);
 
   return redirectResponse(nextPath, origin);
 };
