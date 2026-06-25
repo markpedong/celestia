@@ -93,7 +93,7 @@ const Page = async ({ params }: PostPageProps) => {
         <div className='mb-4 flex flex-wrap items-center justify-between gap-3'>
           <h2 className='text-lg font-semibold'>{post.commentCount} Comments</h2>
         </div>
-        <CommentThread tree={commentTree} postAuthorID={post.authorID} sessionUser={null}>
+        <CommentThread tree={commentTree} postAuthorID={post.authorID} sessionUser={null} communitySlug={communitySlug}>
           <ClientCommentComposerGate postID={post.id} communitySlug={communitySlug} />
         </CommentThread>
       </section>

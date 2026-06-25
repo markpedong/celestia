@@ -2,25 +2,59 @@
 
 import { useGetCommunityStats } from '@/hooks/useQueries';
 import { formatCount } from '@/lib/utils';
-import { CakeSlice, Users } from 'lucide-react';
+import type { Community } from '@/lib/types';
+import { CakeSlice, Hash, MessageSquare, Users } from 'lucide-react';
 import { usePathname } from 'next/navigation';
+import type { FC } from 'react';
 
-const CommunitySidebar = () => {
+const CommunitySidebar: FC<{ community?: Community }> = ({ community }) => {
   const slug = usePathname().split('/').pop() ?? '';
   const { data: stats } = useGetCommunityStats(slug);
+  const color = community?.hashColor ?? 'var(--primary)';
 
   return (
-    <section className='celestia-card p-4'>
-      <h2 className='mb-3 text-sm font-semibold'>About Community</h2>
-      <p className='text-xs leading-6 text-muted-foreground'>
-        r/{slug} is a real community with membership. Join it to add it to your communities and create posts there.
-      </p>
-      <div className='mt-4 space-y-2 text-xs text-muted-foreground'>
-        <p className='flex items-center gap-2'>
-          <Users className='size-3 text-primary' /> {formatCount(stats?.data?.memberCount)} members
+    <section className='celestia-card overflow-hidden'>
+      <div className='h-2' style={{ backgroundColor: color }} />
+      <div className='p-4'>
+        <div className='flex items-center gap-3'>
+          <div
+            className='grid size-10 place-items-center rounded text-sm font-black text-primary-foreground'
+            style={{ backgroundColor: color }}
+          >
+            {(community?.label ?? slug).slice(0, 1).toUpperCase()}
+          </div>
+          <div className='min-w-0'>
+            <h2 className='truncate text-sm font-semibold'>About r/{slug}</h2>
+            <p className='text-xs text-muted-foreground'>Community overview</p>
+          </div>
+        </div>
+        <p className='mt-4 text-xs leading-6 text-muted-foreground'>
+          {community?.description ||
+            `r/${slug} is a place for focused discussions, shared posts, and member-led conversations.`}
         </p>
-        <p className='flex items-center gap-2'>
-          <CakeSlice className='size-3 text-primary' /> Community discussions
+        <div className='mt-4 grid gap-2 text-xs'>
+          <div className='flex items-center justify-between rounded border border-border bg-muted/30 px-3 py-2'>
+            <span className='flex items-center gap-2 text-muted-foreground'>
+              <Users className='size-3.5 text-primary' /> Members
+            </span>
+            <span className='font-mono font-semibold text-foreground'>{formatCount(stats?.data?.memberCount)}</span>
+          </div>
+          <div className='flex items-center justify-between rounded border border-border bg-muted/30 px-3 py-2'>
+            <span className='flex items-center gap-2 text-muted-foreground'>
+              <MessageSquare className='size-3.5 text-primary' /> Comments
+            </span>
+            <span className='font-mono font-semibold text-foreground'>{formatCount(stats?.data?.commentCount)}</span>
+          </div>
+          <div className='flex items-center justify-between rounded border border-border bg-muted/30 px-3 py-2'>
+            <span className='flex items-center gap-2 text-muted-foreground'>
+              <Hash className='size-3.5 text-primary' /> Posts
+            </span>
+            <span className='font-mono font-semibold text-foreground'>{formatCount(stats?.data?.postCount)}</span>
+          </div>
+        </div>
+        <p className='mt-4 flex items-center gap-2 text-xs text-muted-foreground'>
+          <CakeSlice className='size-3.5 text-primary' />
+          Join to keep this community in your orbit.
         </p>
       </div>
     </section>

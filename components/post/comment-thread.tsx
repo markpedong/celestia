@@ -7,7 +7,7 @@ import { createCommentAction } from '@/lib/actions/comments';
 import { CommentSubmissionContext, createPendingComment } from './comment-submission-context';
 import { useOptimistic, useState, useTransition } from 'react';
 
-const CommentThread: FC<CommentThreadProps> = ({ tree, postAuthorID, sessionUser, children }) => {
+const CommentThread: FC<CommentThreadProps> = ({ tree, postAuthorID, sessionUser, communitySlug, children }) => {
   const [pending, startTransition] = useTransition();
   const [activeReplyID, setActiveReplyID] = useState<string | null>(null);
   const [optimisticTree, addOptimisticComment] = useOptimistic(
@@ -34,6 +34,7 @@ const CommentThread: FC<CommentThreadProps> = ({ tree, postAuthorID, sessionUser
             node={node}
             postAuthorID={postAuthorID}
             sessionUser={sessionUser}
+            communitySlug={communitySlug}
             activeReplyID={activeReplyID}
             onReplyChangeAction={setActiveReplyID}
           />

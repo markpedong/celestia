@@ -2,36 +2,55 @@
 
 import Link from 'next/link';
 import CommentComposer from '@/components/post/comment-composer';
-import { useGetProfile } from '@/hooks/useQueries';
+import { Button } from '@/components/ui/button';
+import { useCommunityJoin, useGetCommunityMember, useGetProfile } from '@/hooks/useQueries';
+import { Plus } from 'lucide-react';
 
 export const ClientCommentComposerGate = ({ postID, communitySlug }: { postID: string; communitySlug?: string }) => {
   const { data } = useGetProfile();
+  const memberQuery = useGetCommunityMember(communitySlug ?? '');
+  const { mutate, isPending } = useCommunityJoin();
+  const user = data?.data;
+  const isMember = memberQuery.data?.data?.isMember;
 
-  if (data?.data)
+  if (user && isMember)
     return (
       <div className='mb-8'>
-        <CommentComposer postID={postID} user={data.data} />
+        <CommentComposer postID={postID} user={user} />
       </div>
     );
 
-  return (
-    <p className='mb-8 rounded border border-dashed border-primary/25 bg-primary/5 p-4 text-sm text-muted-foreground'>
-      {data?.data ? (
-        <>
+  if (user && communitySlug) {
+    return (
+      <div className='mb-8 flex flex-wrap items-center justify-between gap-3 rounded border border-dashed border-primary/25 bg-primary/5 p-4 text-sm text-muted-foreground'>
+        <span>
           Join{' '}
-          <Link href={`/r/${communitySlug ?? ''}`} className='font-medium text-primary hover:underline'>
-            this community
+          <Link href={`/r/${communitySlug}`} className='font-medium text-primary hover:underline'>
+            r/{communitySlug}
           </Link>{' '}
           to comment.
-        </>
-      ) : (
-        <>
-          <Link href='/auth/sign-in' className='font-medium text-primary hover:underline'>
-            Sign in
-          </Link>{' '}
-          to join the discussion.
-        </>
-      )}
+        </span>
+        <Button
+          type='button'
+          size='sm'
+          isLoading={isPending || memberQuery.isFetching}
+          loadingText='Joining...'
+          className='celestia-primary-action rounded'
+          onClick={() => mutate(communitySlug)}
+        >
+          <Plus />
+          Join community
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <p className='mb-8 rounded border border-dashed border-primary/25 bg-primary/5 p-4 text-sm text-muted-foreground'>
+      <Link href='/auth/sign-in' className='font-medium text-primary hover:underline'>
+        Sign in
+      </Link>{' '}
+      to join the discussion.
     </p>
   );
 };
