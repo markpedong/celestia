@@ -95,7 +95,7 @@ const CommunitySettingsForm: FC<{ community: Community }> = ({ community }) => {
         type='submit'
         disabled={!isValid}
         loadingText='Saving…'
-        className='celestia-primary-action w-full rounded'
+        className='celestia-primary-action w-full h-11'
       >
         <Save /> Save community settings
       </Button>

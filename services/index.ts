@@ -43,7 +43,7 @@ export const updateCommunity = async (body: Tag & { description: string }) => {
     endpoint: API_ENDPOINT.COMMUNITY,
   });
 
-  return response.data;
+  return response;
 };
 
 export const getCommunityFeed = async (slug: string, sort: FeedSort) => {
