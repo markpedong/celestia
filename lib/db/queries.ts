@@ -211,6 +211,7 @@ export const listCommunity = cache(async (): Promise<Tag[]> => {
     slug: t.slug,
     label: t.label,
     hashColor: t.hashColor,
+    avatarUrl: t.avatarUrl,
   }));
 });
 
@@ -280,6 +281,7 @@ export const searchSuggestions = async (searchQuery: string): Promise<{
       slug: tag.slug,
       label: tag.label,
       hashColor: tag.hashColor,
+      avatarUrl: tag.avatarUrl,
       postCount: countMap.get(tag.slug) ?? 0,
     })),
   };

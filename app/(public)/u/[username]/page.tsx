@@ -13,7 +13,6 @@ import {
   listCommentsByAuthor,
   listPostsByAuthor,
   listCommunity,
-  listUserNames,
   listVotedCommentsByUser,
   listVotedPostsByUser,
 } from '@/lib/db/queries';
@@ -24,8 +23,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-export const revalidate = 300;
-export const dynamicParams = true;
+export const dynamic = 'force-dynamic';
 
 const excerpt = (body: string) => {
   const clean = body.replace(/\s+/g, ' ').trim();
@@ -181,14 +179,13 @@ const UserPage = async ({ params }: UserPageProps) => {
         </div>
         <div className='relative grid gap-5 border-t border-border/70 p-5 pt-16 md:grid-cols-[minmax(0,1fr)_10rem] md:p-6 md:pt-6'>
           <div className='absolute right-5 -top-16 z-20 size-24 overflow-hidden rounded-2xl border-4 border-card bg-card shadow-2xl ring-1 ring-white/10 md:right-7 md:-top-28 md:size-32'>
-            {profile.avatarUrl ? (
+            {(profile.avatar_url ?? profile.avatarUrl) ? (
               <Image
-                src={profile.avatarUrl}
+                src={profile.avatar_url ?? profile.avatarUrl ?? ''}
                 alt={`${profile.displayName || profile.userName} profile picture`}
-                fill
-                unoptimized
-                sizes='(max-width: 768px) 96px, 128px'
-                className='object-cover'
+                width={128}
+                height={128}
+                className='size-full object-cover'
               />
             ) : (
               <span className='grid size-full place-items-center bg-primary/15 text-3xl font-black text-primary md:text-5xl'>
@@ -373,7 +370,5 @@ const CommentsList = ({
     </div>
   </section>
 );
-
-export const generateStaticParams = async () => (await listUserNames()).map(userName => ({ username: userName }));
 
 export default UserPage;

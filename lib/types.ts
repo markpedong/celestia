@@ -30,6 +30,7 @@ export type User = {
   email: string;
   displayName: string | null;
   bio: string | null;
+  avatar_url?: string | null;
   avatarUrl: string | null;
   coverUrl: string | null;
   createdAt: Date;
@@ -39,6 +40,7 @@ export type Tag = {
   slug: string;
   label: string;
   hashColor: string;
+  avatarUrl?: string | null;
 };
 
 export type Community = Tag & {

@@ -1,10 +1,10 @@
 import type { FC } from 'react';
-import { UserAvatar } from '@/components/ui/user-avatar';
 import { AuthorHoverCard } from '@/components/feed/author-hover-card';
 import type { PostMetaProps } from '@/lib/types';
 import { cn, formatTimeAgo } from '@/lib/utils';
 import { Clock } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export const PostMeta: FC<PostMetaProps> = ({ author, authorStats, post, tagsBySlug, className, compact = false }) => {
   const primarySlug = post.tagSlugs[0];
@@ -28,7 +28,13 @@ export const PostMeta: FC<PostMetaProps> = ({ author, authorStats, post, tagsByS
         className
       )}
     >
-      <UserAvatar user={displayAuthor} size='sm' />
+      {displayAuthor.avatarUrl ? (
+        <Image src={displayAuthor.avatarUrl} width={20} height={20} className='rounded-full size-5' alt='Avatar' />
+      ) : (
+        <span className='grid size-5 place-items-center rounded-full bg-primary/15 text-[10px] font-semibold text-primary'>
+          {(displayAuthor.displayName ?? displayAuthor.userName).slice(0, 1).toUpperCase()}
+        </span>
+      )}
       {!author ? (
         <span className='font-medium text-muted-foreground'>u/user-deleted</span>
       ) : compact ? (

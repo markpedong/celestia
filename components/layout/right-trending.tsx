@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { ActiveNowDynamic } from '@/components/dynamic-import';
 import type { RightTrendingProps } from '@/lib/types';
 import { Flame, Minus, Sparkles, TrendingUp, Users } from 'lucide-react';
+import Image from 'next/image';
 
 export const RightTrending: FC<RightTrendingProps> = ({ items, communities }) => {
   return (
@@ -39,11 +40,18 @@ export const RightTrending: FC<RightTrendingProps> = ({ items, communities }) =>
       <div className='space-y-2.5'>
         {communities.slice(0, 3).map((community) => (
           <Link key={community.slug} href={`/r/${encodeURIComponent(community.slug)}`} className='flex items-center gap-2.5 rounded px-1 py-1 celestia-hover-surface'>
-            <span
-              className='grid size-8 place-items-center rounded-lg border border-primary/25 bg-primary/10 text-xs font-bold text-primary'
-              style={{ color: community.hashColor }}
-            >
-              {community.label[0]}
+            <span className='relative grid size-8 shrink-0 place-items-center overflow-hidden rounded-lg border border-primary/25 bg-primary/10 text-xs font-bold text-primary'>
+              {community.avatarUrl ? (
+                <Image
+                  src={community.avatarUrl}
+                  width={32}
+                  height={32}
+                  className='size-full object-cover'
+                  alt={`${community.label} avatar`}
+                />
+              ) : (
+                <span style={{ color: community.hashColor }}>{community.label[0]}</span>
+              )}
             </span>
             <div className='min-w-0 flex-1'>
               <p className='text-xs font-medium text-foreground'>r/{community.slug}</p>

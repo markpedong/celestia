@@ -23,11 +23,13 @@ export const GET = async (request: Request) => {
     .maybeSingle();
 
   const displayName = profile?.display_name ?? (await getInitialDisplayName());
-  const avatarUrl = data.user.user_metadata.avatar_url ?? null;
+  const initialAvatarUrl = typeof data.user.user_metadata.avatar_url === 'string'
+    ? data.user.user_metadata.avatar_url
+    : null;
   const { error: profileError } = profile
     ? await supabase
       .from('users')
-      .update({ email: data.user.email, display_name: displayName, avatar_url: avatarUrl })
+      .update({ email: data.user.email, display_name: displayName })
       .eq('id', data.user.id)
     : await supabase
       .from('users')
@@ -36,7 +38,7 @@ export const GET = async (request: Request) => {
         username: data.user.email.split('@')[0],
         email: data.user.email,
         display_name: displayName,
-        avatar_url: avatarUrl,
+        avatar_url: initialAvatarUrl,
       });
 
   if (profileError) return redirectResponse('/auth/sign-in?error=oauth', origin);
