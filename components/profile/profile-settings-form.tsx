@@ -15,8 +15,7 @@ import useFormSchema from '@/hooks/useFormSchema';
 import { useGetProfile } from '@/hooks/useQueries';
 import z from 'zod';
 import { ImageUploader } from '@/components/ui/image-uploader';
-
-type MediaKind = 'avatar' | 'banner';
+import { MediaKind } from '@/lib/types';
 
 const ProfileSettingsForm = () => {
   const queryClient = useQueryClient();
@@ -91,45 +90,61 @@ const ProfileSettingsForm = () => {
     });
   };
 
+  const sections = [
+    {
+      title: 'Profile details',
+      description: 'Control how you appear across Celestia.',
+      items: [
+        {
+          title: 'Display Name',
+          value: profile?.displayName || 'Not set',
+          editor: 'displayName' as const,
+        },
+        {
+          title: 'About / Bio',
+          value: profile?.bio || 'Tell people a little about yourself.',
+          editor: 'bio' as const,
+        },
+      ],
+    },
+    {
+      title: 'Profile media',
+      description: 'Choose the images people see on your profile.',
+      items: [
+        {
+          title: 'Avatar',
+          value: profile?.avatarUrl ? 'Image uploaded' : 'Not set',
+          editor: 'avatar' as const,
+        },
+        {
+          title: 'Banner',
+          value: profile?.coverUrl ? 'Image uploaded' : 'Not set',
+          editor: 'banner' as const,
+        },
+      ],
+    },
+  ];
+
   return (
     <div className='space-y-5'>
-      <section className='celestia-card space-y-5 p-5 md:p-6'>
-        <div>
-          <h2 className='text-base font-semibold'>Profile details</h2>
-          <p className='mt-1 text-sm text-muted-foreground'>Control how you appear across Celestia.</p>
-        </div>
-        <div className='divide-y divide-border rounded-lg border border-border'>
-          <SettingsOptionRow
-            title='Display Name'
-            value={profile?.displayName || 'Not set'}
-            onClick={() => openEditor('displayName')}
-          />
-          <SettingsOptionRow
-            title='About / Bio'
-            value={profile?.bio || 'Tell people a little about yourself.'}
-            onClick={() => openEditor('bio')}
-          />
-        </div>
-      </section>
-      <section className='celestia-card space-y-5 p-5 md:p-6'>
-        <div>
-          <h2 className='text-base font-semibold'>Profile media</h2>
-          <p className='mt-1 text-sm text-muted-foreground'>Choose the images people see on your profile.</p>
-        </div>
-        <div className='divide-y divide-border rounded-lg border border-border'>
-          <SettingsOptionRow
-            title='Avatar'
-            value={profile?.avatarUrl ? 'Image uploaded' : 'Not set'}
-            onClick={() => openEditor('avatar')}
-          />
-          <SettingsOptionRow
-            title='Banner'
-            value={profile?.coverUrl ? 'Image uploaded' : 'Not set'}
-            onClick={() => openEditor('banner')}
-          />
-        </div>
-      </section>
-
+      {sections.map(section => (
+        <section key={section.title} className='celestia-card space-y-5 p-5 md:p-6'>
+          <div>
+            <h2 className='text-base font-semibold'>{section.title}</h2>
+            <p className='mt-1 text-sm text-muted-foreground'>{section.description}</p>
+          </div>
+          <div className='divide-y divide-border rounded-lg border border-border'>
+            {section.items.map(item => (
+              <SettingsOptionRow
+                key={item.editor}
+                title={item.title}
+                value={item.value}
+                onClick={() => openEditor(item.editor)}
+              />
+            ))}
+          </div>
+        </section>
+      ))}
       <SettingsDialog
         open={activeEditor === 'displayName'}
         onOpenChange={open => !open && closeEditor()}

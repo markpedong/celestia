@@ -417,3 +417,5 @@ export type AccountDialog =
   | { type: 'backupCodes' }
   | { type: 'deleteAccount' }
   | null;
+
+export type MediaKind = 'avatar' | 'banner';
