@@ -6,8 +6,13 @@ import Link from 'next/link';
 
 const NotFound = () => {
   return (
-    <main className='flex min-h-dvh items-center justify-center px-4 py-10'>
-      <section className='relative w-full max-w-3xl overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-2xl shadow-primary/10'>
+    <main className='fixed inset-0 z-[100] flex min-h-dvh items-center justify-center overflow-y-auto bg-background/72 px-4 py-10 backdrop-blur-md'>
+      <section
+        className='relative w-full max-w-3xl overflow-hidden rounded-2xl border border-border bg-card/95 text-card-foreground shadow-2xl shadow-primary/10'
+        role='dialog'
+        aria-modal='true'
+        aria-labelledby='not-found-title'
+      >
         <div className='absolute inset-0 bg-[radial-gradient(circle_at_50%_-10%,var(--primary)_0,transparent_34%),radial-gradient(circle_at_82%_22%,var(--accent)_0,transparent_24%)] opacity-10' />
         <div className='relative grid gap-0 md:grid-cols-[1fr_18rem]'>
           <div className='p-6 md:p-8'>
@@ -21,7 +26,7 @@ const NotFound = () => {
             <p className='mb-3 font-mono text-xs font-semibold uppercase tracking-wider text-muted-foreground'>
               404 signal lost
             </p>
-            <h1 className='text-balance text-4xl font-black tracking-tight text-foreground md:text-5xl'>
+            <h1 id='not-found-title' className='text-balance text-4xl font-black tracking-tight text-foreground md:text-5xl'>
               This thread drifted out of orbit.
             </h1>
             <p className='mt-4 max-w-xl text-sm leading-7 text-muted-foreground'>
