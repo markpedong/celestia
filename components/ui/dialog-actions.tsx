@@ -6,6 +6,7 @@ import { DialogClose, DialogFooter } from '@/components/ui/dialog';
 
 type DialogActionsProps = {
   submitLabel: string;
+  submitDisabled?: boolean;
   submitLoading?: boolean;
   submitVariant?: VariantProps<typeof buttonVariants>['variant'];
 
@@ -15,6 +16,7 @@ type DialogActionsProps = {
 
 const DialogActions = ({
   submitLabel,
+  submitDisabled,
   submitLoading,
   submitVariant,
   cancelLabel = 'Cancel',
@@ -29,7 +31,7 @@ const DialogActions = ({
       </DialogClose>
     )}
 
-    <Button type='submit' variant={submitVariant} isLoading={submitLoading}>
+    <Button type='submit' variant={submitVariant} disabled={submitDisabled} isLoading={submitLoading}>
       {submitLabel}
     </Button>
   </DialogFooter>
