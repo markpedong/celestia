@@ -3,7 +3,7 @@ import { createSupabaseAdminClient } from '../lib/supabase/admin';
 
 config({ path: '.env' });
 
-const buckets = ['profile-avatars', 'profile-covers', 'post-images'];
+const buckets = ['profile-avatars', 'profile-covers', 'community-avatars', 'community-covers', 'post-images'];
 const batchSize = 1000;
 
 const listObjectPaths = async (bucket: string, prefix = ''): Promise<string[]> => {

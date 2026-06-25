@@ -43,6 +43,8 @@ export type Tag = {
 
 export type Community = Tag & {
   description: string;
+  avatarUrl: string | null;
+  coverUrl: string | null;
   createdByID?: string;
   createdAt?: string;
 };
@@ -151,7 +153,7 @@ export type EnrichedCommentRow = Comment & {
   userVote: VoteValue;
 };
 
-export type ImageBucket = 'profile-avatars' | 'profile-covers' | 'post-images';
+export type ImageBucket = 'profile-avatars' | 'profile-covers' | 'community-avatars' | 'community-covers' | 'post-images';
 
 export type PostFormState = ErrorFormState;
 
@@ -159,7 +161,7 @@ export type CommentFormState = ErrorFormState<{ ok?: boolean; comment?: Comment 
 
 export type CommunityFormState = ErrorFormState;
 
-export type CommunitySettingsFormState = ErrorFormState;
+export type CommunitySettingsFormState = ErrorFormState<{ success?: string }>;
 
 export type ProfileMediaFormState = ErrorFormState<{ success?: string }>;
 
@@ -365,7 +367,7 @@ export type PostImageGalleryProps = {
   variant: 'thumbnail' | 'gallery';
 };
 
-export type FormFieldProps = Omit<React.ComponentProps<'input'>, 'id' | 'name'> & {
+type SharedFormFieldProps = {
   name?: string;
   id?: string;
   htmlFor?: string;
@@ -376,6 +378,17 @@ export type FormFieldProps = Omit<React.ComponentProps<'input'>, 'id' | 'name'> 
   error?: string;
   hint?: React.ReactNode;
 };
+
+export type FormFieldProps =
+  | (Omit<React.ComponentProps<'input'>, 'id' | 'name'> &
+    SharedFormFieldProps & {
+      as?: 'input';
+    })
+  | (Omit<React.ComponentProps<'textarea'>, 'id' | 'name' | 'type'> &
+    SharedFormFieldProps & {
+      as: 'textarea';
+    });
+
 
 export type PasswordFieldProps = Omit<ComponentProps<typeof Input>, 'type'> & Pick<FormFieldProps, 'error' | 'label' | 'labelClassName'>;
 

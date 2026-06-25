@@ -4,7 +4,7 @@ import { createSupabaseAdminClient } from '../lib/supabase/admin';
 config({ path: '.env' });
 
 const imageMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-const buckets = ['profile-avatars', 'profile-covers', 'post-images'];
+const buckets = ['profile-avatars', 'profile-covers', 'community-avatars', 'community-covers', 'post-images'];
 
 const main = async () => {
   const supabase = createSupabaseAdminClient();

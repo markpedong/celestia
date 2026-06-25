@@ -6,13 +6,32 @@ import { cn } from '@/lib/utils';
 import { Input } from './input';
 import { Label } from './label';
 import type { FormFieldProps } from '@/lib/types';
+import { Textarea } from './textarea';
 
-const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
-  ({ wrapperClassName, error, hint, label, labelClassName, type, id, name, htmlFor, className, children, ...inputProps }, ref) => {
+const FormField = forwardRef<HTMLInputElement | HTMLTextAreaElement, FormFieldProps>(
+  (
+    {
+      as = 'input',
+      wrapperClassName,
+      error,
+      hint,
+      label,
+      labelClassName,
+      id,
+      name,
+      htmlFor,
+      className,
+      children,
+      ...fieldProps
+    },
+    ref
+  ) => {
     const [isVisible, setIsVisible] = useState(false);
 
     const inputID = htmlFor ?? id ?? name;
-    const isPassword = type === 'password';
+    const isTextarea = as === 'textarea';
+    const inputType = !isTextarea && 'type' in fieldProps ? fieldProps.type : undefined;
+    const isPassword = inputType === 'password';
 
     return (
       <div className={cn('space-y-2', wrapperClassName)}>
@@ -21,18 +40,28 @@ const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
         </Label>
 
         <div className={cn(isPassword && !children && 'relative')}>
-          {children ?? (
-            <Input
-              ref={ref}
-              id={inputID}
-              name={name}
-              type={isPassword && isVisible ? 'text' : type}
-              aria-invalid={inputProps['aria-invalid'] ?? Boolean(error)}
-              className={cn(className, isPassword && 'pr-10')}
-              autoComplete='off'
-              {...inputProps}
-            />
-          )}
+          {children ??
+            (isTextarea ? (
+              <Textarea
+                ref={ref as React.Ref<HTMLTextAreaElement>}
+                id={inputID}
+                name={name}
+                aria-invalid={fieldProps['aria-invalid'] ?? Boolean(error)}
+                className={className}
+                {...(fieldProps as React.ComponentProps<'textarea'>)}
+              />
+            ) : (
+              <Input
+                ref={ref as React.Ref<HTMLInputElement>}
+                id={inputID}
+                name={name}
+                type={isPassword && isVisible ? 'text' : inputType}
+                aria-invalid={fieldProps['aria-invalid'] ?? Boolean(error)}
+                className={cn(className, isPassword && 'pr-10')}
+                autoComplete='off'
+                {...(fieldProps as React.ComponentProps<'input'>)}
+              />
+            ))}
 
           {isPassword && !children ? (
             <button

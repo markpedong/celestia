@@ -24,8 +24,13 @@ export const commentSchema = z.object({
 });
 
 const communityFields = {
-  label: z.string().trim().min(MIN_COMMUNITY_NAME_LENGTH, `Community name must be at least ${MIN_COMMUNITY_NAME_LENGTH} characters.`).max(MAX_COMMUNITY_NAME_LENGTH, `Community name must be ${MAX_COMMUNITY_NAME_LENGTH} characters or fewer.`),
-  description: z.string().trim().max(MAX_COMMUNITY_DESCRIPTION_LENGTH, `Description must be ${MAX_COMMUNITY_DESCRIPTION_LENGTH} characters or fewer.`),
+  label: z.string()
+    .trim()
+    .min(MIN_COMMUNITY_NAME_LENGTH, `Community name must be at least ${MIN_COMMUNITY_NAME_LENGTH} characters.`)
+    .max(MAX_COMMUNITY_NAME_LENGTH, `Community name must be ${MAX_COMMUNITY_NAME_LENGTH} characters or fewer.`),
+  description: z.string()
+    .trim()
+    .max(MAX_COMMUNITY_DESCRIPTION_LENGTH, `Description must be ${MAX_COMMUNITY_DESCRIPTION_LENGTH} characters or fewer.`),
   hashColor: z.string().regex(/^#[0-9a-f]{6}$/i, 'Choose a valid hex color.'),
 };
 

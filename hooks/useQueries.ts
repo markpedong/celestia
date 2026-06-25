@@ -7,6 +7,7 @@ import type { Session } from '@supabase/supabase-js';
 import { useSession } from './useSession';
 import type { FeedSort, Tag } from '@/lib/types';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 const getUserNameByAuth = (user?: Session['user']) => {
   const userName = user?.user_metadata.userName;
@@ -40,9 +41,18 @@ export const useUpdateCommunity = () => {
 
   return useMutation({
     mutationFn: (body: Tag & { description: string }) => updateCommunity(body),
-    onSuccess: (_, variables) => {
+    onSuccess: (res, variables) => {
+      if (!res.success) {
+        toast.error(res.message || 'Unable to update community settings.');
+        return;
+      }
+
+      toast.success('Community settings saved.');
       router.refresh();
       router.push(`/r/${variables.slug}`);
+    },
+    onError: error => {
+      toast.error(error instanceof Error ? error.message : 'Unable to update community settings.');
     },
   });
 };

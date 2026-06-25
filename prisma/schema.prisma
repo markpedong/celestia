@@ -57,6 +57,8 @@ model Community {
   label       String
   description String   @default("")
   hashColor   String   @map("hash_color")
+  avatarUrl   String?  @map("avatar_url")
+  coverUrl    String?  @map("cover_url")
   createdByID String?  @map("created_by_id")
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 

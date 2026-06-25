@@ -226,6 +226,8 @@ export const listJoinedCommunities = async (userID: string): Promise<Community[]
     label: community.label,
     description: community.description,
     hashColor: community.hashColor,
+    avatarUrl: community.avatarUrl,
+    coverUrl: community.coverUrl,
     createdByID: community.createdByID ?? undefined,
     createdAt: community.createdAt.toISOString(),
   }));
