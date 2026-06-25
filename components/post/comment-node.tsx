@@ -29,12 +29,17 @@ export const CommentNode: FC<CommentNodeProps> = ({
   const Icon = hasChildren ? (hideComments ? PlusCircle : MinusCircle) : null;
 
   return (
-    <li className='relative p-4 pt-0 pl-8'>
-      <div className='flex items-start gap-2'>
-        <UserAvatar user={node.author} />
-        <div className='flex flex-col'>
-          <div className='mb-3 mt-[0.4rem] flex flex-wrap items-center gap-2 text-xs text-muted-foreground'>
-            <Link href={`/u/${node.author.userName}`} className='font-medium text-muted-foreground hover:text-primary'>
+    <li className='relative'>
+      <div className='relative flex gap-3'>
+        <div className='relative flex w-9 shrink-0 justify-center'>
+          <UserAvatar user={node.author} />
+          {hasChildren ? (
+            <span className='absolute top-10 bottom-0 w-px rounded-full bg-border hover:bg-primary/50' aria-hidden />
+          ) : null}
+        </div>
+        <div className='min-w-0 flex-1 pb-2'>
+          <div className='flex flex-wrap items-center gap-2 text-xs text-muted-foreground'>
+            <Link href={`/u/${node.author.userName}`} className='font-semibold text-card-foreground hover:text-primary'>
               {node.author.displayName ?? node.author.userName}
             </Link>
             {isOp ? (
@@ -51,48 +56,56 @@ export const CommentNode: FC<CommentNodeProps> = ({
               {formatTimeAgo(node.createdAt)}
             </span>
           </div>
-          <p className='whitespace-pre-wrap text-sm leading-7 text-card-foreground'>{node.body}</p>
-        </div>
-      </div>
-      <div className='mt-3 ml-2 flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground'>
-        <div className='size-5 mr-1'>
-          {Icon && <Icon className='size-5 cursor-pointer' onClick={() => setHideComments(prev => !prev)} />}
-        </div>
-        {node.isPending ? (
-          <span className='px-2 py-1 text-muted-foreground'>Sending…</span>
-        ) : (
-          <VoteButtons
-            target='comment'
-            targetID={node.id}
-            score={node.score}
-            userVote={node.userVote}
-            isSignedIn={Boolean(viewer)}
-          />
-        )}
-        {viewer && isMember && !node.isPending ? (
-          <button
-            type='button'
-            onClick={() => onReplyChangeAction(isReplying ? null : node.id)}
-            className='inline-flex items-center gap-1 rounded-lg px-2 py-1 celestia-hover-surface'
-          >
-            <CornerDownRight className='size-3' />
-            Reply
-          </button>
-        ) : null}
-        <button type='button' className='inline-flex items-center gap-1 rounded-lg px-2 py-1 celestia-hover-surface'>
-          <Share2 className='size-3' />
-          Share
-        </button>
-      </div>
+          <p className='mt-2 whitespace-pre-wrap text-sm leading-7 text-card-foreground'>{node.body}</p>
+          <div className='mt-2 flex flex-wrap items-center gap-1 text-xs font-medium text-muted-foreground'>
+            {Icon ? (
+              <button
+                type='button'
+                onClick={() => setHideComments(prev => !prev)}
+                className='inline-flex items-center gap-1 rounded px-2 py-1 celestia-hover-surface'
+                aria-label={hideComments ? 'Expand replies' : 'Collapse replies'}
+              >
+                <Icon className='size-4' />
+                {node.children.length}
+              </button>
+            ) : null}
+            {node.isPending ? (
+              <span className='px-2 py-1 text-muted-foreground'>Sending...</span>
+            ) : (
+              <VoteButtons
+                target='comment'
+                targetID={node.id}
+                score={node.score}
+                userVote={node.userVote}
+                isSignedIn={Boolean(viewer)}
+              />
+            )}
+            {viewer && isMember && !node.isPending ? (
+              <button
+                type='button'
+                onClick={() => onReplyChangeAction(isReplying ? null : node.id)}
+                className='inline-flex items-center gap-1 rounded px-2 py-1 celestia-hover-surface'
+              >
+                <CornerDownRight className='size-3.5' />
+                Reply
+              </button>
+            ) : null}
+            <button type='button' className='inline-flex items-center gap-1 rounded px-2 py-1 celestia-hover-surface'>
+              <Share2 className='size-3.5' />
+              Share
+            </button>
+          </div>
 
-      {viewer && isReplying && (
-        <div className='mt-3 border-t border-border/70 pt-3'>
-          <CommentComposer postID={node.postID} user={viewer} parentID={node.id} placeholder='Write a reply…' compact />
+          {viewer && isReplying && (
+            <div className='mt-3 border-t border-border/70 pt-3'>
+              <CommentComposer postID={node.postID} user={viewer} parentID={node.id} placeholder='Write a reply...' compact />
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       {node.children.length > 0 && !hideComments && (
-        <ul className='mt-4 space-y-4'>
+        <ul className='mt-2 ml-4 space-y-3 border-l border-border/80 pl-5'>
           {node.children.map(ch => (
             <CommentNode
               key={ch.id}

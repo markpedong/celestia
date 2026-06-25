@@ -5,7 +5,6 @@ import { ContentWithSidebar } from '@/components/layout/content-with-sidebar';
 import { ProfileActivityTabs } from '@/components/profile/profile-activity-tabs';
 import { EmptyState } from '@/components/ui/empty-state';
 import { StatGrid } from '@/components/ui/stat-grid';
-import { UserAvatar } from '@/components/ui/user-avatar';
 import {
   batchAuthorsForIDs,
   batchUserStatsForIDs,
@@ -20,7 +19,7 @@ import {
 } from '@/lib/db/queries';
 import type { CommentsListProps, FeedPostRow, UserCommentActivity, UserPageProps } from '@/lib/types';
 import { formatCount, formatTimeAgo } from '@/lib/utils';
-import { ArrowBigDown, ArrowBigUp, AtSign, CakeSlice, FileText, MessageSquare, Trophy } from 'lucide-react';
+import { ArrowBigDown, ArrowBigUp, AtSign, CakeSlice, FileText, MessageSquare, Radio, Trophy } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -152,8 +151,8 @@ const UserPage = async ({ params }: UserPageProps) => {
 
   return (
     <ContentWithSidebar sidebar={<ProfileSidebar karma={stats.karma} joinedAt={profile.createdAt.toISOString()} />}>
-      <section className='celestia-card mb-4 overflow-hidden'>
-        <div className='relative h-28 overflow-hidden border-b border-border/70 bg-[linear-gradient(135deg,var(--primary),var(--accent))]'>
+      <section className='celestia-card relative mb-5'>
+        <div className='relative min-h-52 overflow-hidden bg-[linear-gradient(135deg,var(--primary),var(--accent))] md:min-h-64'>
           {profile.coverUrl ? (
             <Image
               src={profile.coverUrl}
@@ -165,31 +164,51 @@ const UserPage = async ({ params }: UserPageProps) => {
               loading='eager'
             />
           ) : null}
-        </div>
-        <div className='px-5 py-5'>
-          <div className='flex flex-wrap items-start justify-between gap-5'>
-            <div className='flex min-w-0 items-center gap-5'>
-              <UserAvatar
-                user={authorsByID.get(profile.id) ?? profile}
-                size='lg'
-                className='size-32 border-4 border-card shadow-lg'
-              />
-              <div className='min-w-0'>
-                <h1 className='truncate text-2xl font-bold tracking-tight text-foreground'>
+          <div className='absolute inset-0 bg-[linear-gradient(180deg,rgba(5,8,20,0.08)_0%,rgba(5,8,20,0.78)_100%)]' />
+          <div className='absolute inset-x-0 bottom-0 p-5 md:p-7'>
+            <div className='flex min-w-0 items-end justify-between gap-5'>
+              <div className='min-w-0 text-white'>
+                <p className='celestia-panel-label mb-2 text-white/70'>
+                  <Radio className='size-3' /> Profile signal
+                </p>
+                <h1 className='truncate text-3xl font-black tracking-tight md:text-5xl'>
                   {profile.displayName || profile.userName}
                 </h1>
-                <p className='mt-1 text-sm text-muted-foreground'>u/{profile.userName}</p>
-                {profile.bio ? (
-                  <p className='mt-3 max-w-2xl whitespace-pre-wrap text-sm leading-6 text-card-foreground'>
-                    {profile.bio}
-                  </p>
-                ) : null}
+                <p className='mt-1 font-mono text-sm text-white/75'>u/{profile.userName}</p>
               </div>
             </div>
+          </div>
+        </div>
+        <div className='relative grid gap-5 border-t border-border/70 p-5 pt-16 md:grid-cols-[minmax(0,1fr)_10rem] md:p-6 md:pt-6'>
+          <div className='absolute right-5 -top-16 z-20 size-24 overflow-hidden rounded-2xl border-4 border-card bg-card shadow-2xl ring-1 ring-white/10 md:right-7 md:-top-28 md:size-32'>
+            {profile.avatarUrl ? (
+              <Image
+                src={profile.avatarUrl}
+                alt={`${profile.displayName || profile.userName} profile picture`}
+                fill
+                unoptimized
+                sizes='(max-width: 768px) 96px, 128px'
+                className='object-cover'
+              />
+            ) : (
+              <span className='grid size-full place-items-center bg-primary/15 text-3xl font-black text-primary md:text-5xl'>
+                {(profile.displayName || profile.userName).slice(0, 1).toUpperCase()}
+              </span>
+            )}
+          </div>
+          <div className='min-w-0'>
+            {profile.bio ? (
+              <p className='max-w-2xl whitespace-pre-wrap text-sm leading-6 text-card-foreground'>{profile.bio}</p>
+            ) : (
+              <p className='text-sm leading-6 text-muted-foreground'>This profile has not added a bio yet.</p>
+            )}
+          </div>
+          <div className='md:pt-24'>
             <ClientProfileControls profileID={profile.id} />
           </div>
+        </div>
+        <div className='px-5 pb-5 md:px-6 md:pb-6'>
           <StatGrid
-            className='mt-4 max-w-xl'
             stats={[
               { label: 'Post karma', value: formatCount(stats.karma) },
               { label: 'Posts', value: formatCount(stats.postCount) },
@@ -204,17 +223,26 @@ const UserPage = async ({ params }: UserPageProps) => {
 };
 
 const ProfileSidebar = ({ karma, joinedAt }: { karma: number; joinedAt?: string }) => (
-  <section className='celestia-card p-4'>
-    <h2 className='mb-3 text-sm font-semibold'>Profile</h2>
-    <div className='space-y-3 text-xs text-muted-foreground'>
-      <p className='flex items-center gap-2'>
-        <Trophy className='size-3 text-primary' /> {formatCount(karma)} post karma
-      </p>
-      {joinedAt ? (
-        <p className='flex items-center gap-2'>
-          <CakeSlice className='size-3 text-primary' /> Joined {formatTimeAgo(joinedAt)}
-        </p>
-      ) : null}
+  <section className='celestia-card overflow-hidden'>
+    <div className='h-2 bg-[linear-gradient(90deg,var(--primary),var(--accent))]' />
+    <div className='p-4'>
+      <h2 className='mb-3 text-sm font-semibold'>Profile details</h2>
+      <div className='space-y-2 text-xs text-muted-foreground'>
+        <div className='flex items-center justify-between rounded border border-border bg-muted/30 px-3 py-2'>
+          <span className='flex items-center gap-2'>
+            <Trophy className='size-3.5 text-primary' /> Karma
+          </span>
+          <span className='font-mono font-semibold text-foreground'>{formatCount(karma)}</span>
+        </div>
+        {joinedAt ? (
+          <div className='flex items-center justify-between rounded border border-border bg-muted/30 px-3 py-2'>
+            <span className='flex items-center gap-2'>
+              <CakeSlice className='size-3.5 text-primary' /> Joined
+            </span>
+            <span className='font-mono font-semibold text-foreground'>{formatTimeAgo(joinedAt)}</span>
+          </div>
+        ) : null}
+      </div>
     </div>
   </section>
 );

@@ -19,6 +19,49 @@ import { useGetProfile } from '@/hooks/useQueries';
 import z from 'zod';
 import { X } from 'lucide-react';
 
+type MediaKind = 'avatar' | 'banner';
+type MediaPreview = {
+  kind: MediaKind;
+  file: File;
+  url: string;
+  x: number;
+  y: number;
+  zoom: number;
+};
+
+const adjustedImageFile = async (preview: MediaPreview): Promise<File> => {
+  const image = new window.Image();
+  image.src = preview.url;
+  await new Promise<void>((resolve, reject) => {
+    image.onload = () => resolve();
+    image.onerror = () => reject(new Error('Unable to load image preview.'));
+  });
+
+  const outputWidth = preview.kind === 'avatar' ? 800 : 1600;
+  const outputHeight = preview.kind === 'avatar' ? 800 : 533;
+  const aspect = outputWidth / outputHeight;
+  const sourceWidth = image.naturalWidth;
+  const sourceHeight = image.naturalHeight;
+  const baseCropWidth = sourceWidth / sourceHeight > aspect ? sourceHeight * aspect : sourceWidth;
+  const baseCropHeight = sourceWidth / sourceHeight > aspect ? sourceHeight : sourceWidth / aspect;
+  const cropWidth = baseCropWidth / preview.zoom;
+  const cropHeight = baseCropHeight / preview.zoom;
+  const cropX = (sourceWidth - cropWidth) * (preview.x / 100);
+  const cropY = (sourceHeight - cropHeight) * (preview.y / 100);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = outputWidth;
+  canvas.height = outputHeight;
+  const context = canvas.getContext('2d');
+  if (!context) throw new Error('Unable to adjust this image.');
+  context.drawImage(image, cropX, cropY, cropWidth, cropHeight, 0, 0, outputWidth, outputHeight);
+
+  const blob = await new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(result => (result ? resolve(result) : reject(new Error('Unable to adjust this image.'))), preview.file.type);
+  });
+  return new File([blob], preview.file.name, { type: preview.file.type });
+};
+
 const ProfileSettingsForm = () => {
   const queryClient = useQueryClient();
   const profile = useGetProfile().data?.data;
@@ -27,9 +70,9 @@ const ProfileSettingsForm = () => {
 
   const [savingDetails, startSavingDetails] = useTransition();
   const [savingMedia, startSavingMedia] = useTransition();
-  const [activeEditor, setActiveEditor] = useState<'displayName' | 'bio' | 'avatar' | 'banner' | null>(null);
-  const [mediaPreview, setMediaPreview] = useState<{ kind: 'avatar' | 'banner'; url: string } | null>(null);
-  const mediaInputRefs = useRef<Record<'avatar' | 'banner', HTMLInputElement | null>>({
+  const [activeEditor, setActiveEditor] = useState<'displayName' | 'bio' | MediaKind | null>(null);
+  const [mediaPreview, setMediaPreview] = useState<MediaPreview | null>(null);
+  const mediaInputRefs = useRef<Record<MediaKind, HTMLInputElement | null>>({
     avatar: null,
     banner: null,
   });
@@ -47,14 +90,14 @@ const ProfileSettingsForm = () => {
       if (current?.url.startsWith('blob:')) URL.revokeObjectURL(current.url);
       return null;
     });
-  const clearSelectedMedia = (kind: 'avatar' | 'banner') => {
+  const clearSelectedMedia = (kind: MediaKind) => {
     const field = kind === 'avatar' ? 'avatar' : 'cover';
     if (mediaInputRefs.current[kind]) mediaInputRefs.current[kind]!.value = '';
     mediaForm.resetField(field);
     clearMediaPreview();
   };
 
-  const openEditor = (editor: 'displayName' | 'bio' | 'avatar' | 'banner') => {
+  const openEditor = (editor: 'displayName' | 'bio' | MediaKind) => {
     if (editor === 'displayName' || editor === 'bio') {
       detailsForm.reset({ displayName: profile?.displayName ?? '', bio: profile?.bio ?? '' });
     } else {
@@ -70,12 +113,15 @@ const ProfileSettingsForm = () => {
     clearMediaPreview();
   };
 
-  const previewMedia = (kind: 'avatar' | 'banner', file?: File) => {
+  const previewMedia = (kind: MediaKind, file?: File) => {
     if (!file) return;
     setMediaPreview(current => {
       if (current?.url.startsWith('blob:')) URL.revokeObjectURL(current.url);
-      return { kind, url: URL.createObjectURL(file) };
+      return { kind, file, url: URL.createObjectURL(file), x: 50, y: 50, zoom: 1 };
     });
+  };
+  const updateMediaPreview = (values: Partial<Pick<MediaPreview, 'x' | 'y' | 'zoom'>>) => {
+    setMediaPreview(current => (current ? { ...current, ...values } : current));
   };
 
   const submitDetails = async (values: z.infer<typeof profileDetailsSchema>) => {
@@ -94,8 +140,17 @@ const ProfileSettingsForm = () => {
 
   const submitMedia = async (values: z.infer<typeof profileMediaSchema>) => {
     startSavingMedia(async () => {
-      const { avatar, cover } = values;
-      const result = await updateProfileMediaAction({ avatar, cover });
+      let adjustedFile: File | null = null;
+      try {
+        adjustedFile = mediaPreview ? await adjustedImageFile(mediaPreview) : null;
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : 'Unable to adjust this image.');
+        return;
+      }
+      const result = await updateProfileMediaAction({
+        avatar: mediaPreview?.kind === 'avatar' && adjustedFile ? adjustedFile : values.avatar,
+        cover: mediaPreview?.kind === 'banner' && adjustedFile ? adjustedFile : values.cover,
+      });
       if (result?.error) {
         toast.error(result.error);
         return;
@@ -208,6 +263,7 @@ const ProfileSettingsForm = () => {
             onOpenChange={open => !open && closeEditor()}
             title={kind === 'avatar' ? 'Avatar' : 'Banner'}
             description='Upload an image to update your public profile.'
+            contentClassName={kind === 'banner' ? 'sm:max-w-2xl' : 'sm:max-w-md'}
           >
             <form
               onSubmit={mediaForm.handleSubmit(submitMedia)}
@@ -216,7 +272,7 @@ const ProfileSettingsForm = () => {
               noValidate
             >
               <div
-                className={`relative overflow-hidden rounded-lg border border-border bg-muted ${kind === 'avatar' ? 'size-28' : 'aspect-3/1 w-full'}`}
+                className={`relative overflow-hidden rounded-lg border border-border bg-muted ${kind === 'avatar' ? 'mx-auto size-40' : 'aspect-3/1 w-full'}`}
               >
                 {previewUrl ? (
                   <Image
@@ -225,6 +281,10 @@ const ProfileSettingsForm = () => {
                     fill
                     unoptimized
                     className='object-cover'
+                    style={{
+                      objectPosition: mediaPreview?.kind === kind ? `${mediaPreview.x}% ${mediaPreview.y}%` : '50% 50%',
+                      transform: mediaPreview?.kind === kind ? `scale(${mediaPreview.zoom})` : undefined,
+                    }}
                   />
                 ) : (
                   <span className='grid size-full place-items-center text-xs text-muted-foreground'>
@@ -232,6 +292,41 @@ const ProfileSettingsForm = () => {
                   </span>
                 )}
               </div>
+              {mediaPreview?.kind === kind ? (
+                <div className='grid gap-3 rounded border border-border bg-muted/30 p-3'>
+                  <label className='grid gap-1 text-xs font-medium text-muted-foreground'>
+                    Horizontal position
+                    <input
+                      type='range'
+                      min='0'
+                      max='100'
+                      value={mediaPreview.x}
+                      onChange={event => updateMediaPreview({ x: Number(event.target.value) })}
+                    />
+                  </label>
+                  <label className='grid gap-1 text-xs font-medium text-muted-foreground'>
+                    Vertical position
+                    <input
+                      type='range'
+                      min='0'
+                      max='100'
+                      value={mediaPreview.y}
+                      onChange={event => updateMediaPreview({ y: Number(event.target.value) })}
+                    />
+                  </label>
+                  <label className='grid gap-1 text-xs font-medium text-muted-foreground'>
+                    Zoom
+                    <input
+                      type='range'
+                      min='1'
+                      max='2'
+                      step='0.05'
+                      value={mediaPreview.zoom}
+                      onChange={event => updateMediaPreview({ zoom: Number(event.target.value) })}
+                    />
+                  </label>
+                </div>
+              ) : null}
               <FormField
                 htmlFor={`${kind}-upload`}
                 label={kind === 'avatar' ? 'Profile image' : 'Banner image'}
@@ -254,16 +349,18 @@ const ProfileSettingsForm = () => {
                       mediaInputRefs.current[kind] = node;
                     }}
                   />
-                  <Button
-                    type='button'
-                    variant='outline'
-                    size='icon-lg'
-                    disabled={savingMedia || mediaPreview?.kind !== kind}
-                    onClick={() => clearSelectedMedia(kind)}
-                    aria-label={`Remove selected ${kind === 'avatar' ? 'profile image' : 'banner image'}`}
-                  >
-                    <X />
-                  </Button>
+                  {mediaPreview?.kind === kind ? (
+                    <Button
+                      type='button'
+                      variant='outline'
+                      size='icon-lg'
+                      disabled={savingMedia}
+                      onClick={() => clearSelectedMedia(kind)}
+                      aria-label={`Remove selected ${kind === 'avatar' ? 'profile image' : 'banner image'}`}
+                    >
+                      <X />
+                    </Button>
+                  ) : null}
                 </div>
               </FormField>
               <DialogActions submitLabel={`Upload ${kind}`} submitLoading={savingMedia} />

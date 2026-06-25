@@ -27,7 +27,7 @@ const CommentThread: FC<CommentThreadProps> = ({ tree, postAuthorID, sessionUser
   return (
     <CommentSubmissionContext value={{ submitComment, pending }}>
       {children}
-      <ul className='space-y-4'>
+      <ul className='space-y-3'>
         {optimisticTree.map(node => (
           <CommentNode
             key={node.id}

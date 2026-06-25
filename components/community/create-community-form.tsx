@@ -158,16 +158,18 @@ export const CreateCommunityForm = () => {
                     avatarInputRef.current = node;
                   }}
                 />
-                <Button
-                  type='button'
-                  variant='outline'
-                  size='icon-lg'
-                  disabled={pending || !mediaPreview.avatar}
-                  onClick={() => clearMedia('avatar')}
-                  aria-label='Remove profile picture'
-                >
-                  <X />
-                </Button>
+                {mediaPreview.avatar ? (
+                  <Button
+                    type='button'
+                    variant='outline'
+                    size='icon-lg'
+                    disabled={pending}
+                    onClick={() => clearMedia('avatar')}
+                    aria-label='Remove profile picture'
+                  >
+                    <X />
+                  </Button>
+                ) : null}
               </div>
             </FormField>
             <FormField htmlFor='community-cover' label='Cover photo'>
@@ -186,16 +188,18 @@ export const CreateCommunityForm = () => {
                     coverInputRef.current = node;
                   }}
                 />
-                <Button
-                  type='button'
-                  variant='outline'
-                  size='icon-lg'
-                  disabled={pending || !mediaPreview.cover}
-                  onClick={() => clearMedia('cover')}
-                  aria-label='Remove cover photo'
-                >
-                  <X />
-                </Button>
+                {mediaPreview.cover ? (
+                  <Button
+                    type='button'
+                    variant='outline'
+                    size='icon-lg'
+                    disabled={pending}
+                    onClick={() => clearMedia('cover')}
+                    aria-label='Remove cover photo'
+                  >
+                    <X />
+                  </Button>
+                ) : null}
               </div>
             </FormField>
           </div>

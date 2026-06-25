@@ -251,16 +251,18 @@ const CommunitySettingsForm: FC<{ community: Community }> = ({ community }) => {
                 avatarInputRef.current = node;
               }}
             />
-            <Button
-              type='button'
-              variant='outline'
-              size='icon-lg'
-              disabled={savingMedia || !mediaPreview.avatar}
-              onClick={() => clearMedia('avatar')}
-              aria-label='Remove selected profile picture'
-            >
-              <X />
-            </Button>
+            {mediaPreview.avatar ? (
+              <Button
+                type='button'
+                variant='outline'
+                size='icon-lg'
+                disabled={savingMedia}
+                onClick={() => clearMedia('avatar')}
+                aria-label='Remove selected profile picture'
+              >
+                <X />
+              </Button>
+            ) : null}
           </div>
         </FormField>
         <FormField
@@ -284,16 +286,18 @@ const CommunitySettingsForm: FC<{ community: Community }> = ({ community }) => {
                 coverInputRef.current = node;
               }}
             />
-            <Button
-              type='button'
-              variant='outline'
-              size='icon-lg'
-              disabled={savingMedia || !mediaPreview.cover}
-              onClick={() => clearMedia('cover')}
-              aria-label='Remove selected cover photo'
-            >
-              <X />
-            </Button>
+            {mediaPreview.cover ? (
+              <Button
+                type='button'
+                variant='outline'
+                size='icon-lg'
+                disabled={savingMedia}
+                onClick={() => clearMedia('cover')}
+                aria-label='Remove selected cover photo'
+              >
+                <X />
+              </Button>
+            ) : null}
           </div>
         </FormField>
         <Button

@@ -137,15 +137,16 @@ export const ImageUploadField: FC<ImageUploadFieldProps> = ({
                 : 'Add image'}
           </span>
         </button>
-        <button
-          type='button'
-          onClick={clearImages}
-          disabled={previewUrls.length === 0}
-          className='inline-flex size-11 shrink-0 items-center justify-center rounded border border-border bg-background text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:pointer-events-none disabled:opacity-50'
-          aria-label='Remove selected images'
-        >
-          <X className='size-4' />
-        </button>
+        {previewUrls.length > 0 ? (
+          <button
+            type='button'
+            onClick={clearImages}
+            className='inline-flex size-11 shrink-0 items-center justify-center rounded border border-border bg-background text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive'
+            aria-label='Remove selected images'
+          >
+            <X className='size-4' />
+          </button>
+        ) : null}
       </div>
       <p className='text-xs text-muted-foreground'>
         PNG, JPEG, WebP, or GIF · maximum 2 MB each{multiple ? ` · up to ${MAX_POST_IMAGES} images` : ''}

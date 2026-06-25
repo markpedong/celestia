@@ -2,10 +2,14 @@
 
 import type { FC } from 'react';
 import { ChevronLeft, ChevronRight, ImageOff, Images, ZoomIn } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useState } from 'react';
 import { ImageLightbox } from './image-lightbox';
 import { PostImageGalleryProps } from '@/lib/types';
+import { Inline } from 'yet-another-react-lightbox/plugins';
+
+const InlineLightbox = dynamic(() => import('yet-another-react-lightbox'), { ssr: false });
 
 const isImageUrl = (url: string) => {
   try {
@@ -96,6 +100,102 @@ export const PostImageGallery: FC<PostImageGalleryProps> = ({ imageUrls, title, 
             </span>
           ) : null}
         </button>
+        {lightbox}
+      </>
+    );
+  }
+
+  if (variant === 'feed') {
+    const imageUrl = displayImageUrls[activeIndex] ?? displayImageUrls[0];
+    const hasMultipleImages = displayImageUrls.length > 1;
+
+    if (hasMultipleImages) {
+      return (
+        <>
+          <div className='relative mt-4 overflow-hidden rounded border border-border/80 bg-muted'>
+            <InlineLightbox
+              open
+              plugins={[Inline]}
+              slides={displayImageUrls.map((src, imageIndex) => ({
+                src,
+                alt: `Image ${imageIndex + 1} attached to ${title}`,
+              }))}
+              index={activeIndex}
+              on={{
+                view: ({ index }) => setActiveIndex(index),
+                click: ({ index }) => open(index),
+              }}
+              carousel={{ finite: true, preload: displayImageUrls.length - 1, imageFit: 'cover' }}
+              animation={{ swipe: 300 }}
+              controller={{ closeOnBackdropClick: false }}
+              toolbar={{ buttons: [] }}
+              inline={{
+                className: 'aspect-[16/9] w-full md:aspect-[2.35/1]',
+              }}
+            />
+            <span className='pointer-events-none absolute right-3 bottom-3 z-20 inline-flex items-center gap-1 rounded bg-background/90 px-2 py-1 text-xs font-semibold text-foreground shadow-sm'>
+              <Images className='size-3.5' /> {activeIndex + 1} / {displayImageUrls.length}
+            </span>
+          </div>
+          {lightbox}
+        </>
+      );
+    }
+
+    return (
+      <>
+        <div className='relative mt-4 overflow-hidden rounded border border-border/80 bg-muted'>
+          <button
+            type='button'
+            onClick={() => open(activeIndex)}
+            disabled={imageUnavailable(imageUrl)}
+            className='group relative aspect-[16/9] w-full text-left md:aspect-[2.35/1]'
+            aria-label={`View image ${activeIndex + 1} of ${displayImageUrls.length} attached to ${title}`}
+          >
+            {imageUnavailable(imageUrl) ? (
+              <ImagePlaceholder ratio={16 / 9} />
+            ) : (
+              <Image
+                src={imageUrl}
+                alt={`Image attached to ${title}`}
+                fill
+                unoptimized
+                sizes='(max-width: 768px) calc(100vw - 5rem), 760px'
+                className='object-cover transition-transform duration-300 group-hover:scale-[1.015]'
+                loading='eager'
+                onError={() => markImageUnavailable(imageUrl)}
+              />
+            )}
+            {!imageUnavailable(imageUrl) ? (
+              <span className='absolute inset-0 flex items-center justify-center bg-foreground/0 text-transparent transition-colors hover:bg-foreground/30 hover:text-background'>
+                <ZoomIn className='size-6' />
+              </span>
+            ) : null}
+          </button>
+          {hasMultipleImages ? (
+            <>
+              <button
+                type='button'
+                onClick={showPrevious}
+                className='absolute top-1/2 left-3 -translate-y-1/2 rounded-full bg-background/90 p-2 text-foreground shadow-sm transition-colors hover:bg-background'
+                aria-label='Previous image'
+              >
+                <ChevronLeft className='size-4' />
+              </button>
+              <button
+                type='button'
+                onClick={showNext}
+                className='absolute top-1/2 right-3 -translate-y-1/2 rounded-full bg-background/90 p-2 text-foreground shadow-sm transition-colors hover:bg-background'
+                aria-label='Next image'
+              >
+                <ChevronRight className='size-4' />
+              </button>
+              <span className='absolute right-3 bottom-3 inline-flex items-center gap-1 rounded bg-background/90 px-2 py-1 text-xs font-semibold text-foreground shadow-sm'>
+                <Images className='size-3.5' /> {activeIndex + 1} / {displayImageUrls.length}
+              </span>
+            </>
+          ) : null}
+        </div>
         {lightbox}
       </>
     );

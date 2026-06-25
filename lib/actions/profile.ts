@@ -16,7 +16,7 @@ const revalidateProfilePaths = (...usernames: string[]) => {
 };
 
 export const updateProfileMediaAction = async (
-  { avatar, cover }: { avatar?: FileList; cover?: FileList },
+  { avatar, cover }: { avatar?: FileList | File; cover?: FileList | File },
 ): Promise<ProfileMediaFormState> => {
   const profile = await getSessionUser();
   if (!profile) return { error: 'You must be signed in to update your profile.' };
@@ -26,8 +26,8 @@ export const updateProfileMediaAction = async (
 
   try {
     [avatarUrl, coverUrl] = await Promise.all([
-      uploadImage(avatar?.[0] ?? null, 'profile-avatars', profile.id),
-      uploadImage(cover?.[0] ?? null, 'profile-covers', profile.id),
+      uploadImage(avatar instanceof File ? avatar : avatar?.[0] ?? null, 'profile-avatars', profile.id),
+      uploadImage(cover instanceof File ? cover : cover?.[0] ?? null, 'profile-covers', profile.id),
     ]);
   } catch (error) {
     return { error: getUploadErrorMessage(error, 'We could not upload your image. Please try again.') };
