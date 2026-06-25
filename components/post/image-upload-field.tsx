@@ -64,6 +64,16 @@ export const ImageUploadField: FC<ImageUploadFieldProps> = ({
     setRemoveImages(remaining === 0 && initialImageUrls.length > 0);
     setActiveIndex(current => Math.min(current, Math.max(remaining - 1, 0)));
   };
+  const clearImages = () => {
+    previewUrls.forEach(url => {
+      if (url.startsWith('blob:')) URL.revokeObjectURL(url);
+    });
+    if (inputRef.current) inputRef.current.value = '';
+    setPreviewUrls([]);
+    setImageNames([]);
+    setRemoveImages(initialImageUrls.length > 0);
+    setActiveIndex(0);
+  };
 
   const openPreview = (index: number) => {
     setActiveIndex(index);
@@ -109,16 +119,34 @@ export const ImageUploadField: FC<ImageUploadFieldProps> = ({
         </div>
       ) : null}
 
-      <button type='button' onClick={() => inputRef.current?.click()} className='flex w-full min-w-0 items-center justify-center gap-2 rounded border border-dashed border-border bg-secondary/60 px-3 py-3 text-sm text-muted-foreground celestia-hover-surface'>
-        <ImagePlus className='size-4 text-primary' />
-        <span className='truncate'>
-          {imageNames.length > 0
-            ? `${imageNames.length} image${imageNames.length === 1 ? '' : 's'} selected`
-            : multiple
-              ? 'Add images'
-              : 'Add image'}
-        </span>
-      </button>
+      <div className='flex gap-2'>
+        <button
+          type='button'
+          onClick={() => {
+            clearImages();
+            inputRef.current?.click();
+          }}
+          className='flex min-w-0 flex-1 items-center justify-center gap-2 rounded border border-dashed border-border bg-secondary/60 px-3 py-3 text-sm text-muted-foreground celestia-hover-surface'
+        >
+          <ImagePlus className='size-4 text-primary' />
+          <span className='truncate'>
+            {imageNames.length > 0
+              ? `${imageNames.length} image${imageNames.length === 1 ? '' : 's'} selected`
+              : multiple
+                ? 'Add images'
+                : 'Add image'}
+          </span>
+        </button>
+        <button
+          type='button'
+          onClick={clearImages}
+          disabled={previewUrls.length === 0}
+          className='inline-flex size-11 shrink-0 items-center justify-center rounded border border-border bg-background text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:pointer-events-none disabled:opacity-50'
+          aria-label='Remove selected images'
+        >
+          <X className='size-4' />
+        </button>
+      </div>
       <p className='text-xs text-muted-foreground'>
         PNG, JPEG, WebP, or GIF · maximum 2 MB each{multiple ? ` · up to ${MAX_POST_IMAGES} images` : ''}
       </p>

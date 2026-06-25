@@ -9,7 +9,7 @@ import { IMAGE_ACCEPT } from '@/constants';
 import { Button } from '../ui/button';
 import FormField from '../ui/form-field';
 import { Input } from '../ui/input';
-import { ImagePlus, Save } from 'lucide-react';
+import { ImagePlus, Save, X } from 'lucide-react';
 import { Community } from '@/lib/types';
 import useFormValidate from '@/hooks/useFormValidate';
 import z from 'zod';
@@ -26,6 +26,8 @@ const CommunitySettingsForm: FC<{ community: Community }> = ({ community }) => {
   const [savingMedia, startSavingMedia] = useTransition();
   const [mediaPreview, setMediaPreview] = useState<Partial<Record<'avatar' | 'cover', string>>>({});
   const mediaPreviewRef = useRef(mediaPreview);
+  const avatarInputRef = useRef<HTMLInputElement | null>(null);
+  const coverInputRef = useRef<HTMLInputElement | null>(null);
   const {
     handleSubmit,
     register,
@@ -68,6 +70,24 @@ const CommunitySettingsForm: FC<{ community: Community }> = ({ community }) => {
       return { ...current, [kind]: URL.createObjectURL(file) };
     });
   };
+  const clearMedia = (kind: 'avatar' | 'cover') => {
+    const input = kind === 'avatar' ? avatarInputRef.current : coverInputRef.current;
+    if (input) input.value = '';
+    mediaForm.resetField(kind);
+    setMediaPreview(current => {
+      const previousUrl = current[kind];
+      if (previousUrl?.startsWith('blob:')) URL.revokeObjectURL(previousUrl);
+      const next = { ...current };
+      delete next[kind];
+      return next;
+    });
+  };
+  const avatarRegistration = mediaForm.register('avatar', {
+    onChange: event => previewMedia('avatar', event.target.files?.[0]),
+  });
+  const coverRegistration = mediaForm.register('cover', {
+    onChange: event => previewMedia('cover', event.target.files?.[0]),
+  });
 
   const submitMedia = async (values: CommunityMediaValues) => {
     startSavingMedia(async () => {
@@ -100,7 +120,7 @@ const CommunitySettingsForm: FC<{ community: Community }> = ({ community }) => {
   };
 
   return (
-    <div className='space-y-5'>
+    <div className='grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,0.8fr)]'>
       <form
         onSubmit={handleSubmit(onSubmit)}
         onKeyDown={onFormKeyDown}
@@ -108,6 +128,11 @@ const CommunitySettingsForm: FC<{ community: Community }> = ({ community }) => {
         noValidate
       >
         <input type='hidden' name='slug' value={community.slug} />
+        <div>
+          <p className='celestia-panel-label'>Identity</p>
+          <h2 className='mt-2 text-xl font-bold tracking-tight'>Community details</h2>
+          <p className='mt-1 text-sm text-muted-foreground'>Tune the public name, description, and accent color.</p>
+        </div>
         <div className='rounded border border-border bg-secondary/50 px-4 py-3 text-sm text-muted-foreground'>
           Community URL: <span className='font-semibold text-foreground'>r/{community.slug}</span>. URLs stay fixed
           after creation.
@@ -168,11 +193,12 @@ const CommunitySettingsForm: FC<{ community: Community }> = ({ community }) => {
         noValidate
       >
         <div>
+          <p className='celestia-panel-label'>Visuals</p>
           <h2 className='text-base font-semibold'>Community media</h2>
           <p className='mt-1 text-sm text-muted-foreground'>Upload the profile image and cover photo for r/{community.slug}.</p>
         </div>
-        <div className='space-y-4'>
-          <div className='relative aspect-3/1 overflow-hidden rounded border border-border bg-secondary/80'>
+        <div className='overflow-hidden rounded border border-border bg-card shadow-2xl shadow-background/20'>
+          <div className='relative aspect-3/1 overflow-hidden bg-secondary/80'>
             {coverPreview ? (
               <Image src={coverPreview} alt='Community cover preview' fill unoptimized className='object-cover' />
             ) : (
@@ -181,18 +207,27 @@ const CommunitySettingsForm: FC<{ community: Community }> = ({ community }) => {
                 style={{ background: `linear-gradient(135deg, ${previewColor}55, transparent)` }}
               />
             )}
+            <div className='absolute inset-0 bg-[linear-gradient(180deg,transparent_0%,rgba(5,8,20,0.62)_100%)]' />
           </div>
-          <div className='relative size-24 overflow-hidden rounded-full border-4 border-card bg-secondary shadow-lg'>
-            {avatarPreview ? (
-              <Image src={avatarPreview} alt='Community profile preview' fill unoptimized className='object-cover' />
-            ) : (
-              <span
-                className='grid size-full place-items-center text-3xl font-black text-primary-foreground'
-                style={{ backgroundColor: previewColor }}
-              >
-                {community.label.slice(0, 1).toUpperCase()}
-              </span>
-            )}
+          <div className='px-4 pb-4'>
+            <div className='-mt-8 flex items-end gap-3'>
+              <div className='relative size-20 overflow-hidden rounded border-4 border-card bg-secondary shadow-lg'>
+                {avatarPreview ? (
+                  <Image src={avatarPreview} alt='Community profile preview' fill unoptimized className='object-cover' />
+                ) : (
+                  <span
+                    className='grid size-full place-items-center text-2xl font-black text-primary-foreground'
+                    style={{ backgroundColor: previewColor }}
+                  >
+                    {community.label.slice(0, 1).toUpperCase()}
+                  </span>
+                )}
+              </div>
+              <div className='min-w-0 pb-1'>
+                <p className='font-mono text-xs uppercase tracking-wide text-muted-foreground'>r/{community.slug}</p>
+                <p className='truncate text-lg font-bold'>{community.label}</p>
+              </div>
+            </div>
           </div>
         </div>
         <FormField
@@ -200,32 +235,66 @@ const CommunitySettingsForm: FC<{ community: Community }> = ({ community }) => {
           label='Profile picture'
           error={mediaForm.formState.errors.avatar?.message}
         >
-          <Input
-            id='community-avatar'
-            type='file'
-            accept={IMAGE_ACCEPT}
-            disabled={savingMedia}
-            aria-invalid={Boolean(mediaForm.formState.errors.avatar)}
-            {...mediaForm.register('avatar', {
-              onChange: event => previewMedia('avatar', event.target.files?.[0]),
-            })}
-          />
+          <div className='flex gap-2'>
+            <Input
+              id='community-avatar'
+              type='file'
+              accept={IMAGE_ACCEPT}
+              disabled={savingMedia}
+              aria-invalid={Boolean(mediaForm.formState.errors.avatar)}
+              name={avatarRegistration.name}
+              onBlur={avatarRegistration.onBlur}
+              onChange={avatarRegistration.onChange}
+              onClick={() => clearMedia('avatar')}
+              ref={node => {
+                avatarRegistration.ref(node);
+                avatarInputRef.current = node;
+              }}
+            />
+            <Button
+              type='button'
+              variant='outline'
+              size='icon-lg'
+              disabled={savingMedia || !mediaPreview.avatar}
+              onClick={() => clearMedia('avatar')}
+              aria-label='Remove selected profile picture'
+            >
+              <X />
+            </Button>
+          </div>
         </FormField>
         <FormField
           htmlFor='community-cover'
           label='Cover photo'
           error={mediaForm.formState.errors.cover?.message}
         >
-          <Input
-            id='community-cover'
-            type='file'
-            accept={IMAGE_ACCEPT}
-            disabled={savingMedia}
-            aria-invalid={Boolean(mediaForm.formState.errors.cover)}
-            {...mediaForm.register('cover', {
-              onChange: event => previewMedia('cover', event.target.files?.[0]),
-            })}
-          />
+          <div className='flex gap-2'>
+            <Input
+              id='community-cover'
+              type='file'
+              accept={IMAGE_ACCEPT}
+              disabled={savingMedia}
+              aria-invalid={Boolean(mediaForm.formState.errors.cover)}
+              name={coverRegistration.name}
+              onBlur={coverRegistration.onBlur}
+              onChange={coverRegistration.onChange}
+              onClick={() => clearMedia('cover')}
+              ref={node => {
+                coverRegistration.ref(node);
+                coverInputRef.current = node;
+              }}
+            />
+            <Button
+              type='button'
+              variant='outline'
+              size='icon-lg'
+              disabled={savingMedia || !mediaPreview.cover}
+              onClick={() => clearMedia('cover')}
+              aria-label='Remove selected cover photo'
+            >
+              <X />
+            </Button>
+          </div>
         </FormField>
         <Button
           type='submit'

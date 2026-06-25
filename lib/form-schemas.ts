@@ -37,6 +37,8 @@ const communityFields = {
 export const createCommunitySchema = z.object({
   ...communityFields,
   slug: z.string().trim().min(MIN_COMMUNITY_SLUG_LENGTH, `Community URL must be at least ${MIN_COMMUNITY_SLUG_LENGTH} characters.`).max(MAX_COMMUNITY_SLUG_LENGTH, `Community URL must be ${MAX_COMMUNITY_SLUG_LENGTH} characters or fewer.`).regex(/^[a-zA-Z0-9 _-]+$/, 'Use letters, numbers, spaces, hyphens, or underscores.'),
+  avatar: z.custom<FileList>().optional(),
+  cover: z.custom<FileList>().optional(),
 });
 
 export const communitySettingsSchema = z.object(communityFields);

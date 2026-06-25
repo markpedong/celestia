@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useRef, useState, useTransition } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
 import { toast } from 'sonner';
 import { updateProfileMediaAction, updateProfileSettingsAction } from '@/lib/actions/profile';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import FormField from '@/components/ui/form-field';
 import { Textarea } from '@/components/ui/textarea';
 import DialogActions from '@/components/ui/dialog-actions';
@@ -16,6 +17,7 @@ import useFormValidate from '@/hooks/useFormValidate';
 import useFormSchema from '@/hooks/useFormSchema';
 import { useGetProfile } from '@/hooks/useQueries';
 import z from 'zod';
+import { X } from 'lucide-react';
 
 const ProfileSettingsForm = () => {
   const queryClient = useQueryClient();
@@ -27,6 +29,10 @@ const ProfileSettingsForm = () => {
   const [savingMedia, startSavingMedia] = useTransition();
   const [activeEditor, setActiveEditor] = useState<'displayName' | 'bio' | 'avatar' | 'banner' | null>(null);
   const [mediaPreview, setMediaPreview] = useState<{ kind: 'avatar' | 'banner'; url: string } | null>(null);
+  const mediaInputRefs = useRef<Record<'avatar' | 'banner', HTMLInputElement | null>>({
+    avatar: null,
+    banner: null,
+  });
   const detailsForm = useFormValidate({
     schema: profileDetailsSchema,
     defaultValues: { displayName: profile?.displayName ?? '', bio: profile?.bio ?? '' },
@@ -41,6 +47,12 @@ const ProfileSettingsForm = () => {
       if (current?.url.startsWith('blob:')) URL.revokeObjectURL(current.url);
       return null;
     });
+  const clearSelectedMedia = (kind: 'avatar' | 'banner') => {
+    const field = kind === 'avatar' ? 'avatar' : 'cover';
+    if (mediaInputRefs.current[kind]) mediaInputRefs.current[kind]!.value = '';
+    mediaForm.resetField(field);
+    clearMediaPreview();
+  };
 
   const openEditor = (editor: 'displayName' | 'bio' | 'avatar' | 'banner') => {
     if (editor === 'displayName' || editor === 'bio') {
@@ -182,6 +194,11 @@ const ProfileSettingsForm = () => {
         </form>
       </SettingsDialog>
       {(['avatar', 'banner'] as const).map(kind => {
+        const field = kind === 'avatar' ? 'avatar' : 'cover';
+        const registration = mediaForm.register(field, {
+          required: 'Choose an image to upload.',
+          onChange: event => previewMedia(kind, event.target.files?.[0]),
+        });
         const previewUrl =
           mediaPreview?.kind === kind ? mediaPreview.url : kind === 'avatar' ? profile?.avatarUrl : profile?.coverUrl;
         return (
@@ -218,20 +235,36 @@ const ProfileSettingsForm = () => {
               <FormField
                 htmlFor={`${kind}-upload`}
                 label={kind === 'avatar' ? 'Profile image' : 'Banner image'}
-                error={mediaForm.formState.errors[kind === 'avatar' ? 'avatar' : 'cover']?.message}
+                error={mediaForm.formState.errors[field]?.message}
               >
-                <Input
-                  id={`${kind}-upload`}
-                  type='file'
-                  accept={IMAGE_ACCEPT}
-                  required
-                  disabled={savingMedia}
-                  aria-invalid={Boolean(mediaForm.formState.errors[kind === 'avatar' ? 'avatar' : 'cover'])}
-                  {...mediaForm.register(kind === 'avatar' ? 'avatar' : 'cover', {
-                    required: 'Choose an image to upload.',
-                    onChange: event => previewMedia(kind, event.target.files?.[0]),
-                  })}
-                />
+                <div className='flex gap-2'>
+                  <Input
+                    id={`${kind}-upload`}
+                    type='file'
+                    accept={IMAGE_ACCEPT}
+                    required
+                    disabled={savingMedia}
+                    aria-invalid={Boolean(mediaForm.formState.errors[field])}
+                    name={registration.name}
+                    onBlur={registration.onBlur}
+                    onChange={registration.onChange}
+                    onClick={() => clearSelectedMedia(kind)}
+                    ref={node => {
+                      registration.ref(node);
+                      mediaInputRefs.current[kind] = node;
+                    }}
+                  />
+                  <Button
+                    type='button'
+                    variant='outline'
+                    size='icon-lg'
+                    disabled={savingMedia || mediaPreview?.kind !== kind}
+                    onClick={() => clearSelectedMedia(kind)}
+                    aria-label={`Remove selected ${kind === 'avatar' ? 'profile image' : 'banner image'}`}
+                  >
+                    <X />
+                  </Button>
+                </div>
               </FormField>
               <DialogActions submitLabel={`Upload ${kind}`} submitLoading={savingMedia} />
             </form>
