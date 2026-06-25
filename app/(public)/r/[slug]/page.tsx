@@ -1,12 +1,11 @@
 import CommunityFeed from '@/components/feed/community-feed';
 import { ContentWithSidebar } from '@/components/layout/content-with-sidebar';
 import CommunityMembershipButton from '@/components/community/community-membership-button';
-import { listCommunity } from '@/lib/db/queries';
+import { getCommunityBySlug, listCommunity } from '@/lib/db/queries';
 import type { CommunityPageProps } from '@/lib/types';
 import { notFound } from 'next/navigation';
 import CommunitySidebar from '@/components/community/community-sidebar';
 import CommunityStats from '@/components/community/community-stats';
-import { getCommunity } from '@/services';
 import Image from 'next/image';
 
 export const generateStaticParams = async () => {
@@ -17,7 +16,7 @@ export const generateStaticParams = async () => {
 const CommunityPage = async ({ params }: CommunityPageProps) => {
   const { slug: rawSlug } = await params;
   const slug = decodeURIComponent(rawSlug).toLowerCase();
-  const community = await getCommunity(slug);
+  const community = await getCommunityBySlug(slug);
 
   if (!community) {
     notFound();

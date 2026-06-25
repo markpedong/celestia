@@ -215,6 +215,22 @@ export const listCommunity = cache(async (): Promise<Tag[]> => {
   }));
 });
 
+export const getCommunityBySlug = cache(async (slug: string): Promise<Community | null> => {
+  const community = await prisma.community.findUnique({ where: { slug } });
+  if (!community) return null;
+
+  return {
+    slug: community.slug,
+    label: community.label,
+    description: community.description,
+    hashColor: community.hashColor,
+    avatarUrl: community.avatarUrl,
+    coverUrl: community.coverUrl,
+    createdByID: community.createdByID ?? undefined,
+    createdAt: community.createdAt.toISOString(),
+  };
+});
+
 export const listJoinedCommunities = async (userID: string): Promise<Community[]> => {
   const memberships = await prisma.communityMembers.findMany({
     where: { userID },

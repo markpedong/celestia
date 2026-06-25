@@ -15,6 +15,7 @@ import {
   listCommunity,
   listVotedCommentsByUser,
   listVotedPostsByUser,
+  listUserNames,
 } from '@/lib/db/queries';
 import type { CommentsListProps, FeedPostRow, UserCommentActivity, UserPageProps } from '@/lib/types';
 import { formatCount, formatTimeAgo } from '@/lib/utils';
@@ -23,7 +24,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-export const dynamic = 'force-dynamic';
+export const generateStaticParams = async () => {
+  const userNames = await listUserNames();
+  return userNames.map(username => ({ username }));
+};
 
 const excerpt = (body: string) => {
   const clean = body.replace(/\s+/g, ' ').trim();

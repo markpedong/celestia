@@ -6,13 +6,16 @@ import { ContentWithSidebar } from '@/components/layout/content-with-sidebar';
 import CommentThread from '@/components/post/comment-thread';
 import { PostImageGallery } from '@/components/post/post-image-gallery';
 import { Separator } from '@/components/ui/separator';
-import { getAuthorByID, getCommentTree, getPostByID, getPostScore, listCommunity } from '@/lib/db/queries';
+import { getAuthorByID, getCommentTree, getPostByID, getPostScore, listCommunity, listPostIDs } from '@/lib/db/queries';
 import type { PostPageProps } from '@/lib/types';
 import { MessageSquare, Radio, Users } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-export const dynamic = 'force-dynamic';
+export const generateStaticParams = async () => {
+  const ids = await listPostIDs();
+  return ids.map(id => ({ id }));
+};
 
 const Page = async ({ params }: PostPageProps) => {
   const { id } = await params;
