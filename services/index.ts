@@ -56,7 +56,7 @@ export const getCommunityFeed = async (slug: string, sort: FeedSort) => {
 };
 
 export const joinCommunity = async (slug: string) => {
-  const response = await __api({
+  const response = await __api<{ isMember: boolean }>({
     init: { body: { slug }, method: REQUEST_METHOD.POST },
     endpoint: API_ENDPOINT.COMMUNITY_JOIN,
   });

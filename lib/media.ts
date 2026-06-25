@@ -1,4 +1,4 @@
-import { createSupabaseServerClient } from './supabase/server';
+import { createSupabaseAdminClient } from './supabase/admin';
 import { ACCEPTED_IMAGE_TYPES, IMAGE_CACHE_CONTROL, MAX_IMAGE_BYTES, MAX_POST_IMAGES } from '../constants';
 import type { ImageBucket } from './types';
 
@@ -22,7 +22,7 @@ export const uploadImage = async (
   if (!(value instanceof File) || value.size === 0) return undefined;
   validateImage(value);
 
-  const supabase = await createSupabaseServerClient();
+  const supabase = createSupabaseAdminClient();
   const path = `${userID}/${crypto.randomUUID()}.${extensionFor(value.type)}`;
   const { error } = await supabase.storage.from(bucket).upload(path, value, {
     cacheControl: IMAGE_CACHE_CONTROL,
@@ -64,7 +64,7 @@ export const removePostImages = async (imageUrls: string[]): Promise<void> => {
 
   if (paths.length === 0) return;
 
-  const supabase = await createSupabaseServerClient();
+  const supabase = createSupabaseAdminClient();
   const { error } = await supabase.storage.from('post-images').remove(paths);
   if (error) throw new Error(error.message);
 };

@@ -10,17 +10,16 @@ import Link from 'next/link';
 import { UserAvatar } from '../ui/user-avatar';
 import { useGetCommunityMember, useGetProfile } from '@/hooks/useQueries';
 import { formatTimeAgo } from '@/lib/utils';
-import { usePathname } from 'next/navigation';
 
 export const CommentNode: FC<CommentNodeProps> = ({
   node,
   postAuthorID,
   sessionUser,
+  communitySlug,
   activeReplyID,
   onReplyChangeAction,
 }) => {
-  const slug = usePathname().split('/').pop() ?? '';
-  const isMember = useGetCommunityMember(slug).data?.data?.isMember;
+  const isMember = useGetCommunityMember(communitySlug).data?.data?.isMember;
   const viewer = useGetProfile().data?.data;
   const isOp = node.authorID === postAuthorID;
   const isReplying = activeReplyID === node.id;
@@ -100,6 +99,7 @@ export const CommentNode: FC<CommentNodeProps> = ({
               node={ch}
               postAuthorID={postAuthorID}
               sessionUser={sessionUser}
+              communitySlug={communitySlug}
               activeReplyID={activeReplyID}
               onReplyChangeAction={onReplyChangeAction}
             />

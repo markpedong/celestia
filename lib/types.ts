@@ -275,6 +275,7 @@ export type CommentNodeProps = {
   node: EnrichedCommentNode;
   postAuthorID: string;
   sessionUser: User | null;
+  communitySlug: string;
   activeReplyID: string | null;
   onReplyChangeAction: (commentID: string | null) => void;
 };
@@ -283,6 +284,7 @@ export type CommentThreadProps = {
   tree: EnrichedCommentNode[];
   postAuthorID: string;
   sessionUser: User | null;
+  communitySlug: string;
   children: ReactNode;
 };
 
