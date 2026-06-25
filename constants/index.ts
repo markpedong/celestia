@@ -31,3 +31,6 @@ export const PASSWORD_RECOVERY = {
   password: '',
   confirmPassword: '',
 }
+
+export const USER_FIELDS = ['displayName', 'bio', 'avatarUrl', 'coverUrl'];
+

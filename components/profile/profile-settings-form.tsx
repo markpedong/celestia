@@ -16,6 +16,7 @@ import { useGetProfile } from '@/hooks/useQueries';
 import z from 'zod';
 import { ImageUploader } from '@/components/ui/image-uploader';
 import { MediaKind } from '@/lib/types';
+import ChangeDisplayName from './components/change-display-name';
 
 const ProfileSettingsForm = () => {
   const queryClient = useQueryClient();
@@ -145,29 +146,7 @@ const ProfileSettingsForm = () => {
           </div>
         </section>
       ))}
-      <SettingsDialog
-        open={activeEditor === 'displayName'}
-        onOpenChange={open => !open && closeEditor()}
-        title='Display Name'
-        description='This is the name shown across Celestia.'
-      >
-        <form
-          onSubmit={detailsForm.handleSubmit(submitDetails)}
-          onKeyDown={detailsForm.onFormKeyDown}
-          className='space-y-4'
-          noValidate
-        >
-          <FormField
-            label='Display Name'
-            labelClassName='text-card-foreground'
-            placeholder='johndoe'
-            error={detailsForm.formState.errors.displayName?.message}
-            maxLength={20}
-            {...detailsForm.register('displayName')}
-          />
-          <DialogActions submitLabel='Save display name' submitLoading={savingDetails} />
-        </form>
-      </SettingsDialog>
+      <ChangeDisplayName open={activeEditor === 'displayName'} setActiveEditor={setActiveEditor} />
       <SettingsDialog
         open={activeEditor === 'bio'}
         onOpenChange={open => !open && closeEditor()}

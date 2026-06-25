@@ -1,7 +1,7 @@
 'use client';
 
 import { STALE_TIME } from '@/constants';
-import { getCommunity, getCommunityFeed, getCommunityMember, getCommunityStats, getProfileByUserName, joinCommunity, updateCommunity } from '@/services';
+import { getCommunity, getCommunityFeed, getCommunityMember, getCommunityStats, getProfileByUserName, joinCommunity, updateCommunity, updateProfile } from '@/services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Session } from '@supabase/supabase-js';
 import { useSession } from './useSession';
@@ -14,18 +14,17 @@ const getUserNameByAuth = (user?: Session['user']) => {
   return typeof userName === 'string' ? userName : user?.email?.split('@')[0] ?? '';
 };
 
-export const profileQueryKey = (userName: string) => ['profile', userName] as const;
 export const communityMemberQueryKey = (slug: string) => ['community-member', slug] as const;
 export const communityStatsQueryKey = (slug: string) => ['community-stats', slug] as const;
 
 export const useGetProfile = () => {
   const { user: authUser } = useSession();
-  const userName = getUserNameByAuth(authUser);
+  const username = getUserNameByAuth(authUser);
 
   return useQuery({
-    queryKey: profileQueryKey(userName),
-    queryFn: () => getProfileByUserName({ userName }),
-    enabled: Boolean(userName),
+    queryKey: ['profile', username],
+    queryFn: () => getProfileByUserName({ username }),
+    enabled: Boolean(username),
     staleTime: STALE_TIME,
   });
 };
@@ -59,6 +58,26 @@ export const useUpdateCommunity = () => {
   });
 };
 
+export const useUpdateProfile = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateProfile,
+    onSuccess: res => {
+      if (!res.success) {
+        toast.error(res.message || 'Unable to update profile.');
+        return;
+      }
+
+      toast.success(res.message || 'Profile updated.');
+
+      void queryClient.invalidateQueries({ queryKey: ['profile'] });
+    },
+    onError: error => {
+      toast.error(error instanceof Error ? error.message : 'Unable to update profile.');
+    },
+  });
+};
 
 export const useCommunityFeed = (slug: string, sort: FeedSort) => {
   return useQuery({

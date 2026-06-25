@@ -6,11 +6,12 @@ import type { ZodType } from 'zod';
 import { toast } from 'sonner';
 
 interface IUseValidate<TForm extends FieldValues> {
-  defaultValues: DefaultValues<TForm>;
+  defaultValues?: DefaultValues<TForm>;
+  values?: TForm;
   schema?: ZodType<TForm, TForm>;
 }
 
-const useFormValidate = <TForm extends FieldValues>({ schema, defaultValues }: IUseValidate<TForm>) => {
+const useFormValidate = <TForm extends FieldValues>({ schema, defaultValues, values }: IUseValidate<TForm>) => {
   const {
     getValues,
     setValue,
@@ -24,6 +25,7 @@ const useFormValidate = <TForm extends FieldValues>({ schema, defaultValues }: I
     formState: { errors: errorsList, isValid, isSubmitting, isSubmitted, dirtyFields, touchedFields },
   } = useForm<TForm>({
     defaultValues,
+    values,
     resolver: schema ? zodResolver(schema) : undefined,
     mode: 'onChange',
     reValidateMode: 'onChange',

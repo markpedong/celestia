@@ -4,9 +4,10 @@ import { Community, CommunityFeed, CommunityStats, FeedSort, Tag, User } from "@
 import { __api } from "./request";
 import { API_ENDPOINT, REQUEST_METHOD } from "@/constants/enums";
 
-export const getProfileByUserName = async ({ userName }: { userName: string }) => {
+export const getProfileByUserName = async ({ username }: { username: string }) => {
   const response = await __api<User>({
-    init: { body: { userName } },
+    params: { username },
+    init: { method: REQUEST_METHOD.GET },
     endpoint: API_ENDPOINT.USER,
   });
 
@@ -36,6 +37,14 @@ export const getCommunity = async (slug: string) => {
 
   return response.data;
 };
+
+export const updateProfile = async (body: Record<string, unknown>) => {
+  return await __api({
+    init: { body, method: REQUEST_METHOD.POST, },
+    endpoint: API_ENDPOINT.USER,
+  });
+};
+
 
 export const updateCommunity = async (body: Tag & { description: string }) => {
   const response = await __api({
