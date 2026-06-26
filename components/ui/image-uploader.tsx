@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { ImagePlus, RotateCcw, Trash2, Upload, ZoomIn, ZoomOut } from 'lucide-react';
+import { RotateCcw, Trash2, Upload, ZoomIn, ZoomOut } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Cropper, { type Area, type Point } from 'react-easy-crop';
@@ -102,9 +102,15 @@ export function ImageUploader({
   useEffect(
     () => () => {
       if (image?.startsWith('blob:')) URL.revokeObjectURL(image);
+    },
+    [image],
+  );
+
+  useEffect(
+    () => () => {
       if (previewImage?.startsWith('blob:')) URL.revokeObjectURL(previewImage);
     },
-    [image, previewImage],
+    [previewImage],
   );
 
   const resetCropState = () => {
@@ -188,7 +194,15 @@ export function ImageUploader({
           />
           <div className='absolute right-3 bottom-3 flex gap-2'>
             {image ? (
-              <Button type='button' size='sm' onClick={() => setIsCropDialogOpen(true)} disabled={disabled}>
+              <Button
+                type='button'
+                size='sm'
+                onClick={event => {
+                  event.stopPropagation();
+                  setIsCropDialogOpen(true);
+                }}
+                disabled={disabled}
+              >
                 <RotateCcw /> Edit
               </Button>
             ) : null}
@@ -234,15 +248,10 @@ export function ImageUploader({
         disabled={disabled}
         onChange={event => selectFile(event.target.files?.[0] ?? null)}
       />
-      {!previewImage ? (
-        <Button type='button' variant='outline' className='w-full' onClick={() => inputRef.current?.click()} disabled={disabled}>
-          <ImagePlus /> Choose image
-        </Button>
-      ) : null}
       {error ? <p className='text-sm text-destructive'>{error}</p> : null}
 
-      <Dialog open={isCropDialogOpen} onOpenChange={setIsCropDialogOpen}>
-        <DialogContent className='sm:max-w-lg'>
+      <Dialog modal={false} open={isCropDialogOpen} onOpenChange={setIsCropDialogOpen}>
+        <DialogContent className='z-[70] sm:max-w-lg'>
           <DialogHeader>
             <DialogTitle>Crop image</DialogTitle>
             <DialogDescription>Drag the image to position it, then adjust zoom.</DialogDescription>
