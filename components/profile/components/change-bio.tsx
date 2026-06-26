@@ -1,6 +1,7 @@
 import DialogActions from '@/components/ui/dialog-actions';
 import FormField from '@/components/ui/form-field';
 import SettingsDialog from '@/components/ui/settings-dialog';
+import { Textarea } from '@/components/ui/textarea';
 import useFormSchema from '@/hooks/useFormSchema';
 import useFormValidate from '@/hooks/useFormValidate';
 import { useGetProfile, useUpdateProfile } from '@/hooks/useQueries';
@@ -8,20 +9,20 @@ import { TChangeProfile } from '@/lib/types';
 import { FC } from 'react';
 import z from 'zod';
 
-const ChangeDisplayName: FC<TChangeProfile> = ({ open, setActiveEditor }) => {
+const ChangeBio: FC<TChangeProfile> = ({ open, setActiveEditor }) => {
   const profile = useGetProfile().data?.data;
 
   const { mutateAsync, isPending } = useUpdateProfile();
   const { profileDetailsSchema } = useFormSchema();
 
-  const displayNameSchema = profileDetailsSchema.pick({ displayName: true });
+  const bioSchema = profileDetailsSchema.pick({ bio: true });
   const detailsForm = useFormValidate({
-    schema: displayNameSchema,
-    values: { displayName: profile?.displayName || '' },
+    schema: bioSchema,
+    values: { bio: profile?.bio || '' },
   });
 
-  const submitDetails = async ({ displayName }: z.infer<typeof displayNameSchema>) => {
-    const res = await mutateAsync({ displayName });
+  const submitDetails = async ({ bio }: z.infer<typeof bioSchema>) => {
+    const res = await mutateAsync({ bio });
 
     if (!res.success) return;
 
@@ -32,8 +33,8 @@ const ChangeDisplayName: FC<TChangeProfile> = ({ open, setActiveEditor }) => {
     <SettingsDialog
       open={open}
       onOpenChange={open => !open && setActiveEditor(null)}
-      title='Display Name'
-      description='This is the name shown across Celestia.'
+      title='About / Bio'
+      description='Tell people a little about yourself.'
     >
       <form
         onSubmit={detailsForm.handleSubmit(submitDetails)}
@@ -41,18 +42,20 @@ const ChangeDisplayName: FC<TChangeProfile> = ({ open, setActiveEditor }) => {
         className='space-y-4'
         noValidate
       >
-        <FormField
-          label='Display Name'
-          labelClassName='text-card-foreground'
-          placeholder='johndoe'
-          error={detailsForm.formState.errors.displayName?.message}
-          maxLength={20}
-          {...detailsForm.register('displayName')}
-        />
-        <DialogActions submitLabel={isPending ? 'Saving...' : 'Save'} submitLoading={isPending} />
+        <FormField htmlFor='bio' label='About / Bio' error={detailsForm.errors('bio')}>
+          <Textarea
+            id='bio'
+            maxLength={500}
+            rows={5}
+            className='resize-y'
+            aria-invalid={Boolean(detailsForm.errors('bio'))}
+            {...detailsForm.register('bio')}
+          />
+        </FormField>
+        <DialogActions submitLabel={isPending ? 'Saving bio...' : 'Save bio'} submitLoading={isPending} />
       </form>
     </SettingsDialog>
   );
 };
 
-export default ChangeDisplayName;
+export default ChangeBio;

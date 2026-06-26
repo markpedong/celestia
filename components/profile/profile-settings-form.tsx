@@ -3,9 +3,7 @@
 import { useState, useTransition } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { updateProfileMediaAction, updateProfileSettingsAction } from '@/lib/actions/profile';
-import FormField from '@/components/ui/form-field';
-import { Textarea } from '@/components/ui/textarea';
+import { updateProfileMediaAction } from '@/lib/actions/profile';
 import DialogActions from '@/components/ui/dialog-actions';
 import SettingsDialog from '@/components/ui/settings-dialog';
 import { SettingsOptionRow } from '@/components/ui/settings-option-row';
@@ -13,10 +11,10 @@ import { ACCEPTED_IMAGE_TYPES, IMAGE_MIME_TYPES, MAX_IMAGE_BYTES } from '@/const
 import useFormValidate from '@/hooks/useFormValidate';
 import useFormSchema from '@/hooks/useFormSchema';
 import { useGetProfile } from '@/hooks/useQueries';
-import z from 'zod';
 import { ImageUploader } from '@/components/ui/image-uploader';
 import { MediaKind } from '@/lib/types';
 import ChangeDisplayName from './components/change-display-name';
+import ChangeBio from './components/change-bio';
 
 const ProfileSettingsForm = () => {
   const queryClient = useQueryClient();
@@ -24,7 +22,6 @@ const ProfileSettingsForm = () => {
 
   const { profileDetailsSchema } = useFormSchema();
 
-  const [savingDetails, startSavingDetails] = useTransition();
   const [savingMedia, startSavingMedia] = useTransition();
   const [activeEditor, setActiveEditor] = useState<'displayName' | 'bio' | MediaKind | null>(null);
   const [selectedMedia, setSelectedMedia] = useState<Partial<Record<MediaKind, File>>>({});
@@ -53,20 +50,6 @@ const ProfileSettingsForm = () => {
   const closeEditor = () => {
     if (activeEditor === 'avatar' || activeEditor === 'banner') clearSelectedMedia(activeEditor);
     setActiveEditor(null);
-  };
-
-  const submitDetails = async (values: z.infer<typeof profileDetailsSchema>) => {
-    startSavingDetails(async () => {
-      const { displayName, bio } = values;
-      const result = await updateProfileSettingsAction({ displayName, bio });
-      if (result?.error) {
-        toast.error(result.error);
-        return;
-      }
-      closeEditor();
-      void queryClient.invalidateQueries({ queryKey: ['profile'] });
-      toast.success(result?.success ?? 'Profile details updated.');
-    });
   };
 
   const submitMedia = async (kind: MediaKind) => {
@@ -147,31 +130,7 @@ const ProfileSettingsForm = () => {
         </section>
       ))}
       <ChangeDisplayName open={activeEditor === 'displayName'} setActiveEditor={setActiveEditor} />
-      <SettingsDialog
-        open={activeEditor === 'bio'}
-        onOpenChange={open => !open && closeEditor()}
-        title='About / Bio'
-        description='Tell people a little about yourself.'
-      >
-        <form
-          onSubmit={detailsForm.handleSubmit(submitDetails)}
-          onKeyDown={detailsForm.onFormKeyDown}
-          className='space-y-4'
-          noValidate
-        >
-          <FormField htmlFor='bio' label='About / Bio' error={detailsForm.errors('bio')}>
-            <Textarea
-              id='bio'
-              maxLength={500}
-              rows={5}
-              className='resize-y'
-              aria-invalid={Boolean(detailsForm.errors('bio'))}
-              {...detailsForm.register('bio')}
-            />
-          </FormField>
-          <DialogActions submitLabel='Save bio' submitLoading={savingDetails} />
-        </form>
-      </SettingsDialog>
+      <ChangeBio open={activeEditor === 'bio'} setActiveEditor={setActiveEditor} />
       {(['avatar', 'banner'] as const).map(kind => {
         const isAvatar = kind === 'avatar';
         const currentImageUrl = isAvatar ? profile?.avatarUrl : profile?.coverUrl;

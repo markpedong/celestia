@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import type { ComponentProps, ReactNode } from 'react';
+import type { ComponentProps, Dispatch, ReactNode, SetStateAction } from 'react';
 import { Input } from '@/components/ui/input';
 
 export type ApiResponse<TResponse = null> = {
@@ -419,3 +419,8 @@ export type AccountDialog =
   | null;
 
 export type MediaKind = 'avatar' | 'banner';
+
+export type TChangeProfile = {
+  open: boolean;
+  setActiveEditor: Dispatch<SetStateAction<MediaKind | 'displayName' | 'bio' | null>>;
+};
