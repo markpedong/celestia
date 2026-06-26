@@ -44,7 +44,6 @@ const UserPage = async ({ params }: UserPageProps) => {
   const profile = await getUserByUserName(userName);
   if (!profile) notFound();
 
-  console.log('profile.avatarUrl', profile.avatarUrl);
   const [tags, stats, posts, comments, upvotedPosts, upvotedComments, downvotedPosts, downvotedComments] =
     await Promise.all([
       listCommunity(),
@@ -190,6 +189,7 @@ const UserPage = async ({ params }: UserPageProps) => {
                 alt={`${profile.displayName || profile.userName} profile picture`}
                 width={128}
                 height={128}
+                unoptimized
                 className='size-full object-cover'
               />
             ) : (
