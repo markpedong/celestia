@@ -30,7 +30,6 @@ export type User = {
   email: string;
   displayName: string | null;
   bio: string | null;
-  avatar_url?: string | null;
   avatarUrl: string | null;
   coverUrl: string | null;
   createdAt: Date;

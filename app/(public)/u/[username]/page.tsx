@@ -44,6 +44,7 @@ const UserPage = async ({ params }: UserPageProps) => {
   const profile = await getUserByUserName(userName);
   if (!profile) notFound();
 
+  console.log('profile.avatarUrl', profile.avatarUrl);
   const [tags, stats, posts, comments, upvotedPosts, upvotedComments, downvotedPosts, downvotedComments] =
     await Promise.all([
       listCommunity(),
@@ -183,9 +184,9 @@ const UserPage = async ({ params }: UserPageProps) => {
         </div>
         <div className='relative grid gap-5 border-t border-border/70 p-5 pt-16 md:grid-cols-[minmax(0,1fr)_10rem] md:p-6 md:pt-6'>
           <div className='absolute right-5 -top-16 z-20 size-24 overflow-hidden rounded-2xl border-4 border-card bg-card shadow-2xl ring-1 ring-white/10 md:right-7 md:-top-28 md:size-32'>
-            {(profile.avatar_url ?? profile.avatarUrl) ? (
+            {profile.avatarUrl ? (
               <Image
-                src={profile.avatar_url ?? profile.avatarUrl ?? ''}
+                src={profile.avatarUrl ?? ''}
                 alt={`${profile.displayName || profile.userName} profile picture`}
                 width={128}
                 height={128}
@@ -201,10 +202,12 @@ const UserPage = async ({ params }: UserPageProps) => {
             {profile.bio ? (
               <p className='max-w-2xl whitespace-pre-wrap text-sm leading-6 text-card-foreground'>{profile.bio}</p>
             ) : (
-              <p className='text-sm leading-6 text-muted-foreground'>This profile has not added a bio yet.</p>
+              <p className='text-sm leading-6 text-muted-foreground wrap-break-word'>
+                This profile has not added a bio yet.
+              </p>
             )}
           </div>
-          <div className='md:pt-24'>
+          <div>
             <ClientProfileControls profileID={profile.id} />
           </div>
         </div>

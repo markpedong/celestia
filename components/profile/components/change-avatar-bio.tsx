@@ -4,23 +4,28 @@ import SettingsDialog from '@/components/ui/settings-dialog';
 import { ACCEPTED_IMAGE_TYPES, IMAGE_MIME_TYPES, MAX_IMAGE_BYTES } from '@/constants';
 import { updateProfileMediaAction } from '@/lib/actions/profile';
 import { MediaKind } from '@/lib/types';
+import { useGetProfile } from '@/hooks/useQueries';
 import { useQueryClient } from '@tanstack/react-query';
-import { FC, useTransition } from 'react';
+import { FC, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 
 type Props = {
-  currentImageUrl?: string | null;
   kind: MediaKind;
   open: boolean;
-  selectedFile?: File;
   onClose: () => void;
-  onFileChange: (file?: File) => void;
 };
 
-const ChangeAvatarBio: FC<Props> = ({ currentImageUrl, kind, onClose, onFileChange, open, selectedFile }) => {
+const ChangeAvatarBio: FC<Props> = ({ kind, onClose, open }) => {
   const queryClient = useQueryClient();
+  const profile = useGetProfile().data?.data;
+  const [selectedFile, setSelectedFile] = useState<File>();
   const [savingMedia, startSavingMedia] = useTransition();
   const isAvatar = kind === 'avatar';
+  const currentImageUrl = isAvatar ? profile?.avatarUrl : profile?.coverUrl;
+  const close = () => {
+    setSelectedFile(undefined);
+    onClose();
+  };
 
   const submitMedia = async () => {
     startSavingMedia(async () => {
@@ -37,7 +42,7 @@ const ChangeAvatarBio: FC<Props> = ({ currentImageUrl, kind, onClose, onFileChan
         toast.error(result.error);
         return;
       }
-      onClose();
+      close();
       void queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast.success(result?.success ?? 'Profile media updated.');
     });
@@ -46,7 +51,7 @@ const ChangeAvatarBio: FC<Props> = ({ currentImageUrl, kind, onClose, onFileChan
   return (
     <SettingsDialog
       open={open}
-      onOpenChange={open => !open && onClose()}
+      onOpenChange={open => !open && close()}
       title={isAvatar ? 'Avatar' : 'Banner'}
       description='Upload an image to update your public profile.'
       contentClassName={isAvatar ? 'sm:max-w-md' : 'sm:max-w-2xl'}
@@ -69,8 +74,8 @@ const ChangeAvatarBio: FC<Props> = ({ currentImageUrl, kind, onClose, onFileChan
           outputWidth={isAvatar ? 800 : 1600}
           outputHeight={isAvatar ? 800 : 533}
           previewLabel={isAvatar ? 'avatar' : 'banner'}
-          onClear={() => onFileChange()}
-          onImageCropped={onFileChange}
+          onClear={() => setSelectedFile(undefined)}
+          onImageCropped={setSelectedFile}
         />
         <DialogActions submitLabel={`Upload ${kind}`} submitLoading={savingMedia} submitDisabled={!selectedFile} />
       </form>

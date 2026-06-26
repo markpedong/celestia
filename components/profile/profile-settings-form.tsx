@@ -16,30 +16,16 @@ const ProfileSettingsForm = () => {
   const { profileDetailsSchema } = useFormSchema();
 
   const [activeEditor, setActiveEditor] = useState<'displayName' | 'bio' | MediaKind | null>(null);
-  const [selectedMedia, setSelectedMedia] = useState<Partial<Record<MediaKind, File>>>({});
   const detailsForm = useFormValidate({
     schema: profileDetailsSchema,
     defaultValues: { displayName: profile?.displayName ?? '', bio: profile?.bio ?? '' },
   });
-
-  const clearSelectedMedia = (kind: MediaKind) => {
-    setSelectedMedia(current => {
-      const next = { ...current };
-      delete next[kind];
-      return next;
-    });
-  };
-  const closeMediaEditor = (kind: MediaKind) => {
-    clearSelectedMedia(kind);
-    setActiveEditor(null);
-  };
 
   const openEditor = (editor: 'displayName' | 'bio' | MediaKind) => {
     if (editor === 'displayName' || editor === 'bio') {
       detailsForm.reset({ displayName: profile?.displayName ?? '', bio: profile?.bio ?? '' });
     }
 
-    if (editor === 'avatar' || editor === 'banner') clearSelectedMedia(editor);
     setActiveEditor(editor);
   };
 
@@ -100,19 +86,9 @@ const ProfileSettingsForm = () => {
       ))}
       <ChangeDisplayName open={activeEditor === 'displayName'} setActiveEditor={setActiveEditor} />
       <ChangeBio open={activeEditor === 'bio'} setActiveEditor={setActiveEditor} />
-      {(['avatar', 'banner'] as const).map(kind => {
-        return (
-          <ChangeAvatarBio
-            key={kind}
-            open={activeEditor === kind}
-            kind={kind}
-            currentImageUrl={kind === 'avatar' ? profile?.avatarUrl : profile?.coverUrl}
-            selectedFile={selectedMedia[kind]}
-            onClose={() => closeMediaEditor(kind)}
-            onFileChange={file => setSelectedMedia(current => ({ ...current, [kind]: file }))}
-          />
-        );
-      })}
+      {(['avatar', 'banner'] as const).map(kind => (
+        <ChangeAvatarBio key={kind} open={activeEditor === kind} kind={kind} onClose={() => setActiveEditor(null)} />
+      ))}
     </div>
   );
 };
