@@ -2,10 +2,8 @@
 
 import { revalidatePath } from 'next/cache';
 import { getSessionUser } from '../auth';
-import { uploadImage } from '../media';
 import { prisma } from '../prisma';
 import type { ProfileMediaFormState } from '../types';
-import { getUploadErrorMessage } from '../error-messages';
 import { profileSettingsSchema } from '../form-schemas';
 
 const revalidateProfilePaths = (...usernames: string[]) => {
@@ -16,22 +14,10 @@ const revalidateProfilePaths = (...usernames: string[]) => {
 };
 
 export const updateProfileMediaAction = async (
-  { avatar, cover }: { avatar?: FileList | File; cover?: FileList | File },
+  { avatarUrl, coverUrl }: { avatarUrl?: string; coverUrl?: string },
 ): Promise<ProfileMediaFormState> => {
   const profile = await getSessionUser();
   if (!profile) return { error: 'You must be signed in to update your profile.' };
-
-  let avatarUrl: string | undefined;
-  let coverUrl: string | undefined;
-
-  try {
-    [avatarUrl, coverUrl] = await Promise.all([
-      uploadImage(avatar instanceof File ? avatar : avatar?.[0] ?? null, 'profile-avatars', profile.id),
-      uploadImage(cover instanceof File ? cover : cover?.[0] ?? null, 'profile-covers', profile.id),
-    ]);
-  } catch (error) {
-    return { error: getUploadErrorMessage(error, 'We could not upload your image. Please try again.') };
-  }
 
   if (!avatarUrl && !coverUrl) return { error: 'Choose a profile image or cover photo first.' };
 

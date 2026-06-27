@@ -4,7 +4,7 @@ import SettingsDialog from '@/components/ui/settings-dialog';
 import { ACCEPTED_IMAGE_TYPES, IMAGE_MIME_TYPES, MAX_IMAGE_BYTES } from '@/constants';
 import { updateProfileMediaAction } from '@/lib/actions/profile';
 import { MediaKind } from '@/lib/types';
-import { useGetProfile } from '@/hooks/useQueries';
+import { useGetProfile, useUploadImages } from '@/hooks/useQueries';
 import { useQueryClient } from '@tanstack/react-query';
 import { FC, useState, useTransition } from 'react';
 import { toast } from 'sonner';
@@ -17,6 +17,7 @@ type Props = {
 
 const ChangeAvatarBio: FC<Props> = ({ kind, onClose, open }) => {
   const queryClient = useQueryClient();
+  const uploadImages = useUploadImages();
   const profile = useGetProfile().data?.data;
   const [selectedFile, setSelectedFile] = useState<File>();
   const [savingMedia, startSavingMedia] = useTransition();
@@ -34,10 +35,13 @@ const ChangeAvatarBio: FC<Props> = ({ kind, onClose, open }) => {
         return;
       }
 
-      const result = await updateProfileMediaAction({
-        avatar: isAvatar ? selectedFile : undefined,
-        cover: isAvatar ? undefined : selectedFile,
-      });
+      const imageUrl = (await uploadImages.mutateAsync({
+        files: [selectedFile],
+        bucket: isAvatar ? 'profile-avatars' : 'profile-covers',
+      }))[0];
+      if (!imageUrl) return;
+
+      const result = await updateProfileMediaAction(isAvatar ? { avatarUrl: imageUrl } : { coverUrl: imageUrl });
       if (result?.error) {
         toast.error(result.error);
         return;

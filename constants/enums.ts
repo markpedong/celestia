@@ -7,6 +7,7 @@ export enum API_ENDPOINT {
   COMMUNITY_JOIN = '/community/join',
   COMMUNITY_STATS = '/community/stats',
   COMMUNITY_MEMBER = '/community/member',
+  IMAGES = '/images',
 }
 
 export enum REQUEST_METHOD {

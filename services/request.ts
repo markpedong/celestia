@@ -13,7 +13,7 @@ interface IResponse<ResponseType> extends Response {
 }
 
 export type TRequestInit = {
-  body?: string | Record<string, unknown>;
+  body?: FormData | string | Record<string, unknown>;
   cache?: RequestCache;
   headers?: HeadersInit;
   method?: REQUEST_METHOD;

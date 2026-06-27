@@ -13,8 +13,10 @@ import { Textarea } from '../ui/textarea';
 import { ImageUploadField } from './image-upload-field';
 import { Save } from 'lucide-react';
 import { MAX_POST_BODY_LENGTH, MAX_POST_TITLE_LENGTH } from '@/constants';
+import { useState } from 'react';
 
 export const EditPostForm: FC<EditPostFormProps> = ({ post }) => {
+  const [uploadingImages, setUploadingImages] = useState(false);
   const { editPostSchema } = useFormSchema();
   const {
     form: {
@@ -60,9 +62,15 @@ export const EditPostForm: FC<EditPostFormProps> = ({ post }) => {
         <Label>
           Images <span className='text-muted-foreground'>(optional, up to 4)</span>
         </Label>
-        <ImageUploadField initialImageUrls={post.imageUrls} name='images' multiple />
+        <ImageUploadField initialImageUrls={post.imageUrls} name='images' multiple onUploadingChange={setUploadingImages} />
       </div>
-      <Button type='submit' disabled={!isValid} isLoading={pending} loadingText='Saving…' className='celestia-primary-action w-full rounded'>
+      <Button
+        type='submit'
+        disabled={!isValid || uploadingImages}
+        isLoading={pending || uploadingImages}
+        loadingText={uploadingImages ? 'Optimizing images...' : 'Saving…'}
+        className='celestia-primary-action w-full rounded'
+      >
         <Save /> Save changes
       </Button>
     </form>

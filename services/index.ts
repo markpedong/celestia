@@ -1,6 +1,6 @@
 'use server';
 
-import { Community, CommunityFeed, CommunityStats, FeedSort, Tag, User } from "@/lib/types";
+import { ApiResponse, Community, CommunityFeed, CommunityStats, FeedSort, ImageBucket, Tag, User } from "@/lib/types";
 import { __api } from "./request";
 import { API_ENDPOINT, REQUEST_METHOD } from "@/constants/enums";
 
@@ -56,13 +56,30 @@ export const updateProfile = async (body: Record<string, unknown>) => {
 };
 
 
-export const updateCommunity = async (body: Tag & { description: string }) => {
+export const updateCommunity = async (body: Partial<Tag & { description: string }> & { slug: string; avatarUrl?: string; coverUrl?: string }) => {
   const response = await __api({
     init: { body, method: REQUEST_METHOD.POST },
     endpoint: API_ENDPOINT.COMMUNITY,
   });
 
   return response;
+};
+
+export const uploadImages = async (files: File[], bucket: ImageBucket = 'post-images') => {
+  const formData = new FormData();
+  formData.set('bucket', bucket);
+  files.forEach(file => formData.append('images', file));
+
+  const response = await __api<{ imageUrls: string[] }>({
+    endpoint: API_ENDPOINT.IMAGES,
+    init: { body: formData, method: REQUEST_METHOD.POST },
+  });
+
+  if (!response.success || !response.data) {
+    throw new Error(response.message || 'Unable to upload images.');
+  }
+
+  return response as ApiResponse<{ imageUrls: string[] }>;
 };
 
 export const getCommunityFeed = async (slug: string, sort: FeedSort) => {

@@ -1,13 +1,15 @@
 'use server';
 
+import {
+  MAX_COMMUNITY_SLUG_LENGTH,
+  MIN_COMMUNITY_SLUG_LENGTH,
+  RESERVED_COMMUNITY_SLUGS,
+} from '../../constants';
 import { getCurrentUserID } from '../auth';
-import { getUploadErrorMessage } from '../error-messages';
-import { uploadImage } from '../media';
 import { prisma } from '../prisma';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import type { CommunityFormState, CommunitySettingsFormState } from '../types';
-import { MAX_COMMUNITY_SLUG_LENGTH, MIN_COMMUNITY_SLUG_LENGTH, RESERVED_COMMUNITY_SLUGS } from '../../constants';
 
 const normalizeSlug = (value: string) => value
   .trim()
@@ -27,25 +29,13 @@ export const createCommunityAction = async (
   const slug = normalizeSlug(String(formData.get('slug') ?? ''));
   const description = String(formData.get('description') ?? '').trim();
   const hashColor = String(formData.get('hashColor') ?? '').trim();
-  const avatar = formData.get('avatar');
-  const cover = formData.get('cover');
+  const avatarUrl = String(formData.get('avatarUrl') ?? '') || undefined;
+  const coverUrl = String(formData.get('coverUrl') ?? '') || undefined;
 
   if (slug.length < MIN_COMMUNITY_SLUG_LENGTH || RESERVED_COMMUNITY_SLUGS.has(slug)) return { error: 'Choose a different community URL.' };
 
   const existing = await prisma.community.findUnique({ where: { slug }, select: { slug: true } });
   if (existing) return { error: 'That community URL is already taken.' };
-
-  let avatarUrl: string | undefined;
-  let coverUrl: string | undefined;
-
-  try {
-    [avatarUrl, coverUrl] = await Promise.all([
-      uploadImage(avatar, 'community-avatars', userID),
-      uploadImage(cover, 'community-covers', userID),
-    ]);
-  } catch (error) {
-    return { error: getUploadErrorMessage(error, 'We could not upload your image. Please try again.') };
-  }
 
   await prisma.$transaction(async (tx) => {
     await tx.community.create({

@@ -1,11 +1,11 @@
 'use client';
 
 import { STALE_TIME } from '@/constants';
-import { getCommunity, getCommunityFeed, getCommunityMember, getCommunityStats, getOwnedCommunities, getProfileByUserName, joinCommunity, updateCommunity, updateProfile } from '@/services';
+import { getCommunity, getCommunityFeed, getCommunityMember, getCommunityStats, getOwnedCommunities, getProfileByUserName, joinCommunity, updateCommunity, updateProfile, uploadImages } from '@/services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Session } from '@supabase/supabase-js';
 import { useSession } from './useSession';
-import type { ApiResponse, CommunityStats, FeedSort, Tag } from '@/lib/types';
+import type { ApiResponse, CommunityStats, FeedSort, ImageBucket } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
@@ -50,7 +50,7 @@ export const useUpdateCommunity = () => {
   const router = useRouter();
 
   return useMutation({
-    mutationFn: (body: Tag & { description: string }) => updateCommunity(body),
+    mutationFn: (body: Parameters<typeof updateCommunity>[0]) => updateCommunity(body),
     onSuccess: (res, variables) => {
       if (!res.success) {
         toast.error(res.message || 'Unable to update community settings.');
@@ -175,3 +175,13 @@ export const useGetCommunityMember = (slug: string) => {
     staleTime: STALE_TIME,
   })
 }
+
+export const useUploadImages = () => {
+  return useMutation({
+    mutationFn: async ({ files, bucket = 'post-images' }: { files: File[]; bucket?: ImageBucket }) =>
+      (await uploadImages(files, bucket)).data?.imageUrls ?? [],
+    onError: error => {
+      toast.error(error instanceof Error ? error.message : 'Unable to upload images.');
+    },
+  });
+};

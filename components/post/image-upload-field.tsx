@@ -7,18 +7,26 @@ import { ACCEPTED_IMAGE_TYPES, IMAGE_ACCEPT, MAX_IMAGE_BYTES, MAX_POST_IMAGES } 
 import type { ImageUploadFieldProps } from '@/lib/types';
 import { useEffect, useRef, useState } from 'react';
 import { ImageLightbox } from './image-lightbox';
+import { useUploadImages } from '@/hooks/useQueries';
 
 export const ImageUploadField: FC<ImageUploadFieldProps> = ({
   initialImageUrls = [],
   name = 'image',
   multiple = false,
+  onUploadingChange,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
+  const uploadImages = useUploadImages();
   const [previewUrls, setPreviewUrls] = useState(initialImageUrls);
+  const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([]);
   const [imageNames, setImageNames] = useState<string[]>([]);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [removeImages, setRemoveImages] = useState(false);
+
+  useEffect(() => {
+    onUploadingChange?.(uploadImages.isPending);
+  }, [onUploadingChange, uploadImages.isPending]);
 
   useEffect(() => () => {
     previewUrls.forEach(url => {
@@ -26,7 +34,7 @@ export const ImageUploadField: FC<ImageUploadFieldProps> = ({
     });
   }, [previewUrls]);
 
-  const selectImages = (files: FileList | null) => {
+  const selectImages = async (files: FileList | null) => {
     const selected = Array.from(files ?? []).slice(0, multiple ? MAX_POST_IMAGES : 1);
     if (selected.length === 0) return;
 
@@ -44,8 +52,17 @@ export const ImageUploadField: FC<ImageUploadFieldProps> = ({
     if (inputRef.current) inputRef.current.files = transfer.files;
     setPreviewUrls(selected.map(file => URL.createObjectURL(file)));
     setImageNames(selected.map(file => file.name));
+    setUploadedImageUrls([]);
     setRemoveImages(false);
     setActiveIndex(0);
+
+    try {
+      setUploadedImageUrls(await uploadImages.mutateAsync({ files: selected }));
+    } catch {
+      if (inputRef.current) inputRef.current.value = '';
+      setPreviewUrls([]);
+      setImageNames([]);
+    }
   };
 
   const removeImage = (index: number) => {
@@ -60,6 +77,7 @@ export const ImageUploadField: FC<ImageUploadFieldProps> = ({
 
     const remaining = previewUrls.length - 1;
     setPreviewUrls(urls => urls.filter((_, imageIndex) => imageIndex !== index));
+    setUploadedImageUrls(urls => urls.filter((_, imageIndex) => imageIndex !== index));
     setImageNames(names => names.filter((_, imageIndex) => imageIndex !== index));
     setRemoveImages(remaining === 0 && initialImageUrls.length > 0);
     setActiveIndex(current => Math.min(current, Math.max(remaining - 1, 0)));
@@ -70,6 +88,7 @@ export const ImageUploadField: FC<ImageUploadFieldProps> = ({
     });
     if (inputRef.current) inputRef.current.value = '';
     setPreviewUrls([]);
+    setUploadedImageUrls([]);
     setImageNames([]);
     setRemoveImages(initialImageUrls.length > 0);
     setActiveIndex(0);
@@ -85,13 +104,13 @@ export const ImageUploadField: FC<ImageUploadFieldProps> = ({
       <input
         ref={inputRef}
         id={name}
-        name={name}
         type='file'
         accept={IMAGE_ACCEPT}
         multiple={multiple}
         className='sr-only'
         onChange={event => selectImages(event.target.files)}
       />
+      <input type='hidden' name={name} value={JSON.stringify(uploadedImageUrls)} />
       <input type='hidden' name='removeImages' value={removeImages ? 'true' : 'false'} />
 
       {previewUrls.length > 0 ? (
@@ -149,7 +168,7 @@ export const ImageUploadField: FC<ImageUploadFieldProps> = ({
         ) : null}
       </div>
       <p className='text-xs text-muted-foreground'>
-        PNG, JPEG, WebP, or GIF · maximum 2 MB each{multiple ? ` · up to ${MAX_POST_IMAGES} images` : ''}
+        {uploadImages.isPending ? 'Optimizing images...' : `PNG, JPEG, WebP, or GIF · maximum 2 MB each${multiple ? ` · up to ${MAX_POST_IMAGES} images` : ''}`}
       </p>
       <ImageLightbox
         imageUrls={previewUrls}

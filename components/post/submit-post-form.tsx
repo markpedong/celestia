@@ -12,8 +12,10 @@ import { Send } from 'lucide-react';
 import type { SubmitPostFormProps } from '@/lib/types';
 import { ImageUploadField } from './image-upload-field';
 import { MAX_POST_BODY_LENGTH, MAX_POST_TITLE_LENGTH } from '@/constants';
+import { useState } from 'react';
 
 export const SubmitPostForm: FC<SubmitPostFormProps> = ({ communities, defaultCommunitySlug }) => {
+  const [uploadingImages, setUploadingImages] = useState(false);
   const { postSchema } = useFormSchema();
   const selectedCommunity =
     defaultCommunitySlug && communities.some(community => community.slug === defaultCommunitySlug)
@@ -104,14 +106,14 @@ export const SubmitPostForm: FC<SubmitPostFormProps> = ({ communities, defaultCo
         <Label>
           Images <span className='text-muted-foreground'>(optional, up to 4)</span>
         </Label>
-        <ImageUploadField name='images' multiple />
+        <ImageUploadField name='images' multiple onUploadingChange={setUploadingImages} />
       </div>
 
       <Button
         type='submit'
-        disabled={communities.length === 0 || !isValid}
-        isLoading={pending}
-        loadingText='Posting...'
+        disabled={communities.length === 0 || !isValid || uploadingImages}
+        isLoading={pending || uploadingImages}
+        loadingText={uploadingImages ? 'Optimizing images...' : 'Posting...'}
         className='celestia-primary-action h-10 w-full rounded'
       >
         <Send />

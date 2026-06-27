@@ -16,10 +16,15 @@ import {
   MAX_COMMUNITY_SLUG_LENGTH,
 } from '@/constants';
 import { ImagePlus, Plus, X } from 'lucide-react';
+import { toast } from 'sonner';
+import { useUploadImages } from '@/hooks/useQueries';
 
 export const CreateCommunityForm = () => {
   const { createCommunitySchema } = useFormSchema();
+  const uploadImages = useUploadImages();
   const [mediaPreview, setMediaPreview] = useState<Partial<Record<'avatar' | 'cover', string>>>({});
+  const [mediaUrls, setMediaUrls] = useState<Partial<Record<'avatar' | 'cover', string>>>({});
+  const [uploadingMedia, setUploadingMedia] = useState(false);
   const mediaPreviewRef = useRef(mediaPreview);
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
   const coverInputRef = useRef<HTMLInputElement | null>(null);
@@ -56,13 +61,28 @@ export const CreateCommunityForm = () => {
     []
   );
 
-  const previewMedia = (kind: 'avatar' | 'cover', file?: File) => {
+  const previewMedia = async (kind: 'avatar' | 'cover', file?: File) => {
     if (!file) return;
     setMediaPreview(current => {
       const previousUrl = current[kind];
       if (previousUrl?.startsWith('blob:')) URL.revokeObjectURL(previousUrl);
       return { ...current, [kind]: URL.createObjectURL(file) };
     });
+
+    setUploadingMedia(true);
+    try {
+      const imageUrl = (await uploadImages.mutateAsync({
+        files: [file],
+        bucket: kind === 'avatar' ? 'community-avatars' : 'community-covers',
+      }))[0];
+      if (!imageUrl) throw new Error('Unable to upload image.');
+      setMediaUrls(current => ({ ...current, [kind]: imageUrl }));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Unable to upload image.');
+      clearMedia(kind);
+    } finally {
+      setUploadingMedia(false);
+    }
   };
   const clearMedia = (kind: 'avatar' | 'cover') => {
     const input = kind === 'avatar' ? avatarInputRef.current : coverInputRef.current;
@@ -74,16 +94,17 @@ export const CreateCommunityForm = () => {
       delete next[kind];
       return next;
     });
+    setMediaUrls(current => {
+      const next = { ...current };
+      delete next[kind];
+      return next;
+    });
   };
-  const avatarRegistration = register('avatar', {
-    onChange: event => previewMedia('avatar', event.target.files?.[0]),
-  });
-  const coverRegistration = register('cover', {
-    onChange: event => previewMedia('cover', event.target.files?.[0]),
-  });
 
   return (
     <form onSubmit={onSubmit} onKeyDown={onFormKeyDown} className='celestia-card overflow-hidden' noValidate>
+      <input type='hidden' name='avatarUrl' value={mediaUrls.avatar ?? ''} />
+      <input type='hidden' name='coverUrl' value={mediaUrls.cover ?? ''} />
       <div className='grid lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]'>
         <div className='border-b border-border bg-muted/25 p-5 lg:border-r lg:border-b-0 md:p-6'>
           <div>
@@ -148,15 +169,10 @@ export const CreateCommunityForm = () => {
                   id='community-avatar'
                   type='file'
                   accept={IMAGE_ACCEPT}
-                  disabled={pending}
-                  name={avatarRegistration.name}
-                  onBlur={avatarRegistration.onBlur}
-                  onChange={avatarRegistration.onChange}
+                  disabled={pending || uploadingMedia}
+                  onChange={event => void previewMedia('avatar', event.target.files?.[0])}
                   onClick={() => clearMedia('avatar')}
-                  ref={node => {
-                    avatarRegistration.ref(node);
-                    avatarInputRef.current = node;
-                  }}
+                  ref={avatarInputRef}
                 />
                 {mediaPreview.avatar ? (
                   <Button
@@ -178,15 +194,10 @@ export const CreateCommunityForm = () => {
                   id='community-cover'
                   type='file'
                   accept={IMAGE_ACCEPT}
-                  disabled={pending}
-                  name={coverRegistration.name}
-                  onBlur={coverRegistration.onBlur}
-                  onChange={coverRegistration.onChange}
+                  disabled={pending || uploadingMedia}
+                  onChange={event => void previewMedia('cover', event.target.files?.[0])}
                   onClick={() => clearMedia('cover')}
-                  ref={node => {
-                    coverRegistration.ref(node);
-                    coverInputRef.current = node;
-                  }}
+                  ref={coverInputRef}
                 />
                 {mediaPreview.cover ? (
                   <Button
@@ -282,9 +293,9 @@ export const CreateCommunityForm = () => {
           </FormField>
           <Button
             type='submit'
-            disabled={!isValid}
-            isLoading={pending}
-            loadingText='Creating community…'
+            disabled={!isValid || uploadingMedia}
+            isLoading={pending || uploadingMedia}
+            loadingText={uploadingMedia ? 'Optimizing images...' : 'Creating community…'}
             className='celestia-primary-action h-11 w-full rounded'
           >
             {mediaPreview.avatar || mediaPreview.cover ? <ImagePlus /> : <Plus />}

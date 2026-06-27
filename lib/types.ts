@@ -297,6 +297,7 @@ export type ImageUploadFieldProps = {
   initialImageUrls?: string[];
   name?: string;
   multiple?: boolean;
+  onUploadingChange?: (uploading: boolean) => void;
 };
 
 export type SubmitPostFormProps = {

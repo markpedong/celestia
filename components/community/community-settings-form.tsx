@@ -13,7 +13,8 @@ import { ImagePlus, Save, X } from 'lucide-react';
 import { Community } from '@/lib/types';
 import useFormValidate from '@/hooks/useFormValidate';
 import z from 'zod';
-import { useUpdateCommunity } from '@/hooks/useQueries';
+import { useUpdateCommunity, useUploadImages } from '@/hooks/useQueries';
+import { updateCommunity } from '@/services';
 
 type CommunityMediaValues = {
   avatar?: FileList;
@@ -22,6 +23,7 @@ type CommunityMediaValues = {
 
 const CommunitySettingsForm: FC<{ community: Community }> = ({ community }) => {
   const router = useRouter();
+  const uploadImages = useUploadImages();
   const { communitySettingsSchema } = useFormSchema();
   const [savingMedia, startSavingMedia] = useTransition();
   const [mediaPreview, setMediaPreview] = useState<Partial<Record<'avatar' | 'cover', string>>>({});
@@ -91,31 +93,33 @@ const CommunitySettingsForm: FC<{ community: Community }> = ({ community }) => {
 
   const submitMedia = async (values: CommunityMediaValues) => {
     startSavingMedia(async () => {
-      const formData = new FormData();
-      formData.set('slug', community.slug);
-      if (values.avatar?.[0]) formData.set('avatar', values.avatar[0]);
-      if (values.cover?.[0]) formData.set('cover', values.cover[0]);
+      try {
+        const avatarUrl = values.avatar?.[0]
+          ? (await uploadImages.mutateAsync({ files: [values.avatar[0]], bucket: 'community-avatars' }))[0]
+          : undefined;
+        const coverUrl = values.cover?.[0]
+          ? (await uploadImages.mutateAsync({ files: [values.cover[0]], bucket: 'community-covers' }))[0]
+          : undefined;
 
-      const response = await fetch('/api/community', {
-        method: 'POST',
-        body: formData,
-      });
-      const result = await response.json();
+        const result = await updateCommunity({ slug: community.slug, avatarUrl, coverUrl });
+        if (!result.success) {
+          toast.error(result.message || 'Unable to update community media.');
+          return;
+        }
 
-      if (!response.ok || !result.success) {
-        toast.error(result.message || 'Unable to update community media.');
+        setMediaPreview(current => {
+          Object.values(current).forEach(url => {
+            if (url?.startsWith('blob:')) URL.revokeObjectURL(url);
+          });
+          return {};
+        });
+        mediaForm.reset({ avatar: undefined, cover: undefined });
+        router.refresh();
+        toast.success(result.message || 'Community media updated.');
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : 'Unable to upload community media.');
         return;
       }
-
-      setMediaPreview(current => {
-        Object.values(current).forEach(url => {
-          if (url?.startsWith('blob:')) URL.revokeObjectURL(url);
-        });
-        return {};
-      });
-      mediaForm.reset({ avatar: undefined, cover: undefined });
-      router.refresh();
-      toast.success(result.message || 'Community media updated.');
     });
   };
 
