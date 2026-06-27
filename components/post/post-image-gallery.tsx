@@ -1,307 +1,56 @@
 'use client';
 
 import type { FC } from 'react';
-import { ChevronLeft, ChevronRight, ImageOff, Images, ZoomIn } from 'lucide-react';
-import dynamic from 'next/dynamic';
-import Image from 'next/image';
 import { useState } from 'react';
 import { ImageLightbox } from './image-lightbox';
+import { FeedImageGallery, GalleryImageGallery, ThumbnailImageGallery, isImageUrl } from './post-image-gallery-views';
 import { PostImageGalleryProps } from '@/lib/types';
-import { Inline } from 'yet-another-react-lightbox/plugins';
-
-const InlineLightbox = dynamic(() => import('yet-another-react-lightbox'), { ssr: false });
-
-const isImageUrl = (url: string) => {
-  try {
-    return ['http:', 'https:'].includes(new URL(url).protocol);
-  } catch {
-    return false;
-  }
-};
-
-const ImagePlaceholder: FC<{ ratio: number }> = ({ ratio }) => {
-  return (
-    <div className='size-full' style={{ aspectRatio: ratio }}>
-      <div className='flex size-full flex-col items-center justify-center gap-1 bg-muted text-xs text-muted-foreground'>
-        <ImageOff className='size-5' />
-        Image unavailable
-      </div>
-    </div>
-  );
-};
 
 export const PostImageGallery: FC<PostImageGalleryProps> = ({ imageUrls, title, variant }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [failedImageUrls, setFailedImageUrls] = useState<string[]>([]);
 
-  const imageUnavailable = (imageUrl: string) => !isImageUrl(imageUrl) || failedImageUrls.includes(imageUrl);
+  const isImageUnavailable = (imageUrl: string) => !isImageUrl(imageUrl) || failedImageUrls.includes(imageUrl);
   const displayImageUrls =
-    variant === 'gallery' ? imageUrls.filter(imageUrl => !imageUnavailable(imageUrl)) : imageUrls;
+    variant === 'gallery' ? imageUrls.filter(imageUrl => !isImageUnavailable(imageUrl)) : imageUrls;
 
-  if (displayImageUrls.length === 0) {
-    return null;
-  }
+  if (displayImageUrls.length === 0) return null;
 
   const open = (index: number) => {
     setActiveIndex(index);
     setIsOpen(true);
   };
 
-  const showPrevious = () => setActiveIndex(index => (index - 1 + displayImageUrls.length) % displayImageUrls.length);
-  const showNext = () => setActiveIndex(index => (index + 1) % displayImageUrls.length);
   const markImageUnavailable = (imageUrl: string) => {
     setFailedImageUrls(urls => (urls.includes(imageUrl) ? urls : [...urls, imageUrl]));
     setActiveIndex(0);
   };
 
-  const lightbox = (
-    <ImageLightbox
-      imageUrls={displayImageUrls}
-      open={isOpen}
-      onClose={() => setIsOpen(false)}
-      index={activeIndex}
-      altPrefix={`Image attached to ${title}`}
-    />
-  );
-
-  if (variant === 'thumbnail') {
-    return (
-      <>
-        <button
-          type='button'
-          onClick={() => open(0)}
-          disabled={imageUnavailable(displayImageUrls[0])}
-          className='group relative h-20 w-28 shrink-0 self-center overflow-hidden rounded border border-border/80 shadow-inner'
-          aria-label={`View ${displayImageUrls.length} image${displayImageUrls.length === 1 ? '' : 's'} attached to ${title}`}
-        >
-          {imageUnavailable(displayImageUrls[0]) ? (
-            <ImagePlaceholder ratio={7 / 5} />
-          ) : (
-            <>
-              <Image
-                src={displayImageUrls[0]}
-                alt=''
-                fill
-                unoptimized
-                sizes='112px'
-                className='object-cover transition-transform duration-200 hover:scale-105'
-                loading='eager'
-                onError={() => markImageUnavailable(displayImageUrls[0])}
-              />
-              <span className='absolute inset-0 flex items-center justify-center bg-foreground/0 text-transparent transition-colors hover:bg-foreground/35 hover:text-background'>
-                <ZoomIn className='size-4' />
-              </span>
-            </>
-          )}
-          {displayImageUrls.length > 1 ? (
-            <span className='absolute right-1.5 bottom-1.5 inline-flex items-center gap-1 rounded-md bg-background/90 px-1.5 py-0.5 text-[10px] font-semibold text-foreground shadow-sm'>
-              <Images className='size-3' /> {displayImageUrls.length}
-            </span>
-          ) : null}
-        </button>
-        {lightbox}
-      </>
-    );
-  }
-
-  if (variant === 'feed') {
-    const imageUrl = displayImageUrls[activeIndex] ?? displayImageUrls[0];
-    const hasMultipleImages = displayImageUrls.length > 1;
-
-    if (hasMultipleImages) {
-      return (
-        <>
-          <div className='relative mt-4 overflow-hidden rounded border border-border/80 bg-muted'>
-            <InlineLightbox
-              open
-              plugins={[Inline]}
-              slides={displayImageUrls.map((src, imageIndex) => ({
-                src,
-                alt: `Image ${imageIndex + 1} attached to ${title}`,
-              }))}
-              index={activeIndex}
-              on={{
-                view: ({ index }) => setActiveIndex(index),
-                click: ({ index }) => open(index),
-              }}
-              carousel={{ finite: true, preload: displayImageUrls.length - 1, imageFit: 'cover' }}
-              animation={{ swipe: 300 }}
-              controller={{ closeOnBackdropClick: false }}
-              toolbar={{ buttons: [] }}
-              inline={{
-                className: 'aspect-[16/9] w-full md:aspect-[2.35/1]',
-              }}
-            />
-            <span className='pointer-events-none absolute right-3 bottom-3 z-20 inline-flex items-center gap-1 rounded bg-background/90 px-2 py-1 text-xs font-semibold text-foreground shadow-sm'>
-              <Images className='size-3.5' /> {activeIndex + 1} / {displayImageUrls.length}
-            </span>
-          </div>
-          {lightbox}
-        </>
-      );
-    }
-
-    return (
-      <>
-        <div className='relative mt-4 overflow-hidden rounded border border-border/80 bg-muted'>
-          <button
-            type='button'
-            onClick={() => open(activeIndex)}
-            disabled={imageUnavailable(imageUrl)}
-            className='group relative aspect-[16/9] w-full text-left md:aspect-[2.35/1]'
-            aria-label={`View image ${activeIndex + 1} of ${displayImageUrls.length} attached to ${title}`}
-          >
-            {imageUnavailable(imageUrl) ? (
-              <ImagePlaceholder ratio={16 / 9} />
-            ) : (
-              <Image
-                src={imageUrl}
-                alt={`Image attached to ${title}`}
-                fill
-                unoptimized
-                sizes='(max-width: 768px) calc(100vw - 5rem), 760px'
-                className='object-cover transition-transform duration-300 group-hover:scale-[1.015]'
-                loading='eager'
-                onError={() => markImageUnavailable(imageUrl)}
-              />
-            )}
-            {!imageUnavailable(imageUrl) ? (
-              <span className='absolute inset-0 flex items-center justify-center bg-foreground/0 text-transparent transition-colors hover:bg-foreground/30 hover:text-background'>
-                <ZoomIn className='size-6' />
-              </span>
-            ) : null}
-          </button>
-          {hasMultipleImages ? (
-            <>
-              <button
-                type='button'
-                onClick={showPrevious}
-                className='absolute top-1/2 left-3 -translate-y-1/2 rounded-full bg-background/90 p-2 text-foreground shadow-sm transition-colors hover:bg-background'
-                aria-label='Previous image'
-              >
-                <ChevronLeft className='size-4' />
-              </button>
-              <button
-                type='button'
-                onClick={showNext}
-                className='absolute top-1/2 right-3 -translate-y-1/2 rounded-full bg-background/90 p-2 text-foreground shadow-sm transition-colors hover:bg-background'
-                aria-label='Next image'
-              >
-                <ChevronRight className='size-4' />
-              </button>
-              <span className='absolute right-3 bottom-3 inline-flex items-center gap-1 rounded bg-background/90 px-2 py-1 text-xs font-semibold text-foreground shadow-sm'>
-                <Images className='size-3.5' /> {activeIndex + 1} / {displayImageUrls.length}
-              </span>
-            </>
-          ) : null}
-        </div>
-        {lightbox}
-      </>
-    );
-  }
-
-  if (displayImageUrls.length === 1) {
-    const imageUrl = displayImageUrls[0];
-
-    return (
-      <>
-        <div className='mt-5'>
-          <button
-            type='button'
-            onClick={() => open(0)}
-            disabled={imageUnavailable(imageUrl)}
-            className='group relative aspect-[16/9] w-full overflow-hidden rounded-2xl border border-border/80 bg-muted text-left'
-            aria-label={`View image attached to ${title}`}
-          >
-            {imageUnavailable(imageUrl) ? (
-              <ImagePlaceholder ratio={16 / 9} />
-            ) : (
-              <Image
-                src={imageUrl}
-                alt={`Image attached to ${title}`}
-                fill
-                unoptimized
-                sizes='(max-width: 768px) calc(100vw - 8rem), 672px'
-                className='object-cover transition-transform duration-200 hover:scale-[1.02]'
-                loading='eager'
-                onError={() => markImageUnavailable(imageUrl)}
-              />
-            )}
-            {!imageUnavailable(imageUrl) ? (
-              <span className='absolute inset-0 flex items-center justify-center bg-foreground/0 text-transparent transition-colors hover:bg-foreground/35 hover:text-background'>
-                <ZoomIn className='size-6' />
-              </span>
-            ) : null}
-          </button>
-        </div>
-        {lightbox}
-      </>
-    );
-  }
+  const viewProps = {
+    imageUrls: displayImageUrls,
+    title,
+    activeIndex,
+    isImageUnavailable,
+    onImageError: markImageUnavailable,
+    onOpen: open,
+    onNext: () => setActiveIndex(index => (index + 1) % displayImageUrls.length),
+    onPrevious: () => setActiveIndex(index => (index - 1 + displayImageUrls.length) % displayImageUrls.length),
+    onView: setActiveIndex,
+  };
 
   return (
     <>
-      <div className='relative mt-5 overflow-hidden rounded border border-border/80 bg-muted'>
-        <div
-          className='flex transition-transform duration-300 ease-out'
-          style={{ transform: `translateX(-${activeIndex * 100}%)` }}
-        >
-          {displayImageUrls.map((imageUrl, index) => (
-            <button
-              key={imageUrl}
-              type='button'
-              onClick={() => open(index)}
-              disabled={imageUnavailable(imageUrl)}
-              className='group relative aspect-[16/9] w-full shrink-0 text-left'
-              aria-label={`View image ${index + 1} of ${displayImageUrls.length} attached to ${title}`}
-            >
-              {imageUnavailable(imageUrl) ? (
-                <ImagePlaceholder ratio={16 / 9} />
-              ) : (
-                <Image
-                  src={imageUrl}
-                  alt={`Image ${index + 1} attached to ${title}`}
-                  fill
-                  unoptimized
-                  sizes='(max-width: 768px) calc(100vw - 8rem), 672px'
-                  className='object-cover transition-transform duration-200 hover:scale-[1.02]'
-                  loading={index === 0 ? 'eager' : 'lazy'}
-                  onError={() => markImageUnavailable(imageUrl)}
-                />
-              )}
-              {!imageUnavailable(imageUrl) ? (
-                <span className='absolute inset-0 flex items-center justify-center bg-foreground/0 text-transparent transition-colors hover:bg-foreground/35 hover:text-background'>
-                  <ZoomIn className='size-6' />
-                </span>
-              ) : null}
-            </button>
-          ))}
-        </div>
-        <button
-          type='button'
-          onClick={showPrevious}
-          className='absolute top-1/2 left-3 -translate-y-1/2 rounded-full bg-background/90 p-2 text-foreground shadow-sm transition-colors hover:bg-background'
-          aria-label='Previous image'
-        >
-          <ChevronLeft className='size-5' />
-        </button>
-        <button
-          type='button'
-          onClick={showNext}
-          className='absolute top-1/2 right-3 -translate-y-1/2 rounded-full bg-background/90 p-2 text-foreground shadow-sm transition-colors hover:bg-background'
-          aria-label='Next image'
-        >
-          <ChevronRight className='size-5' />
-        </button>
-        <div
-          className='absolute right-3 bottom-3 rounded-md bg-background/90 px-2 py-1 text-xs font-medium text-foreground shadow-sm'
-          aria-live='polite'
-        >
-          {activeIndex + 1} / {displayImageUrls.length}
-        </div>
-      </div>
-      {lightbox}
+      {variant === 'thumbnail' ? <ThumbnailImageGallery {...viewProps} /> : null}
+      {variant === 'feed' ? <FeedImageGallery {...viewProps} /> : null}
+      {variant === 'gallery' ? <GalleryImageGallery {...viewProps} /> : null}
+      <ImageLightbox
+        imageUrls={displayImageUrls}
+        open={isOpen}
+        onClose={() => setIsOpen(false)}
+        index={activeIndex}
+        altPrefix={`Image attached to ${title}`}
+      />
     </>
   );
 };
