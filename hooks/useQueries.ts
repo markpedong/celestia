@@ -1,7 +1,7 @@
 'use client';
 
 import { STALE_TIME } from '@/constants';
-import { getCommunity, getCommunityFeed, getCommunityMember, getCommunityStats, getProfileByUserName, joinCommunity, updateCommunity, updateProfile } from '@/services';
+import { getCommunity, getCommunityFeed, getCommunityMember, getCommunityStats, getOwnedCommunities, getProfileByUserName, joinCommunity, updateCommunity, updateProfile } from '@/services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Session } from '@supabase/supabase-js';
 import { useSession } from './useSession';
@@ -25,6 +25,15 @@ export const useGetProfile = () => {
     queryKey: ['profile', username],
     queryFn: () => getProfileByUserName({ username }),
     enabled: Boolean(username),
+    staleTime: STALE_TIME,
+  });
+};
+
+export const useGetOwnedCommunities = (profileID: string, enabled = true) => {
+  return useQuery({
+    queryKey: ['profile-owned-communities', profileID],
+    queryFn: () => getOwnedCommunities(profileID),
+    enabled: Boolean(profileID) && enabled,
     staleTime: STALE_TIME,
   });
 };

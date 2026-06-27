@@ -3,6 +3,7 @@ import PostCard from '@/components/feed/post-card';
 import { PostList } from '@/components/feed/post-list';
 import { ContentWithSidebar } from '@/components/layout/content-with-sidebar';
 import { ProfileActivityTabs } from '@/components/profile/profile-activity-tabs';
+import { ProfileManagedCommunities } from '@/components/profile/profile-managed-communities';
 import { EmptyState } from '@/components/ui/empty-state';
 import { StatGrid } from '@/components/ui/stat-grid';
 import {
@@ -16,15 +17,15 @@ import {
   listVotedCommentsByUser,
   listVotedPostsByUser,
   listUserNames,
-  listOwnedCommunities,
 } from '@/lib/db/queries';
-import { getSessionUser } from '@/lib/auth';
-import type { CommentsListProps, Community, FeedPostRow, UserCommentActivity, UserPageProps } from '@/lib/types';
+import type { CommentsListProps, FeedPostRow, UserCommentActivity, UserPageProps } from '@/lib/types';
 import { formatCount, formatTimeAgo } from '@/lib/utils';
-import { ArrowBigDown, ArrowBigUp, AtSign, CakeSlice, FileText, MessageSquare, Radio, Settings, Trophy } from 'lucide-react';
+import { ArrowBigDown, ArrowBigUp, AtSign, CakeSlice, FileText, MessageSquare, Radio, Trophy } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+
+export const dynamicParams = true;
 
 export const generateStaticParams = async () => {
   const userNames = await listUserNames();
@@ -46,9 +47,8 @@ const UserPage = async ({ params }: UserPageProps) => {
   const profile = await getUserByUserName(userName);
   if (!profile) notFound();
 
-  const [viewer, tags, stats, posts, comments, upvotedPosts, upvotedComments, downvotedPosts, downvotedComments] =
+  const [tags, stats, posts, comments, upvotedPosts, upvotedComments, downvotedPosts, downvotedComments] =
     await Promise.all([
-      getSessionUser(),
       listCommunity(),
       getUserStats(profile.id),
       listPostsByAuthor(profile.id, 'new', undefined),
@@ -58,8 +58,6 @@ const UserPage = async ({ params }: UserPageProps) => {
       listVotedPostsByUser(profile.id, -1, undefined),
       listVotedCommentsByUser(profile.id, -1),
     ]);
-  const isOwnProfile = viewer?.id === profile.id;
-  const ownedCommunities = isOwnProfile ? await listOwnedCommunities(profile.id) : [];
   const allRows = [...posts, ...upvotedPosts, ...downvotedPosts];
   const authorIDs = [...new Set(allRows.map(({ post }) => post.authorID).concat(profile.id))];
   const [authorsByID, authorStatsByID] = await Promise.all([
@@ -157,7 +155,7 @@ const UserPage = async ({ params }: UserPageProps) => {
   ];
 
   return (
-    <ContentWithSidebar sidebar={<ProfileSidebar karma={stats.karma} joinedAt={profile.createdAt.toISOString()} managedCommunities={ownedCommunities} />}>
+    <ContentWithSidebar sidebar={<ProfileSidebar profileID={profile.id} karma={stats.karma} joinedAt={profile.createdAt.toISOString()} />}>
       <section className='celestia-card relative mb-5'>
         <div className='relative min-h-52 overflow-hidden bg-[linear-gradient(135deg,var(--primary),var(--accent))] md:min-h-64'>
           {profile.coverUrl ? (
@@ -231,7 +229,7 @@ const UserPage = async ({ params }: UserPageProps) => {
   );
 };
 
-const ProfileSidebar = ({ karma, joinedAt, managedCommunities }: { karma: number; joinedAt?: string; managedCommunities: Community[] }) => (
+const ProfileSidebar = ({ profileID, karma, joinedAt }: { profileID: string; karma: number; joinedAt?: string }) => (
   <div className='space-y-4'>
     <section className='celestia-card overflow-hidden'>
       <div className='h-2 bg-[linear-gradient(90deg,var(--primary),var(--accent))]' />
@@ -256,28 +254,7 @@ const ProfileSidebar = ({ karma, joinedAt, managedCommunities }: { karma: number
       </div>
     </section>
 
-    {managedCommunities.length ? (
-      <section className='celestia-card p-4'>
-        <h2 className='mb-3 text-sm font-semibold'>Communities you manage</h2>
-        <div className='space-y-2'>
-          {managedCommunities.map(community => (
-            <Link
-              key={community.slug}
-              href={`/settings/communities/${encodeURIComponent(community.slug)}`}
-              className='flex items-center justify-between gap-3 rounded border border-border bg-muted/30 px-3 py-2 text-xs transition-colors hover:bg-muted'
-            >
-              <span className='min-w-0'>
-                <span className='block truncate font-medium text-foreground'>r/{community.slug}</span>
-                <span className='block truncate text-muted-foreground'>{community.label}</span>
-              </span>
-              <span className='inline-flex shrink-0 items-center gap-1 font-medium text-primary'>
-                <Settings className='size-3.5' /> Manage
-              </span>
-            </Link>
-          ))}
-        </div>
-      </section>
-    ) : null}
+    <ProfileManagedCommunities profileID={profileID} />
   </div>
 );
 

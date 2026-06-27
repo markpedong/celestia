@@ -14,6 +14,16 @@ export const getProfileByUserName = async ({ username }: { username: string }) =
   return response;
 };
 
+export const getOwnedCommunities = async (profileID: string) => {
+  const response = await __api<Community[]>({
+    params: { profileID },
+    init: { method: REQUEST_METHOD.GET },
+    endpoint: API_ENDPOINT.USER_OWNED_COMMUNITIES,
+  });
+
+  return response;
+};
+
 export const getInitialDisplayName = async (): Promise<string> =>
   ((await (await fetch('https://random-word-api.herokuapp.com/word?number=2')).json()) as string[]).join('-');
 
