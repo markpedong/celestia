@@ -189,7 +189,6 @@ const UserPage = async ({ params }: UserPageProps) => {
                 alt={`${profile.displayName || profile.userName} profile picture`}
                 width={128}
                 height={128}
-                unoptimized
                 className='size-full object-cover'
               />
             ) : (
