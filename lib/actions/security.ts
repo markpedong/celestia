@@ -79,7 +79,14 @@ export const updateSensitiveAccountAction = async ({ setting, token, value }: { 
   const user = await getSessionUser();
   if (!user || !verifyVerificationToken(token, user.id, setting as SensitiveSetting)) return { error: 'Verify your password again before making this change.' };
   const supabase = await createSupabaseServerClient();
-  const attributes = setting === 'email' ? { email: value.trim() } : setting === 'phone' ? { phone: value.trim() } : { data: { [setting]: value.trim() } };
+  const nextValue = value.trim();
+
+  if (setting === 'email') {
+    if (!/^\S+@\S+\.\S+$/.test(nextValue)) return { error: 'Enter a valid email address.' };
+    if (user.email?.trim().toLowerCase() === nextValue.toLowerCase()) return { error: 'Enter a different email address.' };
+  }
+
+  const attributes = setting === 'email' ? { email: nextValue } : setting === 'phone' ? { phone: nextValue } : { data: { [setting]: nextValue } };
   const { error } = await supabase.auth.updateUser(attributes);
   if (error) return { error: error.message };
   revalidatePath('/settings');

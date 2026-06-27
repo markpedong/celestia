@@ -21,7 +21,7 @@ type SensitiveSettingDialogProps = {
 export const SensitiveSettingDialog = ({ dialog, user, onCloseAction }: SensitiveSettingDialogProps) => {
   const [pending, startTransition] = useTransition();
   const { sensitiveSettingSchema } = useFormSchema();
-  const { register, handleSubmit, reset, onFormKeyDown, formState: { errors } } = useFormValidate({
+  const { register, handleSubmit, reset, setError, onFormKeyDown, formState: { errors } } = useFormValidate({
     schema: sensitiveSettingSchema,
     defaultValues: { value: '' },
   });
@@ -79,8 +79,25 @@ export const SensitiveSettingDialog = ({ dialog, user, onCloseAction }: Sensitiv
   const onSubmit = async ({ value }: { value: string }) => {
     if (!dialog) return;
 
+    const nextValue = value.trim();
+
+    if (dialog.setting === 'email') {
+      const currentEmail = user?.email?.trim().toLowerCase();
+      const nextEmail = nextValue.toLowerCase();
+
+      if (!/^\S+@\S+\.\S+$/.test(nextValue)) {
+        setError('value', { message: 'Enter a valid email address.' });
+        return;
+      }
+
+      if (currentEmail && nextEmail === currentEmail) {
+        setError('value', { message: 'Enter a different email address.' });
+        return;
+      }
+    }
+
     startTransition(async () => {
-      const result = await updateSensitiveAccountAction({ value, setting: dialog.setting, token: dialog.token });
+      const result = await updateSensitiveAccountAction({ value: nextValue, setting: dialog.setting, token: dialog.token });
 
       if (result?.error) {
         toast.error(result.error);

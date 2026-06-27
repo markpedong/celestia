@@ -13,7 +13,7 @@ type SettingsDialogProps = ComponentProps<typeof Dialog> & {
 
 const SettingsDialog = ({ children, contentClassName, description, title, ...props }: SettingsDialogProps) => (
   <Dialog {...props}>
-    <DialogContent className={cn('p-5 sm:p-6', contentClassName)}>
+    <DialogContent className={cn('p-5 sm:max-w-md sm:p-6', contentClassName)}>
       <DialogHeader className='pr-8'>
         <DialogTitle>{title}</DialogTitle>
         {description ? <DialogDescription>{description}</DialogDescription> : null}
