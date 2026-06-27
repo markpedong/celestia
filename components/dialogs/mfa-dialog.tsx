@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import SettingsDialog from '@/components/ui/settings-dialog';
@@ -32,12 +31,11 @@ export const MfaDialog = ({
   >
     {enrollment ? (
       <div className='space-y-4'>
-        <Image
-          src={enrollment.qr}
+        <img
+          src={enrollment.qr.trimEnd()}
           alt='Authenticator setup QR code'
           width={176}
           height={176}
-          unoptimized
           className='size-44 bg-background p-2'
         />
 

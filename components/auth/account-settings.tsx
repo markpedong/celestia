@@ -98,9 +98,10 @@ export const AccountSettings = () => {
 
   const changeProvider = async (provider: 'google' | 'apple') => {
     const identity = identities.find(item => item.provider === provider);
+    const hasAnotherOAuthProvider = identities.some(item => item.provider !== provider);
 
-    if (identity && identities.length < 2 && passkeys.length === 0) {
-      toast.error('Add another sign-in method before disconnecting your last login method.');
+    if (identity && !hasAnotherOAuthProvider) {
+      toast.error('Link another sign-in provider before disconnecting this one.');
       return;
     }
 
@@ -290,6 +291,7 @@ export const AccountSettings = () => {
         {(['google', 'apple'] as const).map(provider => {
           const label = provider === 'google' ? 'Google' : 'Apple';
           const connected = hasProvider(provider);
+          const canDisconnect = !connected || identities.some(identity => identity.provider !== provider);
 
           return (
             <div key={provider} className='flex items-center justify-between gap-3 rounded-md border border-border p-3'>
@@ -301,6 +303,8 @@ export const AccountSettings = () => {
                 variant='outline'
                 onClick={() => void changeProvider(provider)}
                 isLoading={pending === provider}
+                disabled={connected && !canDisconnect}
+                title={connected && !canDisconnect ? 'Link another sign-in provider before disconnecting this one.' : undefined}
               >
                 {connected ? 'Disconnect' : 'Connect'}
               </Button>
