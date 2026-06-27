@@ -30,7 +30,13 @@ export const MfaDialog = ({
     description='Scan the QR code with your authenticator app, then enter its six-digit code.'
   >
     {enrollment ? (
-      <div className='space-y-5'>
+      <form
+        onSubmit={event => {
+          event.preventDefault();
+          onVerifiedAction();
+        }}
+        className='space-y-5'
+      >
         <div className='flex justify-center'>
           <div className='rounded-lg border border-border bg-background p-3 shadow-sm'>
             <img
@@ -66,11 +72,11 @@ export const MfaDialog = ({
             Cancel
           </Button>
 
-          <Button type='button' onClick={onVerifiedAction} isLoading={pending === 'mfa-verify'}>
+          <Button type='submit' isLoading={pending === 'mfa-verify'}>
             Verify and enable
           </Button>
         </div>
-      </div>
+      </form>
     ) : (
       <p className='text-sm text-muted-foreground'>Preparing your authenticator setup…</p>
     )}

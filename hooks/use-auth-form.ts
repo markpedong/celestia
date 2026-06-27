@@ -6,6 +6,7 @@ import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
+import { verifyBackupCodeAction } from '@/lib/actions/security';
 import { getEmailByUserName, getInitialDisplayName } from '@/services';
 import type { AuthMode } from '@/lib/types';
 import { MAX_EMAIL_LENGTH, MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '@/constants';
@@ -31,6 +32,8 @@ type AuthValues = z.infer<typeof authSchema>;
 export const useAuthForm = (mode: AuthMode) => {
   const router = useRouter();
   const [message, setMessage] = useState<string | null>(null);
+  const [backupCode, setBackupCode] = useState('');
+  const [backupCodeRequired, setBackupCodeRequired] = useState(false);
   const [pending, startTransition] = useTransition();
   const isSignUp = mode === 'sign-up';
   const isSignIn = mode === 'sign-in';
@@ -60,8 +63,8 @@ export const useAuthForm = (mode: AuthMode) => {
     setMessage(null);
 
     startTransition(async () => {
-      const email = values.email.trim().toLowerCase();
-      if (isSignIn) {
+      let email = values.email.trim().toLowerCase();
+      if (isSignIn && !email.includes('@')) {
         const userNameEmail = await getEmailByUserName(email);
 
         if (!userNameEmail) {
@@ -69,6 +72,7 @@ export const useAuthForm = (mode: AuthMode) => {
           return;
         }
 
+        email = userNameEmail;
       }
 
 
@@ -89,6 +93,15 @@ export const useAuthForm = (mode: AuthMode) => {
       }
 
       if (result.data.session && result.data.user) {
+        if (isSignIn) {
+          const assurance = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+          if (!assurance.error && assurance.data.nextLevel === 'aal2' && assurance.data.currentLevel !== 'aal2') {
+            setBackupCodeRequired(true);
+            setMessage('Enter one of your saved backup codes to finish signing in.');
+            return;
+          }
+        }
+
         const userName = typeof result.data.user.user_metadata.userName === 'string' ? result.data.user.user_metadata.userName : values.userName;
         const { error: profileError } = await supabase
           .from('users')
@@ -113,6 +126,38 @@ export const useAuthForm = (mode: AuthMode) => {
 
       router.replace('/');
       router.refresh();
+    });
+  };
+
+  const submitBackupCode = () => {
+    setMessage(null);
+
+    startTransition(async () => {
+      const result = await verifyBackupCodeAction(backupCode);
+
+      if (!result || result.error) {
+        toast.error(result?.error ?? 'Unable to verify that backup code.');
+        return;
+      }
+
+      if (result.remainingCodes === 0) {
+        toast.warning('That was your last backup code. Generate a new set after signing in.');
+      } else {
+        toast.success(result.success ?? 'Backup code accepted.');
+      }
+
+      setBackupCode('');
+      router.replace('/');
+      router.refresh();
+    });
+  };
+
+  const cancelBackupCode = () => {
+    startTransition(async () => {
+      await supabase.auth.signOut();
+      setBackupCode('');
+      setBackupCodeRequired(false);
+      setMessage(null);
     });
   };
 
@@ -142,5 +187,18 @@ export const useAuthForm = (mode: AuthMode) => {
     });
   };
 
-  return { ...form, continueWithPasskey, continueWithProvider, isSignUp, message, pending, submit };
+  return {
+    ...form,
+    backupCode,
+    backupCodeRequired,
+    cancelBackupCode,
+    continueWithPasskey,
+    continueWithProvider,
+    isSignUp,
+    message,
+    pending,
+    setBackupCode,
+    submit,
+    submitBackupCode,
+  };
 };

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import FormField from '@/components/ui/form-field';
 import { useAuthForm } from '@/hooks/use-auth-form';
 import type { AuthMethodsProps } from '@/lib/types';
-import { Fingerprint, KeyRound, Mail } from 'lucide-react';
+import { Fingerprint, KeyRound, Mail, ShieldCheck } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -19,6 +19,9 @@ const authOptionClassName =
 
 const AuthMethods: FC<AuthMethodsProps> = ({ mode }) => {
   const {
+    backupCode,
+    backupCodeRequired,
+    cancelBackupCode,
     register,
     handleSubmit,
     formState: { errors, isSubmitted, isValid, touchedFields },
@@ -28,8 +31,47 @@ const AuthMethods: FC<AuthMethodsProps> = ({ mode }) => {
     message,
     onFormKeyDown,
     pending,
+    setBackupCode,
     submit,
+    submitBackupCode,
   } = useAuthForm(mode);
+
+  if (backupCodeRequired) {
+    return (
+      <div className='space-y-4'>
+        <form
+          onSubmit={event => {
+            event.preventDefault();
+            submitBackupCode();
+          }}
+          className='space-y-4'
+        >
+          <FormField
+            label='Backup code'
+            labelClassName='text-card-foreground'
+            placeholder='Enter one-time backup code'
+            value={backupCode}
+            onChange={event => setBackupCode(event.target.value)}
+            autoCapitalize='characters'
+            autoComplete='one-time-code'
+          />
+          <Button
+            type='submit'
+            disabled={!backupCode.trim()}
+            isLoading={pending}
+            loadingText='Checking code...'
+            className='celestia-primary-action h-11 w-full'
+          >
+            <ShieldCheck /> Continue
+          </Button>
+          <Button type='button' variant='ghost' className='w-full' onClick={cancelBackupCode} disabled={pending}>
+            Use a different sign-in method
+          </Button>
+        </form>
+        {message ? <p className='text-center text-sm text-muted-foreground'>{message}</p> : null}
+      </div>
+    );
+  }
 
   return (
     <div className='space-y-4'>

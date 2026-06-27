@@ -1,6 +1,6 @@
 export enum API_ENDPOINT {
   USER = '/user',
-  USERNAME_LOGIN = '/auth/userName',
+  USERNAME_LOGIN = '/auth/username',
   COMMUNITY = '/community',
   COMMUNITY_FEED = '/community/feed',
   COMMUNITY_JOIN = '/community/join',

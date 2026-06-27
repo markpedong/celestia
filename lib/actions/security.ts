@@ -8,7 +8,7 @@ import { createSupabaseAdminClient, createSupabaseServerClient } from '../supaba
 import type { ChangePasswordValues, ErrorFormState } from '../types';
 import { deleteAccountSchema, setPasswordSchema } from '../form-schemas';
 
-type SecurityActionState = ErrorFormState<{ success?: string; codes?: string[] }>;
+type SecurityActionState = ErrorFormState<{ success?: string; codes?: string[]; remainingCodes?: number }>;
 type SensitiveSetting = 'email' | 'phone' | 'gender' | 'location';
 type PasswordVerificationSetting = SensitiveSetting | 'passkey' | 'mfa' | 'backupCodes';
 type PasswordVerificationState = ErrorFormState<{ success?: string; setting?: PasswordVerificationSetting; token?: string }>;
@@ -22,7 +22,8 @@ const hasAccountPassword = (appMetadata: Record<string, unknown> | undefined, id
   identities?.some(identity => identity.provider === 'email') === true ||
   appMetadata?.providers instanceof Array && appMetadata.providers.includes('email');
 
-const hashCode = (code: string) => createHash('sha256').update(code).digest('hex');
+const normalizeCode = (code: string) => code.trim().replace(/\s+/g, '').toUpperCase();
+const hashCode = (code: string) => createHash('sha256').update(normalizeCode(code)).digest('hex');
 const makeCode = () => randomBytes(9).toString('base64url').toUpperCase();
 
 const verificationSecret = () => process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -143,6 +144,50 @@ export const generateBackupCodesAction = async (): Promise<SecurityActionState> 
   ]);
   revalidatePath('/settings');
   return { success: 'New backup codes generated. Save them now; they will not be shown again.', codes };
+};
+
+export const verifyBackupCodeAction = async (code: string): Promise<SecurityActionState> => {
+  const normalizedCode = normalizeCode(code);
+  if (!normalizedCode) return { error: 'Enter a backup code.' };
+
+  const supabase = await createSupabaseServerClient();
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user) return { error: 'Sign in before using a backup code.' };
+
+  const assurance = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (assurance.error) return { error: assurance.error.message };
+  if (assurance.data.currentLevel === assurance.data.nextLevel) {
+    return { error: 'A backup code is not needed for this session.' };
+  }
+
+  const backupCode = await prisma.backupCode.findFirst({
+    where: {
+      userID: user.id,
+      codeHash: hashCode(normalizedCode),
+      usedAt: null,
+    },
+    select: { id: true },
+  });
+
+  if (!backupCode) return { error: 'That backup code is invalid or has already been used.' };
+
+  const update = await prisma.backupCode.updateMany({
+    where: {
+      id: backupCode.id,
+      userID: user.id,
+      usedAt: null,
+    },
+    data: { usedAt: new Date() },
+  });
+
+  if (update.count !== 1) return { error: 'That backup code was already used. Try another code.' };
+
+  const remainingCodes = await prisma.backupCode.count({
+    where: { userID: user.id, usedAt: null },
+  });
+
+  revalidatePath('/settings');
+  return { success: 'Backup code accepted.', remainingCodes };
 };
 
 export const deleteAccountAction = async (_prev: SecurityActionState, { confirmation }: { confirmation: string }): Promise<SecurityActionState> => {

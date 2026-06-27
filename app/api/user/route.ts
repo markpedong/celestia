@@ -20,8 +20,8 @@ export const GET = async (request: Request,) => {
     }
 
     return generateSuccessResponse(profile);
-  } catch (error: any) {
-    return generateErrorResponse(error.message, 404);
+  } catch (error: unknown) {
+    return generateErrorResponse(error instanceof Error ? error.message : 'User not found', 404);
   }
 
   // return generateSuccessResponse(profile);
