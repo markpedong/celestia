@@ -21,6 +21,7 @@ const revalidateCommunityPaths = (slug: string) => {
   revalidatePath('/submit');
   revalidatePath(`/r/${slug}`);
   revalidatePath(`/r/${slug}/settings`);
+  revalidatePath(`/settings/communities/${slug}`);
 };
 
 const updateCommunityMedia = async (request: Request, userID: string) => {

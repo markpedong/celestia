@@ -16,10 +16,12 @@ import {
   listVotedCommentsByUser,
   listVotedPostsByUser,
   listUserNames,
+  listOwnedCommunities,
 } from '@/lib/db/queries';
-import type { CommentsListProps, FeedPostRow, UserCommentActivity, UserPageProps } from '@/lib/types';
+import { getSessionUser } from '@/lib/auth';
+import type { CommentsListProps, Community, FeedPostRow, UserCommentActivity, UserPageProps } from '@/lib/types';
 import { formatCount, formatTimeAgo } from '@/lib/utils';
-import { ArrowBigDown, ArrowBigUp, AtSign, CakeSlice, FileText, MessageSquare, Radio, Trophy } from 'lucide-react';
+import { ArrowBigDown, ArrowBigUp, AtSign, CakeSlice, FileText, MessageSquare, Radio, Settings, Trophy } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -44,8 +46,9 @@ const UserPage = async ({ params }: UserPageProps) => {
   const profile = await getUserByUserName(userName);
   if (!profile) notFound();
 
-  const [tags, stats, posts, comments, upvotedPosts, upvotedComments, downvotedPosts, downvotedComments] =
+  const [viewer, tags, stats, posts, comments, upvotedPosts, upvotedComments, downvotedPosts, downvotedComments] =
     await Promise.all([
+      getSessionUser(),
       listCommunity(),
       getUserStats(profile.id),
       listPostsByAuthor(profile.id, 'new', undefined),
@@ -55,6 +58,8 @@ const UserPage = async ({ params }: UserPageProps) => {
       listVotedPostsByUser(profile.id, -1, undefined),
       listVotedCommentsByUser(profile.id, -1),
     ]);
+  const isOwnProfile = viewer?.id === profile.id;
+  const ownedCommunities = isOwnProfile ? await listOwnedCommunities(profile.id) : [];
   const allRows = [...posts, ...upvotedPosts, ...downvotedPosts];
   const authorIDs = [...new Set(allRows.map(({ post }) => post.authorID).concat(profile.id))];
   const [authorsByID, authorStatsByID] = await Promise.all([
@@ -152,7 +157,7 @@ const UserPage = async ({ params }: UserPageProps) => {
   ];
 
   return (
-    <ContentWithSidebar sidebar={<ProfileSidebar karma={stats.karma} joinedAt={profile.createdAt.toISOString()} />}>
+    <ContentWithSidebar sidebar={<ProfileSidebar karma={stats.karma} joinedAt={profile.createdAt.toISOString()} managedCommunities={ownedCommunities} />}>
       <section className='celestia-card relative mb-5'>
         <div className='relative min-h-52 overflow-hidden bg-[linear-gradient(135deg,var(--primary),var(--accent))] md:min-h-64'>
           {profile.coverUrl ? (
@@ -226,29 +231,54 @@ const UserPage = async ({ params }: UserPageProps) => {
   );
 };
 
-const ProfileSidebar = ({ karma, joinedAt }: { karma: number; joinedAt?: string }) => (
-  <section className='celestia-card overflow-hidden'>
-    <div className='h-2 bg-[linear-gradient(90deg,var(--primary),var(--accent))]' />
-    <div className='p-4'>
-      <h2 className='mb-3 text-sm font-semibold'>Profile details</h2>
-      <div className='space-y-2 text-xs text-muted-foreground'>
-        <div className='flex items-center justify-between rounded border border-border bg-muted/30 px-3 py-2'>
-          <span className='flex items-center gap-2'>
-            <Trophy className='size-3.5 text-primary' /> Karma
-          </span>
-          <span className='font-mono font-semibold text-foreground'>{formatCount(karma)}</span>
-        </div>
-        {joinedAt ? (
+const ProfileSidebar = ({ karma, joinedAt, managedCommunities }: { karma: number; joinedAt?: string; managedCommunities: Community[] }) => (
+  <div className='space-y-4'>
+    <section className='celestia-card overflow-hidden'>
+      <div className='h-2 bg-[linear-gradient(90deg,var(--primary),var(--accent))]' />
+      <div className='p-4'>
+        <h2 className='mb-3 text-sm font-semibold'>Profile details</h2>
+        <div className='space-y-2 text-xs text-muted-foreground'>
           <div className='flex items-center justify-between rounded border border-border bg-muted/30 px-3 py-2'>
             <span className='flex items-center gap-2'>
-              <CakeSlice className='size-3.5 text-primary' /> Joined
+              <Trophy className='size-3.5 text-primary' /> Karma
             </span>
-            <span className='font-mono font-semibold text-foreground'>{formatTimeAgo(joinedAt)}</span>
+            <span className='font-mono font-semibold text-foreground'>{formatCount(karma)}</span>
           </div>
-        ) : null}
+          {joinedAt ? (
+            <div className='flex items-center justify-between rounded border border-border bg-muted/30 px-3 py-2'>
+              <span className='flex items-center gap-2'>
+                <CakeSlice className='size-3.5 text-primary' /> Joined
+              </span>
+              <span className='font-mono font-semibold text-foreground'>{formatTimeAgo(joinedAt)}</span>
+            </div>
+          ) : null}
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
+
+    {managedCommunities.length ? (
+      <section className='celestia-card p-4'>
+        <h2 className='mb-3 text-sm font-semibold'>Communities you manage</h2>
+        <div className='space-y-2'>
+          {managedCommunities.map(community => (
+            <Link
+              key={community.slug}
+              href={`/settings/communities/${encodeURIComponent(community.slug)}`}
+              className='flex items-center justify-between gap-3 rounded border border-border bg-muted/30 px-3 py-2 text-xs transition-colors hover:bg-muted'
+            >
+              <span className='min-w-0'>
+                <span className='block truncate font-medium text-foreground'>r/{community.slug}</span>
+                <span className='block truncate text-muted-foreground'>{community.label}</span>
+              </span>
+              <span className='inline-flex shrink-0 items-center gap-1 font-medium text-primary'>
+                <Settings className='size-3.5' /> Manage
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
+    ) : null}
+  </div>
 );
 
 const ProfileEmpty = ({ icon, title, description }: { icon: typeof AtSign; title: string; description: string }) => (

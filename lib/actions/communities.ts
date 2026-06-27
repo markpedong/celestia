@@ -109,5 +109,6 @@ export const updateCommunityAction = async (
   revalidatePath('/submit');
   revalidatePath(`/r/${slug}`);
   revalidatePath(`/r/${slug}/settings`);
-  redirect(`/r/${slug}`);
+  revalidatePath(`/settings/communities/${slug}`);
+  redirect(`/settings/communities/${slug}`);
 };

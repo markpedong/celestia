@@ -250,6 +250,24 @@ export const listJoinedCommunities = async (userID: string): Promise<Community[]
   }));
 };
 
+export const listOwnedCommunities = cache(async (userID: string): Promise<Community[]> => {
+  const communities = await prisma.community.findMany({
+    where: { createdByID: userID },
+    orderBy: { slug: 'asc' },
+  });
+
+  return communities.map(community => ({
+    slug: community.slug,
+    label: community.label,
+    description: community.description,
+    hashColor: community.hashColor,
+    avatarUrl: community.avatarUrl,
+    coverUrl: community.coverUrl,
+    createdByID: community.createdByID ?? undefined,
+    createdAt: community.createdAt.toISOString(),
+  }));
+});
+
 export const searchSuggestions = async (searchQuery: string): Promise<{
   posts: SearchPostSuggestion[];
   tags: SearchTagSuggestion[];

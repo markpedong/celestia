@@ -46,7 +46,7 @@ const CommunityMembershipButton: FC<CommunityMembershipButtonProps> = ({ ownerID
     return (
       <div className='flex flex-wrap items-center gap-2'>
         <Button asChild type='button' variant='outline' size='sm' className='h-9 rounded px-3'>
-          <Link href={`/r/${encodeURIComponent(slug)}/settings`}>
+          <Link href={`/settings/communities/${encodeURIComponent(slug)}`}>
             <Check /> Manage
           </Link>
         </Button>
