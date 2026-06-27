@@ -6,7 +6,7 @@ import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
-import { verifyBackupCodeAction } from '@/lib/actions/security';
+import { getBackupCodeStatusAction, verifyBackupCodeAction } from '@/lib/actions/security';
 import { getEmailByUserName, getInitialDisplayName } from '@/services';
 import type { AuthMode } from '@/lib/types';
 import { MAX_EMAIL_LENGTH, MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '@/constants';
@@ -28,12 +28,15 @@ const authSchema = z.object({
 });
 
 type AuthValues = z.infer<typeof authSchema>;
+type MfaStep = 'totp' | 'backup' | null;
 
 export const useAuthForm = (mode: AuthMode) => {
   const router = useRouter();
   const [message, setMessage] = useState<string | null>(null);
   const [backupCode, setBackupCode] = useState('');
-  const [backupCodeRequired, setBackupCodeRequired] = useState(false);
+  const [hasBackupCodes, setHasBackupCodes] = useState(false);
+  const [mfaCode, setMfaCode] = useState('');
+  const [mfaStep, setMfaStep] = useState<MfaStep>(null);
   const [pending, startTransition] = useTransition();
   const isSignUp = mode === 'sign-up';
   const isSignIn = mode === 'sign-in';
@@ -96,8 +99,10 @@ export const useAuthForm = (mode: AuthMode) => {
         if (isSignIn) {
           const assurance = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
           if (!assurance.error && assurance.data.nextLevel === 'aal2' && assurance.data.currentLevel !== 'aal2') {
-            setBackupCodeRequired(true);
-            setMessage('Enter one of your saved backup codes to finish signing in.');
+            const backupCodeStatus = await getBackupCodeStatusAction();
+            setHasBackupCodes(backupCodeStatus?.hasBackupCodes === true);
+            setMfaStep('totp');
+            setMessage('Enter the code from your authenticator app to finish signing in.');
             return;
           }
         }
@@ -129,6 +134,52 @@ export const useAuthForm = (mode: AuthMode) => {
     });
   };
 
+  const showMfaStep = (step: Exclude<MfaStep, null>) => {
+    setBackupCode('');
+    setMfaCode('');
+    setMfaStep(step);
+    setMessage(step === 'backup'
+      ? 'Enter one of your saved backup codes to finish signing in.'
+      : 'Enter the code from your authenticator app to finish signing in.');
+  };
+
+  const submitMfaCode = () => {
+    setMessage(null);
+
+    startTransition(async () => {
+      const factors = await supabase.auth.mfa.listFactors();
+      if (factors.error) {
+        toast.error(factors.error.message);
+        return;
+      }
+
+      const factor = factors.data.totp.find(({ status }) => status === 'verified');
+      if (!factor) {
+        toast.error('No verified authenticator app was found for this account.');
+        return;
+      }
+
+      const challenge = await supabase.auth.mfa.challenge({ factorId: factor.id });
+      const result = challenge.error
+        ? challenge
+        : await supabase.auth.mfa.verify({
+            factorId: factor.id,
+            challengeId: challenge.data.id,
+            code: mfaCode.trim(),
+          });
+
+      if (result.error) {
+        toast.error(result.error.message);
+        return;
+      }
+
+      setMfaCode('');
+      setMfaStep(null);
+      router.replace('/');
+      router.refresh();
+    });
+  };
+
   const submitBackupCode = () => {
     setMessage(null);
 
@@ -141,22 +192,26 @@ export const useAuthForm = (mode: AuthMode) => {
       }
 
       if (result.remainingCodes === 0) {
+        setHasBackupCodes(false);
         toast.warning('That was your last backup code. Generate a new set after signing in.');
       } else {
         toast.success(result.success ?? 'Backup code accepted.');
       }
 
       setBackupCode('');
+      setMfaStep(null);
       router.replace('/');
       router.refresh();
     });
   };
 
-  const cancelBackupCode = () => {
+  const cancelMfaChallenge = () => {
     startTransition(async () => {
       await supabase.auth.signOut();
       setBackupCode('');
-      setBackupCodeRequired(false);
+      setHasBackupCodes(false);
+      setMfaCode('');
+      setMfaStep(null);
       setMessage(null);
     });
   };
@@ -190,15 +245,20 @@ export const useAuthForm = (mode: AuthMode) => {
   return {
     ...form,
     backupCode,
-    backupCodeRequired,
-    cancelBackupCode,
+    cancelMfaChallenge,
     continueWithPasskey,
     continueWithProvider,
+    hasBackupCodes,
     isSignUp,
     message,
+    mfaCode,
+    mfaStep,
     pending,
     setBackupCode,
+    setMfaCode,
+    showMfaStep,
     submit,
     submitBackupCode,
+    submitMfaCode,
   };
 };

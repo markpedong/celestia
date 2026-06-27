@@ -1,6 +1,7 @@
 'use server';
 
 import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
+import { createClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
 import { getSessionUser } from '../auth';
 import { prisma } from '../prisma';
@@ -9,6 +10,7 @@ import type { ChangePasswordValues, ErrorFormState } from '../types';
 import { deleteAccountSchema, setPasswordSchema } from '../form-schemas';
 
 type SecurityActionState = ErrorFormState<{ success?: string; codes?: string[]; remainingCodes?: number }>;
+type BackupCodeStatusState = ErrorFormState<{ hasBackupCodes?: boolean }>;
 type SensitiveSetting = 'email' | 'phone' | 'gender' | 'location';
 type PasswordVerificationSetting = SensitiveSetting | 'passkey' | 'mfa' | 'backupCodes';
 type PasswordVerificationState = ErrorFormState<{ success?: string; setting?: PasswordVerificationSetting; token?: string }>;
@@ -50,10 +52,20 @@ const verifyVerificationToken = (token: string, userID: string, setting: Passwor
 const verifyCurrentPassword = async (password: string) => {
   const user = await getSessionUser();
   if (!user) return { error: 'A password is not available for this account.' as const };
-  const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase.auth.signInWithPassword({ email: user.email, password });
+  const passwordVerifier = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    {
+      auth: {
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+        persistSession: false,
+      },
+    },
+  );
+  const { data, error } = await passwordVerifier.auth.signInWithPassword({ email: user.email, password });
   if (error || data.user?.id !== user.id) return { error: 'Your current password is incorrect.' as const };
-  return { user, supabase };
+  return { user };
 };
 
 export const verifyAccountPasswordAction = async ({ password, setting }: { password: string; setting: PasswordVerificationSetting }): Promise<PasswordVerificationState> => {
@@ -98,7 +110,8 @@ export const changePasswordAction = async (values: ChangePasswordValues): Promis
   const { currentPassword, newPassword } = values;
   const verification = await verifyCurrentPassword(currentPassword);
   if ('error' in verification) return verification;
-  const { error } = await verification.supabase.auth.updateUser({ password: newPassword });
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
   if (error) return { error: error.message };
   return { success: 'Password updated.' };
 };
@@ -144,6 +157,21 @@ export const generateBackupCodesAction = async (): Promise<SecurityActionState> 
   ]);
   revalidatePath('/settings');
   return { success: 'New backup codes generated. Save them now; they will not be shown again.', codes };
+};
+
+export const getBackupCodeStatusAction = async (): Promise<BackupCodeStatusState> => {
+  const supabase = await createSupabaseServerClient();
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user) return { error: 'Sign in before checking backup codes.' };
+
+  const count = await prisma.backupCode.count({
+    where: {
+      userID: user.id,
+      usedAt: null,
+    },
+  });
+
+  return { hasBackupCodes: count > 0 };
 };
 
 export const verifyBackupCodeAction = async (code: string): Promise<SecurityActionState> => {

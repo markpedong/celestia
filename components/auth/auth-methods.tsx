@@ -20,51 +20,94 @@ const authOptionClassName =
 const AuthMethods: FC<AuthMethodsProps> = ({ mode }) => {
   const {
     backupCode,
-    backupCodeRequired,
-    cancelBackupCode,
+    cancelMfaChallenge,
     register,
     handleSubmit,
     formState: { errors, isSubmitted, isValid, touchedFields },
     continueWithPasskey,
     continueWithProvider,
+    hasBackupCodes,
     isSignUp,
     message,
+    mfaCode,
+    mfaStep,
     onFormKeyDown,
     pending,
     setBackupCode,
+    setMfaCode,
+    showMfaStep,
     submit,
     submitBackupCode,
+    submitMfaCode,
   } = useAuthForm(mode);
 
-  if (backupCodeRequired) {
+  if (mfaStep) {
+    const isBackupCode = mfaStep === 'backup';
+    const currentCode = isBackupCode ? backupCode : mfaCode;
+    const verifyMfaStep = () => {
+      if (!currentCode.trim() || pending) return;
+
+      if (isBackupCode) {
+        submitBackupCode();
+        return;
+      }
+
+      submitMfaCode();
+    };
+
     return (
       <div className='space-y-4'>
+        <div className='space-y-1 text-center'>
+          <div className='mx-auto grid size-10 place-items-center rounded-sm border border-border bg-muted'>
+            <ShieldCheck className='size-5 text-muted-foreground' />
+          </div>
+          <h2 className='text-lg font-semibold text-card-foreground'>
+            {isBackupCode ? 'Use a backup code' : 'Two-factor authentication'}
+          </h2>
+        </div>
         <form
           onSubmit={event => {
             event.preventDefault();
-            submitBackupCode();
+            verifyMfaStep();
+          }}
+          onKeyDown={event => {
+            if (event.key !== 'Enter' || event.nativeEvent.isComposing) return;
+            event.preventDefault();
+            verifyMfaStep();
           }}
           className='space-y-4'
         >
           <FormField
-            label='Backup code'
+            label={isBackupCode ? 'Backup code' : 'Verification code'}
             labelClassName='text-card-foreground'
-            placeholder='Enter one-time backup code'
-            value={backupCode}
-            onChange={event => setBackupCode(event.target.value)}
+            placeholder={isBackupCode ? 'Enter one-time backup code' : 'Enter 6-digit code'}
+            value={isBackupCode ? backupCode : mfaCode}
+            onChange={event => (isBackupCode ? setBackupCode(event.target.value) : setMfaCode(event.target.value))}
             autoCapitalize='characters'
             autoComplete='one-time-code'
+            inputMode={isBackupCode ? 'text' : 'numeric'}
           />
           <Button
             type='submit'
-            disabled={!backupCode.trim()}
+            disabled={!currentCode.trim()}
             isLoading={pending}
-            loadingText='Checking code...'
+            loadingText={isBackupCode ? 'Checking code...' : 'Verifying...'}
             className='celestia-primary-action h-11 w-full'
           >
-            <ShieldCheck /> Continue
+            <ShieldCheck /> {isBackupCode ? 'Continue' : 'Verify and continue'}
           </Button>
-          <Button type='button' variant='ghost' className='w-full' onClick={cancelBackupCode} disabled={pending}>
+          {isBackupCode || hasBackupCodes ? (
+            <Button
+              type='button'
+              variant='ghost'
+              className='w-full'
+              onClick={() => showMfaStep(isBackupCode ? 'totp' : 'backup')}
+              disabled={pending}
+            >
+              {isBackupCode ? 'Use authenticator code' : 'Use backup code instead'}
+            </Button>
+          ) : null}
+          <Button type='button' variant='ghost' className='w-full' onClick={cancelMfaChallenge} disabled={pending}>
             Use a different sign-in method
           </Button>
         </form>

@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { KeyRound, Link2, Moon, ShieldCheck, Smartphone, Trash2 } from 'lucide-react';
+import { Copy, KeyRound, Link2, Moon, ShieldCheck, Smartphone, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTheme } from 'next-themes';
 import { useSession } from '@/hooks/useSession';
@@ -51,6 +51,15 @@ export const AccountSettings = () => {
     identities.some(identity => identity.provider === 'email') ||
     (Array.isArray(user?.app_metadata.providers) && user.app_metadata.providers.includes('email'));
 
+  const copyText = async (text: string, successMessage: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success(successMessage);
+    } catch {
+      toast.error('Unable to copy to clipboard.');
+    }
+  };
+
   const openPasswordProtectedSetting = (setting: SensitiveSetting) => {
     if (!hasPassword) {
       toast.error('Set a password first before changing this setting.');
@@ -87,6 +96,21 @@ export const AccountSettings = () => {
   const pendingTotpFactors = securityQuery.data?.pendingTotpFactors ?? [];
   const refreshSecurity = () => queryClient.invalidateQueries({ queryKey: ['auth', 'security', user?.id] });
 
+  const hasAal2Session = async () => {
+    const assurance = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (assurance.error) {
+      toast.error(assurance.error.message);
+      return false;
+    }
+
+    if (assurance.data.nextLevel === 'aal2' && assurance.data.currentLevel !== 'aal2') {
+      toast.error('Verify your two-factor code again before managing passkeys.');
+      return false;
+    }
+
+    return true;
+  };
+
   useEffect(() => {
     if (securityQuery.error) toast.error(securityQuery.error.message);
   }, [securityQuery.error]);
@@ -121,6 +145,8 @@ export const AccountSettings = () => {
   };
 
   const registerPasskey = async () => {
+    if (!(await hasAal2Session())) return;
+
     setPending('passkey');
 
     const { error } = await supabase.auth.registerPasskey();
@@ -135,6 +161,8 @@ export const AccountSettings = () => {
   };
 
   const removePasskey = async (passkeyID: string) => {
+    if (!(await hasAal2Session())) return;
+
     if (passkeys.length === 1 && identities.length < 2) {
       toast.error('Add another sign-in method before removing your last passkey.');
       return;
@@ -394,10 +422,33 @@ export const AccountSettings = () => {
           <p className='text-xs text-muted-foreground'>Generate one-time codes to store somewhere safe.</p>
 
           {backupCodes ? (
-            <div className='rounded bg-muted p-3 font-mono text-xs leading-6'>
-              {backupCodes.map(code => (
-                <div key={code}>{code}</div>
-              ))}
+            <div className='space-y-2'>
+              <div className='flex justify-end'>
+                <Button
+                  type='button'
+                  size='sm'
+                  variant='ghost'
+                  onClick={() => void copyText(backupCodes.join('\n'), 'Backup codes copied.')}
+                >
+                  <Copy /> Copy all
+                </Button>
+              </div>
+              <div className='rounded bg-muted p-3 font-mono text-xs leading-6'>
+                {backupCodes.map(code => (
+                  <div key={code} className='flex items-center justify-between gap-3'>
+                    <span>{code}</span>
+                    <Button
+                      type='button'
+                      size='icon-xs'
+                      variant='ghost'
+                      aria-label={`Copy backup code ${code}`}
+                      onClick={() => void copyText(code, 'Backup code copied.')}
+                    >
+                      <Copy />
+                    </Button>
+                  </div>
+                ))}
+              </div>
             </div>
           ) : null}
         </div>
