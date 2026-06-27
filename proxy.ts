@@ -18,8 +18,14 @@ export const proxy = async (request: NextRequest) => {
     },
   );
   const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return response;
 
-  return user ? NextResponse.redirect(new URL('/', request.url)) : response;
+  const assurance = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (!assurance.error && assurance.data.nextLevel === 'aal2' && assurance.data.currentLevel !== 'aal2') {
+    return response;
+  }
+
+  return NextResponse.redirect(new URL('/', request.url));
 };
 
 export const config = {
