@@ -269,7 +269,7 @@ export type PendingCommentInput = {
   author: User;
 };
 
-export type CommentSubmitResult = ErrorFormState;
+export type CommentSubmitResult = CommentFormState;
 
 export type CommentSubmissionContextValue = {
   submitComment: (pendingComment: PendingCommentInput) => Promise<CommentSubmitResult>;

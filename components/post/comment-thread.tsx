@@ -3,12 +3,13 @@
 import type { FC } from 'react';
 import type { CommentSubmitResult, CommentThreadProps, EnrichedCommentNode, PendingCommentInput } from '@/lib/types';
 import { CommentNode } from './comment-node';
-import { createCommentAction } from '@/lib/actions/comments';
 import { CommentSubmissionContext, createPendingComment } from './comment-submission-context';
 import { useOptimistic, useState, useTransition } from 'react';
+import { useCreateComment } from '@/hooks/useQueries';
 
 const CommentThread: FC<CommentThreadProps> = ({ tree, postAuthorID, sessionUser, communitySlug, children }) => {
   const [pending, startTransition] = useTransition();
+  const createCommentMutation = useCreateComment();
   const [activeReplyID, setActiveReplyID] = useState<string | null>(null);
   const [optimisticTree, addOptimisticComment] = useOptimistic(
     tree,
@@ -18,14 +19,14 @@ const CommentThread: FC<CommentThreadProps> = ({ tree, postAuthorID, sessionUser
   const submitComment = (pendingComment: PendingCommentInput) =>
     new Promise<CommentSubmitResult>(resolve => {
       startTransition(async () => {
-        const result = await createCommentAction(pendingComment);
+        const result = await createCommentMutation.mutateAsync(pendingComment);
         if (result?.ok) addOptimisticComment(createPendingComment(pendingComment));
         resolve(result);
       });
     });
 
   return (
-    <CommentSubmissionContext value={{ submitComment, pending }}>
+    <CommentSubmissionContext value={{ submitComment, pending: pending || createCommentMutation.isPending }}>
       {children}
       <ul className='space-y-3'>
         {optimisticTree.map(node => (

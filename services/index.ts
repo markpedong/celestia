@@ -1,6 +1,6 @@
 'use server';
 
-import { ApiResponse, Community, CommunityFeed, CommunityStats, FeedSort, ImageBucket, Tag, User } from "@/lib/types";
+import { ApiResponse, CommentFormState, Community, CommunityFeed, CommunityStats, FeedSort, ImageBucket, Tag, User, VoteActionValue, VoteTarget, VoteValue } from "@/lib/types";
 import { __api } from "./request";
 import { API_ENDPOINT, REQUEST_METHOD } from "@/constants/enums";
 
@@ -80,6 +80,29 @@ export const uploadImages = async (files: File[], bucket: ImageBucket = 'post-im
   }
 
   return response as ApiResponse<{ imageUrls: string[] }>;
+};
+
+export const removeImages = async (imageUrls: string[], bucket: ImageBucket = 'post-images') => {
+  return await __api({
+    endpoint: API_ENDPOINT.IMAGES,
+    init: { body: { bucket, imageUrls }, method: REQUEST_METHOD.DELETE },
+  });
+};
+
+export const vote = async (body: { target: VoteTarget; targetID: string; value: VoteActionValue }) => {
+  return await __api<{ userVote: VoteValue }>({
+    endpoint: API_ENDPOINT.VOTES,
+    init: { body, method: REQUEST_METHOD.POST },
+  });
+};
+
+export const createComment = async (body: { postID: string; parentID: string | null; body: string }) => {
+  const response = await __api<NonNullable<CommentFormState>>({
+    endpoint: API_ENDPOINT.COMMENTS,
+    init: { body, method: REQUEST_METHOD.POST },
+  });
+
+  return response.success ? response.data : { error: response.message };
 };
 
 export const getCommunityFeed = async (slug: string, sort: FeedSort) => {

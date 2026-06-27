@@ -1,11 +1,11 @@
 'use client';
 
 import { STALE_TIME } from '@/constants';
-import { getCommunity, getCommunityFeed, getCommunityMember, getCommunityStats, getOwnedCommunities, getProfileByUserName, joinCommunity, updateCommunity, updateProfile, uploadImages } from '@/services';
+import { createComment, getCommunity, getCommunityFeed, getCommunityMember, getCommunityStats, getOwnedCommunities, getProfileByUserName, joinCommunity, updateCommunity, updateProfile, uploadImages, vote } from '@/services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Session } from '@supabase/supabase-js';
 import { useSession } from './useSession';
-import type { ApiResponse, CommunityStats, FeedSort, ImageBucket } from '@/lib/types';
+import type { ApiResponse, CommentFormState, CommunityStats, FeedSort, ImageBucket, VoteActionValue, VoteTarget } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
@@ -182,6 +182,24 @@ export const useUploadImages = () => {
       (await uploadImages(files, bucket)).data?.imageUrls ?? [],
     onError: error => {
       toast.error(error instanceof Error ? error.message : 'Unable to upload images.');
+    },
+  });
+};
+
+export const useVote = () => {
+  return useMutation({
+    mutationFn: (body: { target: VoteTarget; targetID: string; value: VoteActionValue }) => vote(body),
+    onError: error => {
+      toast.error(error instanceof Error ? error.message : 'Unable to vote.');
+    },
+  });
+};
+
+export const useCreateComment = () => {
+  return useMutation<CommentFormState, Error, { postID: string; parentID: string | null; body: string }>({
+    mutationFn: createComment,
+    onError: error => {
+      toast.error(error.message || 'Unable to post comment.');
     },
   });
 };

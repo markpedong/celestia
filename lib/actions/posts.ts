@@ -2,23 +2,26 @@
 
 import { revalidatePath } from "next/cache";
 import { getCurrentUserID } from "../auth";
-import type { PostFormState, VoteActionValue } from "../types";
+import type { PostFormState } from "../types";
 import { redirect } from "next/navigation";
-import { removePostImages, uploadPostImages } from "../media";
 import { prisma } from '../prisma';
-import { toggleVote } from '../db/votes';
 import { getUploadErrorMessage } from '../error-messages';
+import { MAX_POST_IMAGES } from '../../constants';
+import { removeImages as removeStoredImages } from '@/services';
 
-export const votePostAction = async (postID: string, value: VoteActionValue) => {
-  const userID = await getCurrentUserID();
-  if (!userID) {
-    return { error: "Sign in to vote." };
+const POST_IMAGE_PATH_PREFIX = '/storage/v1/object/public/post-images/';
+
+const parsePostImageUrls = (value: FormDataEntryValue | null): string[] => {
+  if (typeof value !== 'string' || !value) return [];
+
+  const imageUrls: unknown = JSON.parse(value);
+  if (!Array.isArray(imageUrls) || imageUrls.length > MAX_POST_IMAGES) throw new Error(`Upload up to ${MAX_POST_IMAGES} images per post.`);
+  if (!imageUrls.every(imageUrl => typeof imageUrl === 'string' && new URL(imageUrl).pathname.includes(POST_IMAGE_PATH_PREFIX))) {
+    throw new Error('Invalid uploaded image.');
   }
 
-  await toggleVote(userID, 'post', postID, value);
-  for (const path of ['/', '/explore', '/posts', '/top']) revalidatePath(path);
-  revalidatePath(`/post/${postID}`);
-}
+  return imageUrls;
+};
 
 export const createPostAction = async (
   _prev: PostFormState,
@@ -32,7 +35,6 @@ export const createPostAction = async (
   const title = String(formData.get("title") ?? "").trim();
   const body = String(formData.get("body") ?? "").trim();
   const communitySlug = String(formData.get("communitySlug") ?? "").trim().toLowerCase();
-  const images = formData.getAll("images");
 
   const membership = await prisma.communityMembers.findUnique({
     where: { userID_communitySlug: { userID, communitySlug } },
@@ -44,7 +46,7 @@ export const createPostAction = async (
 
   let imageUrls: string[];
   try {
-    imageUrls = await uploadPostImages(images, userID);
+    imageUrls = parsePostImageUrls(formData.get('images'));
   } catch (error) {
     return { error: getUploadErrorMessage(error, 'We could not upload your images. Please try again.') };
   }
@@ -76,7 +78,6 @@ export const updatePostAction = async (
   const title = String(formData.get('title') ?? '').trim();
   const body = String(formData.get('body') ?? '').trim();
   const removeImages = String(formData.get('removeImages') ?? '') === 'true';
-  const images = formData.getAll('images');
 
   if (!postID) return { error: 'Post not found.' };
   const existing = await prisma.post.findUnique({
@@ -90,7 +91,7 @@ export const updatePostAction = async (
   let imageUrls = removeImages ? [] : existingImageUrls;
   let replacesExistingImages = removeImages;
   try {
-    const uploadedImages = await uploadPostImages(images, userID);
+    const uploadedImages = parsePostImageUrls(formData.get('images'));
     if (uploadedImages.length > 0) {
       imageUrls = uploadedImages;
       replacesExistingImages = true;
@@ -106,7 +107,7 @@ export const updatePostAction = async (
 
   if (replacesExistingImages && existingImageUrls.length > 0) {
     try {
-      await removePostImages(existingImageUrls);
+      await removeStoredImages(existingImageUrls, 'post-images');
     } catch {
       // The post update is already complete; a failed cleanup must not block it.
     }

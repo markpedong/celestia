@@ -1,7 +1,6 @@
 'use client';
 
 import type { FC } from 'react';
-import { createCommentAction } from '@/lib/actions/comments';
 import type { CommentComposerProps } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
@@ -13,11 +12,13 @@ import { useCommentSubmission } from './comment-submission-context';
 import useFormValidate from '@/hooks/useFormValidate';
 import useFormSchema from '@/hooks/useFormSchema';
 import { MAX_COMMENT_LENGTH } from '@/constants';
+import { useCreateComment } from '@/hooks/useQueries';
 
 const CommentComposer: FC<CommentComposerProps> = ({ postID, user, compact, parentID, placeholder }) => {
   const { commentSchema } = useFormSchema();
   const [pending, startTransition] = useTransition();
   const router = useRouter();
+  const createCommentMutation = useCreateComment();
   const commentSubmission = useCommentSubmission();
   const { register, handleSubmit, onFormKeyDown, reset, formState: { errors, isSubmitted, isValid, touchedFields } } = useFormValidate({
     schema: commentSchema,
@@ -35,7 +36,7 @@ const CommentComposer: FC<CommentComposerProps> = ({ postID, user, compact, pare
     }
 
     startTransition(async () => {
-      const res = await createCommentAction(pendingComment);
+      const res = await createCommentMutation.mutateAsync(pendingComment);
       if (res?.error) {
         toast.error(res.error);
         return;
@@ -62,7 +63,7 @@ const CommentComposer: FC<CommentComposerProps> = ({ postID, user, compact, pare
           type='submit'
           size='sm'
           disabled={!isValid}
-          isLoading={pending || Boolean(commentSubmission?.pending)}
+          isLoading={pending || createCommentMutation.isPending || Boolean(commentSubmission?.pending)}
           loadingText='Posting...'
           className='celestia-primary-action rounded'
         >

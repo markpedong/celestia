@@ -8,6 +8,8 @@ export enum API_ENDPOINT {
   COMMUNITY_STATS = '/community/stats',
   COMMUNITY_MEMBER = '/community/member',
   IMAGES = '/images',
+  COMMENTS = '/comments',
+  VOTES = '/votes',
 }
 
 export enum REQUEST_METHOD {
