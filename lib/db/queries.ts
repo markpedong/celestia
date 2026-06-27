@@ -4,9 +4,10 @@ import { Prisma } from "../generated/prisma/client";
 import { PostModel } from "../generated/prisma/models";
 import { prisma } from "../prisma";
 import type { Comment, Community, CommunityFeed, EnrichedCommentNode, FeedPostRow, FeedSort, Post, SearchPostSuggestion, SearchTagSuggestion, Tag, TagPostCount, User, UserCommentActivity, UserStats, VoteTarget } from "../types";
+import uniq from "lodash/uniq";
 
 export const batchAuthorsForIDs = async (authorIDs: string[]): Promise<Map<string, User>> => {
-  const unique = [...new Set(authorIDs)];
+  const unique = uniq(authorIDs);
   if (unique.length === 0) return new Map();
 
   const rows = await prisma.users.findMany({
@@ -17,7 +18,7 @@ export const batchAuthorsForIDs = async (authorIDs: string[]): Promise<Map<strin
 };
 
 export const batchUserStatsForIDs = async (userIDs: string[]): Promise<Map<string, UserStats>> => {
-  const unique = [...new Set(userIDs)];
+  const unique = uniq(userIDs);
   const result = new Map(unique.map(id => [id, { postCount: 0, commentCount: 0, karma: 0, commentKarma: 0 }]));
   if (unique.length === 0) return result;
 
@@ -150,7 +151,7 @@ export const getCommunityFeedData = async (
     listPostSorted(sort, slug, userID),
     listCommunity(),
   ]);
-  const authorIDs = [...new Set(rows.map(({ post }) => post.authorID))];
+  const authorIDs = uniq(rows.map(({ post }) => post.authorID));
   const [authorsByID, authorStatsByID] = await Promise.all([
     batchAuthorsForIDs(authorIDs),
     batchUserStatsForIDs(authorIDs),
@@ -490,7 +491,7 @@ export const getCommentTree = async (
 
   if (flat.length === 0) return [];
 
-  const authorIDs = [...new Set(flat.map(comment => comment.authorID))];
+  const authorIDs = uniq(flat.map(comment => comment.authorID));
   const commentIDs = flat.map(comment => comment.id);
 
   const [authors, scoreMap, voteMap] = await Promise.all([

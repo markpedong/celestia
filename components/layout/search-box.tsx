@@ -6,12 +6,12 @@ import { cn } from '@/lib/utils';
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
 import { Clock, Hash, Search, TrendingUp, X, Zap } from 'lucide-react';
 import Link from 'next/link';
+import uniq from 'lodash/uniq';
 import { usePathname, useRouter } from 'next/navigation';
 import { type FormEvent, type MouseEvent, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 
 const RECENT_SEARCHES_KEY = 'celestia:recent-searches';
 const emptySuggestions: SearchSuggestionsResponse = { posts: [], tags: [] };
-const unique = (items: string[]) => [...new Set(items)];
 
 const getStoredRecentSearches = (): string[] => {
   if (typeof window === 'undefined') return [];
@@ -55,7 +55,7 @@ const SearchBox: FC<SearchBoxProps> = ({ trending, communities }) => {
       `${trimmedQuery} advice`,
     ];
 
-    return unique(base).slice(0, 5);
+    return uniq(base).slice(0, 5);
   }, [trimmedQuery]);
   const suggestions = trimmedQuery ? suggestionResults : emptySuggestions;
 
@@ -107,7 +107,7 @@ const SearchBox: FC<SearchBoxProps> = ({ trending, communities }) => {
 
   const saveRecentSearch = (term: string) => {
     updateRecentSearches(current =>
-      unique([term, ...current.filter(item => item.toLowerCase() !== term.toLowerCase())]).slice(0, 6)
+      uniq([term, ...current.filter(item => item.toLowerCase() !== term.toLowerCase())]).slice(0, 6)
     );
   };
 

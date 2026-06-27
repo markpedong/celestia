@@ -21,6 +21,7 @@ import {
 import type { CommentsListProps, FeedPostRow, UserCommentActivity, UserPageProps } from '@/lib/types';
 import { formatCount, formatTimeAgo } from '@/lib/utils';
 import { ArrowBigDown, ArrowBigUp, AtSign, CakeSlice, FileText, MessageSquare, Radio, Trophy } from 'lucide-react';
+import uniq from 'lodash/uniq';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -59,7 +60,7 @@ const UserPage = async ({ params }: UserPageProps) => {
       listVotedCommentsByUser(profile.id, -1),
     ]);
   const allRows = [...posts, ...upvotedPosts, ...downvotedPosts];
-  const authorIDs = [...new Set(allRows.map(({ post }) => post.authorID).concat(profile.id))];
+  const authorIDs = uniq(allRows.map(({ post }) => post.authorID).concat(profile.id));
   const [authorsByID, authorStatsByID] = await Promise.all([
     batchAuthorsForIDs(authorIDs),
     batchUserStatsForIDs(authorIDs),

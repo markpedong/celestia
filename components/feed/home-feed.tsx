@@ -6,6 +6,7 @@ import { batchAuthorsForIDs, batchUserStatsForIDs, listPostSorted, listCommunity
 import { trendingToday } from '@/lib/trending';
 import type { FeedSort, SearchParams } from '@/lib/types';
 import { FileQuestion, Radio } from 'lucide-react';
+import uniq from 'lodash/uniq';
 
 type HomeFeedProps = {
   searchParams: Promise<SearchParams>;
@@ -24,7 +25,7 @@ const HomeFeed = async ({ searchParams, sort, hotPath }: HomeFeedProps) => {
     tagsPostCounts(),
   ]);
 
-  const authorIDs = [...new Set(rows.map(({ post }) => post.authorID))];
+  const authorIDs = uniq(rows.map(({ post }) => post.authorID));
   const [authorByID, authorStatsByID] = await Promise.all([
     batchAuthorsForIDs(authorIDs),
     batchUserStatsForIDs(authorIDs),
