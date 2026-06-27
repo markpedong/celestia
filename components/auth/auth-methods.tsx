@@ -1,6 +1,6 @@
 'use client';
 
-import type { FC } from 'react';
+import { useRef, type FC } from 'react';
 import { Button } from '@/components/ui/button';
 import FormField from '@/components/ui/form-field';
 import { useAuthForm } from '@/hooks/use-auth-form';
@@ -16,8 +16,10 @@ const providers = [
 
 const authOptionClassName =
   'flex h-11 items-center justify-center gap-2 rounded-sm border border-border bg-background text-sm font-medium text-card-foreground transition-colors hover:bg-muted disabled:opacity-60';
+const activationCooldown = 900;
 
 const AuthMethods: FC<AuthMethodsProps> = ({ mode }) => {
+  const lastMfaActivationRef = useRef(0);
   const {
     backupCode,
     cancelMfaChallenge,
@@ -46,6 +48,9 @@ const AuthMethods: FC<AuthMethodsProps> = ({ mode }) => {
     const currentCode = isBackupCode ? backupCode : mfaCode;
     const verifyMfaStep = () => {
       if (!currentCode.trim() || pending) return;
+      const now = Date.now();
+      if (now - lastMfaActivationRef.current < activationCooldown) return;
+      lastMfaActivationRef.current = now;
 
       if (isBackupCode) {
         submitBackupCode();
@@ -86,6 +91,8 @@ const AuthMethods: FC<AuthMethodsProps> = ({ mode }) => {
             autoCapitalize='characters'
             autoComplete='one-time-code'
             inputMode={isBackupCode ? 'text' : 'numeric'}
+            maxLength={isBackupCode ? undefined : 6}
+            pattern={isBackupCode ? undefined : '[0-9]{6}'}
           />
           <Button
             type='submit'

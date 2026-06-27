@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import SettingsDialog from '@/components/ui/settings-dialog';
 
+const formatVerificationCode = (value: string) => value.replace(/\D/g, '').slice(0, 6);
+
 type MfaDialogProps = {
   open: boolean;
   enrollment: { id: string; qr: string; secret: string } | null;
@@ -59,9 +61,11 @@ export const MfaDialog = ({
           <Input
             id='mfa-code'
             value={code}
-            onChange={event => onCodeChangeAction(event.target.value)}
+            onChange={event => onCodeChangeAction(formatVerificationCode(event.target.value))}
             inputMode='numeric'
             autoComplete='one-time-code'
+            maxLength={6}
+            pattern='[0-9]{6}'
             placeholder='6-digit code'
             className='text-center font-mono tracking-[0.2em]'
           />

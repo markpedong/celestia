@@ -29,6 +29,7 @@ const authSchema = z.object({
 
 type AuthValues = z.infer<typeof authSchema>;
 type MfaStep = 'totp' | 'backup' | null;
+const formatVerificationCode = (value: string) => value.replace(/\D/g, '').slice(0, 6);
 
 export const useAuthForm = (mode: AuthMode) => {
   const router = useRouter();
@@ -165,7 +166,7 @@ export const useAuthForm = (mode: AuthMode) => {
         : await supabase.auth.mfa.verify({
             factorId: factor.id,
             challengeId: challenge.data.id,
-            code: mfaCode.trim(),
+            code: formatVerificationCode(mfaCode),
           });
 
       if (result.error) {
@@ -255,7 +256,7 @@ export const useAuthForm = (mode: AuthMode) => {
     mfaStep,
     pending,
     setBackupCode,
-    setMfaCode,
+    setMfaCode: (value: string) => setMfaCode(formatVerificationCode(value)),
     showMfaStep,
     submit,
     submitBackupCode,
