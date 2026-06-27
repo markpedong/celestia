@@ -1,9 +1,11 @@
 import { USER_FIELDS } from '@/constants';
 import { getCurrentUserID } from '@/lib/auth';
 import { getUserByUserName } from '@/lib/db/queries';
+import { profileSettingsSchema } from '@/lib/form-schemas';
 import { prisma } from '@/lib/prisma';
 import { generateErrorResponse, generateSuccessResponse } from '@/services/request';
 import pick from 'lodash/pick';
+import { revalidatePath } from 'next/cache';
 
 export const GET = async (request: Request,) => {
   const { searchParams } = new URL(request.url);
@@ -38,7 +40,26 @@ export const POST = async (request: Request) => {
     return generateErrorResponse('No fields to update.', 400);
   }
 
-  await prisma.users.update({ where: { id: userID }, data, });
+  const profile = await prisma.users.findUnique({ where: { id: userID }, select: { userName: true } });
+  if (!profile) return generateErrorResponse('User not found.', 404);
+
+  if ('displayName' in data || 'bio' in data) {
+    const parsed = profileSettingsSchema.safeParse({
+      userName: profile.userName,
+      displayName: data.displayName ?? '',
+      bio: data.bio ?? '',
+    });
+    if (!parsed.success) return generateErrorResponse(parsed.error.issues[0]?.message ?? 'Check your profile details.');
+    data.displayName = parsed.data.displayName || null;
+    data.bio = parsed.data.bio || null;
+  }
+
+  await prisma.users.update({ where: { id: userID }, data });
+
+  revalidatePath('/');
+  revalidatePath('/profile');
+  revalidatePath('/settings');
+  revalidatePath(`/u/${profile.userName}`);
 
   return generateSuccessResponse(null, 200, 'Profile updated successfully.');
 }

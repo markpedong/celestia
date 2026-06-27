@@ -1,10 +1,9 @@
 'use client';
 
-import type { FC } from 'react';
-import { updatePostAction } from '@/lib/actions/posts';
+import type { FC, FormEventHandler } from 'react';
 import type { EditPostFormProps } from '@/lib/types';
-import { useServerActionForm } from '@/hooks/use-server-action-form';
 import useFormSchema from '@/hooks/useFormSchema';
+import useFormValidate from '@/hooks/useFormValidate';
 import { Button } from '../ui/button';
 import FormField from '../ui/form-field';
 import { Input } from '../ui/input';
@@ -14,19 +13,33 @@ import { ImageUploadField } from './image-upload-field';
 import { Save } from 'lucide-react';
 import { MAX_POST_BODY_LENGTH, MAX_POST_TITLE_LENGTH } from '@/constants';
 import { useState } from 'react';
+import { useUpdatePost } from '@/hooks/useQueries';
 
 export const EditPostForm: FC<EditPostFormProps> = ({ post }) => {
   const [uploadingImages, setUploadingImages] = useState(false);
   const { editPostSchema } = useFormSchema();
+  const updatePost = useUpdatePost();
   const {
-    form: {
-      register,
-      formState: { errors, isSubmitted, isValid, touchedFields },
-    },
+    handleSubmit,
+    register,
+    formState: { errors, isSubmitted, isValid, touchedFields },
     onFormKeyDown,
-    onSubmit,
-    pending,
-  } = useServerActionForm(updatePostAction, null, editPostSchema, { title: post.title, body: post.body });
+  } = useFormValidate({
+    schema: editPostSchema,
+    defaultValues: { title: post.title, body: post.body },
+  });
+  const pending = updatePost.isPending;
+  const onSubmit: FormEventHandler<HTMLFormElement> = event => {
+    const formData = new FormData(event.currentTarget);
+    void handleSubmit(values => {
+      updatePost.mutate({
+        postID: post.id,
+        ...values,
+        images: JSON.parse(String(formData.get('images') ?? '[]')) as string[],
+        removeImages: String(formData.get('removeImages') ?? '') === 'true',
+      });
+    })(event);
+  };
 
   return (
     <form onSubmit={onSubmit} onKeyDown={onFormKeyDown} className='celestia-card space-y-5 p-5 md:p-6' noValidate>

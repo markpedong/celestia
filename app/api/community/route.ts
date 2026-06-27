@@ -1,3 +1,8 @@
+import {
+  MAX_COMMUNITY_SLUG_LENGTH,
+  MIN_COMMUNITY_SLUG_LENGTH,
+  RESERVED_COMMUNITY_SLUGS,
+} from '@/constants';
 import { HTTP_MESSAGE } from '@/constants/enums';
 import { getCurrentUserID } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
@@ -22,7 +27,49 @@ const revalidateCommunityPaths = (slug: string) => {
   revalidatePath(`/settings/communities/${slug}`);
 };
 
+const normalizeSlug = (value: string) => value
+  .trim()
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, '_')
+  .replace(/^_+|_+$/g, '')
+  .slice(0, MAX_COMMUNITY_SLUG_LENGTH);
+
 export const POST = async (request: Request) => {
+  const userID = await getCurrentUserID();
+  if (!userID) return generateErrorResponse(HTTP_MESSAGE.UNAUTHORIZED, 401);
+
+  const { slug, label, description, hashColor, avatarUrl, coverUrl } = await request.json();
+  const communitySlug = normalizeSlug(String(slug ?? ''));
+
+  if (communitySlug.length < MIN_COMMUNITY_SLUG_LENGTH || RESERVED_COMMUNITY_SLUGS.has(communitySlug)) {
+    return generateErrorResponse('Choose a different community URL.');
+  }
+
+  const existing = await prisma.community.findUnique({ where: { slug: communitySlug }, select: { slug: true } });
+  if (existing) return generateErrorResponse('That community URL is already taken.');
+
+  await prisma.$transaction(async tx => {
+    await tx.community.create({
+      data: {
+        slug: communitySlug,
+        label: String(label ?? '').trim(),
+        description: String(description ?? '').trim(),
+        hashColor: String(hashColor ?? '').trim(),
+        avatarUrl: avatarUrl || undefined,
+        coverUrl: coverUrl || undefined,
+        createdByID: userID,
+      },
+    });
+    await tx.communityMembers.create({ data: { userID, communitySlug } });
+  });
+
+  revalidatePath('/');
+  revalidatePath('/submit');
+
+  return generateSuccessResponse({ slug: communitySlug });
+};
+
+export const PATCH = async (request: Request) => {
   const userID = await getCurrentUserID();
   if (!userID) return generateErrorResponse(HTTP_MESSAGE.UNAUTHORIZED, 401);
 

@@ -1,8 +1,7 @@
 'use client';
-import type { FC } from 'react';
-import { createPostAction } from '@/lib/actions/posts';
-import { useServerActionForm } from '@/hooks/use-server-action-form';
+import type { FC, FormEventHandler } from 'react';
 import useFormSchema from '@/hooks/useFormSchema';
+import useFormValidate from '@/hooks/useFormValidate';
 import { Label } from '../ui/label';
 import FormField from '../ui/form-field';
 import { Input } from '../ui/input';
@@ -13,27 +12,40 @@ import type { SubmitPostFormProps } from '@/lib/types';
 import { ImageUploadField } from './image-upload-field';
 import { MAX_POST_BODY_LENGTH, MAX_POST_TITLE_LENGTH } from '@/constants';
 import { useState } from 'react';
+import { useCreatePost } from '@/hooks/useQueries';
 
 export const SubmitPostForm: FC<SubmitPostFormProps> = ({ communities, defaultCommunitySlug }) => {
   const [uploadingImages, setUploadingImages] = useState(false);
   const { postSchema } = useFormSchema();
+  const createPost = useCreatePost();
   const selectedCommunity =
     defaultCommunitySlug && communities.some(community => community.slug === defaultCommunitySlug)
       ? defaultCommunitySlug
       : '';
   const {
-    form: {
-      register,
-      formState: { errors, isSubmitted, isValid, touchedFields },
-    },
+    handleSubmit,
+    register,
+    formState: { errors, isSubmitted, isValid, touchedFields },
     onFormKeyDown,
-    onSubmit,
-    pending,
-  } = useServerActionForm(createPostAction, null, postSchema, {
-    title: '',
-    body: '',
-    communitySlug: selectedCommunity,
+  } = useFormValidate({
+    schema: postSchema,
+    defaultValues: {
+      title: '',
+      body: '',
+      communitySlug: selectedCommunity,
+    },
   });
+  const pending = createPost.isPending;
+  const onSubmit: FormEventHandler<HTMLFormElement> = event => {
+    const formData = new FormData(event.currentTarget);
+    void handleSubmit(values => {
+      createPost.mutate({
+        ...values,
+        images: JSON.parse(String(formData.get('images') ?? '[]')) as string[],
+      });
+    })(event);
+  };
+
   return (
     <form onSubmit={onSubmit} onKeyDown={onFormKeyDown} className='celestia-card space-y-4 p-4 md:p-5' noValidate>
       <FormField

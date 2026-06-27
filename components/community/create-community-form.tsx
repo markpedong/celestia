@@ -1,13 +1,11 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type FormEventHandler } from 'react';
 import Image from 'next/image';
-import { createCommunityAction } from '@/lib/actions/communities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import FormField from '@/components/ui/form-field';
 import { Textarea } from '@/components/ui/textarea';
-import { useServerActionForm } from '@/hooks/use-server-action-form';
 import useFormSchema from '@/hooks/useFormSchema';
 import {
   IMAGE_ACCEPT,
@@ -17,10 +15,12 @@ import {
 } from '@/constants';
 import { ImagePlus, Plus, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { useUploadImages } from '@/hooks/useQueries';
+import { useCreateCommunity, useUploadImages } from '@/hooks/useQueries';
+import useFormValidate from '@/hooks/useFormValidate';
 
 export const CreateCommunityForm = () => {
   const { createCommunitySchema } = useFormSchema();
+  const createCommunity = useCreateCommunity();
   const uploadImages = useUploadImages();
   const [mediaPreview, setMediaPreview] = useState<Partial<Record<'avatar' | 'cover', string>>>({});
   const [mediaUrls, setMediaUrls] = useState<Partial<Record<'avatar' | 'cover', string>>>({});
@@ -29,24 +29,37 @@ export const CreateCommunityForm = () => {
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
   const coverInputRef = useRef<HTMLInputElement | null>(null);
   const {
-    form: {
-      register,
-      formState: { errors, isSubmitted, isValid, touchedFields },
-      watch,
-    },
+    handleSubmit,
+    register,
+    formState: { errors, isSubmitted, isValid, touchedFields },
+    watch,
     onFormKeyDown,
-    onSubmit,
-    pending,
-  } = useServerActionForm(createCommunityAction, null, createCommunitySchema, {
-    label: '',
-    slug: '',
-    description: '',
-    hashColor: '#8b5cf6',
+  } = useFormValidate({
+    schema: createCommunitySchema,
+    defaultValues: {
+      label: '',
+      slug: '',
+      description: '',
+      hashColor: '#8b5cf6',
+    },
   });
+  const pending = createCommunity.isPending;
   const label = watch('label');
   const hashColor = watch('hashColor');
   const previewColor = /^#[0-9a-f]{6}$/i.test(hashColor) ? hashColor : '#8b5cf6';
   const previewInitial = label.trim().slice(0, 1).toUpperCase() || 'C';
+  const onSubmit: FormEventHandler<HTMLFormElement> = event => {
+    void handleSubmit(values => {
+      createCommunity.mutate({
+        label: values.label,
+        slug: values.slug,
+        description: values.description,
+        hashColor: values.hashColor,
+        avatarUrl: mediaUrls.avatar,
+        coverUrl: mediaUrls.cover,
+      });
+    })(event);
+  };
 
   useEffect(() => {
     mediaPreviewRef.current = mediaPreview;

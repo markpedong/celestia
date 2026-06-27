@@ -9,12 +9,14 @@ export enum API_ENDPOINT {
   COMMUNITY_MEMBER = '/community/member',
   IMAGES = '/images',
   COMMENTS = '/comments',
+  POSTS = '/posts',
   VOTES = '/votes',
 }
 
 export enum REQUEST_METHOD {
   DELETE = 'DELETE',
   GET = 'GET',
+  PATCH = 'PATCH',
   POST = 'POST',
 }
 

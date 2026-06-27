@@ -2,9 +2,8 @@ import DialogActions from '@/components/ui/dialog-actions';
 import { ImageUploader } from '@/components/ui/image-uploader';
 import SettingsDialog from '@/components/ui/settings-dialog';
 import { ACCEPTED_IMAGE_TYPES, IMAGE_MIME_TYPES, MAX_IMAGE_BYTES } from '@/constants';
-import { updateProfileMediaAction } from '@/lib/actions/profile';
 import { MediaKind } from '@/lib/types';
-import { useGetProfile, useUploadImages } from '@/hooks/useQueries';
+import { useGetProfile, useUpdateProfile, useUploadImages } from '@/hooks/useQueries';
 import { useQueryClient } from '@tanstack/react-query';
 import { FC, useState, useTransition } from 'react';
 import { toast } from 'sonner';
@@ -18,6 +17,7 @@ type Props = {
 const ChangeAvatarBio: FC<Props> = ({ kind, onClose, open }) => {
   const queryClient = useQueryClient();
   const uploadImages = useUploadImages();
+  const updateProfile = useUpdateProfile();
   const profile = useGetProfile().data?.data;
   const [selectedFile, setSelectedFile] = useState<File>();
   const [savingMedia, startSavingMedia] = useTransition();
@@ -41,14 +41,10 @@ const ChangeAvatarBio: FC<Props> = ({ kind, onClose, open }) => {
       }))[0];
       if (!imageUrl) return;
 
-      const result = await updateProfileMediaAction(isAvatar ? { avatarUrl: imageUrl } : { coverUrl: imageUrl });
-      if (result?.error) {
-        toast.error(result.error);
-        return;
-      }
+      const result = await updateProfile.mutateAsync(isAvatar ? { avatarUrl: imageUrl } : { coverUrl: imageUrl });
+      if (!result.success) return;
       close();
       void queryClient.invalidateQueries({ queryKey: ['profile'] });
-      toast.success(result?.success ?? 'Profile media updated.');
     });
   };
 

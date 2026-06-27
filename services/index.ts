@@ -55,10 +55,18 @@ export const updateProfile = async (body: Record<string, unknown>) => {
   });
 };
 
+export const createCommunity = async (body: Partial<Tag & { description: string }> & { avatarUrl?: string; coverUrl?: string }) => {
+  const response = await __api<{ slug: string }>({
+    init: { body, method: REQUEST_METHOD.POST },
+    endpoint: API_ENDPOINT.COMMUNITY,
+  });
+
+  return response;
+};
 
 export const updateCommunity = async (body: Partial<Tag & { description: string }> & { slug: string; avatarUrl?: string; coverUrl?: string }) => {
   const response = await __api({
-    init: { body, method: REQUEST_METHOD.POST },
+    init: { body, method: REQUEST_METHOD.PATCH },
     endpoint: API_ENDPOINT.COMMUNITY,
   });
 
@@ -103,6 +111,33 @@ export const createComment = async (body: { postID: string; parentID: string | n
   });
 
   return response.success ? response.data : { error: response.message };
+};
+
+type PostMutationResult = { postID: string } | { error: string };
+
+export const createPost = async (body: { title: string; body: string; communitySlug: string; images: string[] }): Promise<PostMutationResult> => {
+  const response = await __api<{ postID: string }>({
+    endpoint: API_ENDPOINT.POSTS,
+    init: { body, method: REQUEST_METHOD.POST },
+  });
+
+  return response.success && response.data ? response.data : { error: response.message };
+};
+
+export const updatePost = async (body: { postID: string; title: string; body: string; images: string[]; removeImages?: boolean }): Promise<PostMutationResult> => {
+  const response = await __api<{ postID: string }>({
+    endpoint: API_ENDPOINT.POSTS,
+    init: { body, method: REQUEST_METHOD.PATCH },
+  });
+
+  return response.success && response.data ? response.data : { error: response.message };
+};
+
+export const deletePost = async (postID: string) => {
+  return await __api({
+    endpoint: API_ENDPOINT.POSTS,
+    init: { body: { postID }, method: REQUEST_METHOD.DELETE },
+  });
 };
 
 export const getCommunityFeed = async (slug: string, sort: FeedSort) => {

@@ -1,7 +1,7 @@
 'use client';
 
 import { STALE_TIME } from '@/constants';
-import { createComment, getCommunity, getCommunityFeed, getCommunityMember, getCommunityStats, getOwnedCommunities, getProfileByUserName, joinCommunity, updateCommunity, updateProfile, uploadImages, vote } from '@/services';
+import { createComment, createCommunity, createPost, getCommunity, getCommunityFeed, getCommunityMember, getCommunityStats, getOwnedCommunities, getProfileByUserName, joinCommunity, updateCommunity, updatePost, updateProfile, uploadImages, vote } from '@/services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Session } from '@supabase/supabase-js';
 import { useSession } from './useSession';
@@ -63,6 +63,27 @@ export const useUpdateCommunity = () => {
     },
     onError: error => {
       toast.error(error instanceof Error ? error.message : 'Unable to update community settings.');
+    },
+  });
+};
+
+export const useCreateCommunity = () => {
+  const router = useRouter();
+
+  return useMutation({
+    mutationFn: (body: Parameters<typeof createCommunity>[0]) => createCommunity(body),
+    onSuccess: res => {
+      if (!res.success || !res.data) {
+        toast.error(res.message || 'Unable to create community.');
+        return;
+      }
+
+      toast.success('Community created.');
+      router.refresh();
+      router.push(`/r/${res.data.slug}`);
+    },
+    onError: error => {
+      toast.error(error instanceof Error ? error.message : 'Unable to create community.');
     },
   });
 };
@@ -200,6 +221,46 @@ export const useCreateComment = () => {
     mutationFn: createComment,
     onError: error => {
       toast.error(error.message || 'Unable to post comment.');
+    },
+  });
+};
+
+export const useCreatePost = () => {
+  const router = useRouter();
+
+  return useMutation({
+    mutationFn: createPost,
+    onSuccess: result => {
+      if (!result || 'error' in result) {
+        toast.error(result?.error || 'Unable to create post.');
+        return;
+      }
+
+      router.refresh();
+      router.push(`/post/${result.postID}`);
+    },
+    onError: error => {
+      toast.error(error instanceof Error ? error.message : 'Unable to create post.');
+    },
+  });
+};
+
+export const useUpdatePost = () => {
+  const router = useRouter();
+
+  return useMutation({
+    mutationFn: updatePost,
+    onSuccess: result => {
+      if (!result || 'error' in result) {
+        toast.error(result?.error || 'Unable to update post.');
+        return;
+      }
+
+      router.refresh();
+      router.push(`/post/${result.postID}`);
+    },
+    onError: error => {
+      toast.error(error instanceof Error ? error.message : 'Unable to update post.');
     },
   });
 };
