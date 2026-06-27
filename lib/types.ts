@@ -91,6 +91,10 @@ export type CommunityStats = {
   commentCount: number;
 };
 
+export type CommunityMember = User & {
+  joinedAt: string;
+};
+
 export type UserStats = {
   postCount: number;
   commentCount: number;

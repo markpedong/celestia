@@ -3,7 +3,7 @@ import { cache } from "react";
 import { Prisma } from "../generated/prisma/client";
 import { PostModel } from "../generated/prisma/models";
 import { prisma } from "../prisma";
-import type { Comment, Community, CommunityFeed, EnrichedCommentNode, FeedPostRow, FeedSort, Post, SearchPostSuggestion, SearchTagSuggestion, Tag, TagPostCount, User, UserCommentActivity, UserStats, VoteTarget } from "../types";
+import type { Comment, Community, CommunityFeed, CommunityMember, CommunityStats, EnrichedCommentNode, FeedPostRow, FeedSort, Post, SearchPostSuggestion, SearchTagSuggestion, Tag, TagPostCount, User, UserCommentActivity, UserStats, VoteTarget } from "../types";
 import uniq from "lodash/uniq";
 
 export const batchAuthorsForIDs = async (authorIDs: string[]): Promise<Map<string, User>> => {
@@ -231,6 +231,34 @@ export const getCommunityBySlug = cache(async (slug: string): Promise<Community 
     createdAt: community.createdAt.toISOString(),
   };
 });
+
+export const getCommunityStatsData = async (slug: string): Promise<CommunityStats> => {
+  const posts = await prisma.post.findMany({
+    where: { postTags: { some: { tagSlug: slug } } },
+    select: { id: true },
+  });
+  const postIDs = posts.map(post => post.id);
+  const [memberCount, commentCount] = await Promise.all([
+    prisma.communityMembers.count({ where: { communitySlug: slug } }),
+    postIDs.length ? prisma.comment.count({ where: { postID: { in: postIDs } } }) : Promise.resolve(0),
+  ]);
+
+  return { postCount: posts.length, memberCount, commentCount };
+};
+
+export const listCommunityMembers = async (slug: string): Promise<CommunityMember[]> => {
+  const memberships = await prisma.communityMembers.findMany({
+    where: { communitySlug: slug },
+    orderBy: { joinedAt: 'desc' },
+    take: 50,
+  });
+  const usersByID = await batchAuthorsForIDs(memberships.map(member => member.userID));
+
+  return memberships.flatMap(member => {
+    const user = usersByID.get(member.userID);
+    return user ? [{ ...user, joinedAt: member.joinedAt.toISOString() }] : [];
+  });
+};
 
 export const listJoinedCommunities = async (userID: string): Promise<Community[]> => {
   const memberships = await prisma.communityMembers.findMany({
