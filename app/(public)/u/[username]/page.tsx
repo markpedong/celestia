@@ -190,6 +190,7 @@ const UserPage = async ({ params }: UserPageProps) => {
                 width={128}
                 height={128}
                 className='size-full object-cover'
+                unoptimized
               />
             ) : (
               <span className='grid size-full place-items-center bg-primary/15 text-3xl font-black text-primary md:text-5xl'>
