@@ -72,7 +72,7 @@ export const listUserNames = async () => {
 
 export const listJoinedCommunities = async () => {
   const response = await __api<Community[]>({
-    init: { method: REQUEST_METHOD.GET },
+  init: { method: REQUEST_METHOD.GET },
     endpoint: API_ENDPOINT.USER_COMMUNITIES,
   });
 
@@ -124,9 +124,11 @@ export const getCommunity = async (slug: string) => {
 };
 
 export const listCommunity = async () => {
-  const response = await fetch(`${process.env.DOMAIN}/api${API_ENDPOINT.COMMUNITY}`, { cache: 'no-store' });
-  if (!response.ok) return [];
-  return ((await response.json()) as ApiResponse<Tag[]>).data ?? [];
+  const response = await __api<Tag[]>({
+    init: { method: REQUEST_METHOD.GET },
+    endpoint: API_ENDPOINT.COMMUNITY,
+  });
+  return response.data ?? [];
 };
 
 export const getCommunityBySlug = getCommunity;
