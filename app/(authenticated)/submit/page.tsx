@@ -1,7 +1,7 @@
 import { SubmitPostForm } from '@/components/post/submit-post-form';
 import { getSessionUser } from '@/lib/auth';
-import { listJoinedCommunities } from '@/lib/db/queries';
 import type { SubmitPageProps } from '@/lib/types';
+import { listJoinedCommunities } from '@/services';
 import { ArrowLeft, Send } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
@@ -13,7 +13,7 @@ const SubmitPage = async ({ searchParams }: SubmitPageProps) => {
   }
 
   const selectedCommunity = Array.isArray(query.community) ? query.community[0] : query.community;
-  const communities = await listJoinedCommunities(user.id);
+  const communities = await listJoinedCommunities();
 
   return (
     <div className='grid gap-5 max-w-5xl ml-7'>

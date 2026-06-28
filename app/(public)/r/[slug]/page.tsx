@@ -1,8 +1,8 @@
 import CommunityFeed from '@/components/feed/community-feed';
 import { ContentWithSidebar } from '@/components/layout/content-with-sidebar';
 import CommunityMembershipButton from '@/components/community/community-membership-button';
-import { getCommunityBySlug, listCommunity } from '@/lib/db/queries';
 import type { CommunityPageProps } from '@/lib/types';
+import { getCommunityBySlug, listCommunity } from '@/services';
 import { notFound } from 'next/navigation';
 import CommunitySidebar from '@/components/community/community-sidebar';
 import CommunityStats from '@/components/community/community-stats';

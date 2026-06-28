@@ -1,7 +1,9 @@
 import { MAX_POST_IMAGES } from '@/constants';
 import { getCurrentUserID } from '@/lib/auth';
+import { listPostSorted, getPostByID, listPostIDs, listPostsByAuthor, listVotedPostsByUser } from '@/lib/db/post.queries';
 import { getUploadErrorMessage } from '@/lib/error-messages';
 import { prisma } from '@/lib/prisma';
+import type { FeedSort } from '@/lib/types';
 import { generateErrorResponse, generateSuccessResponse } from '@/services/request';
 import { removeImages as removeStoredImages } from '@/services';
 import { revalidatePath } from 'next/cache';
@@ -22,6 +24,40 @@ const revalidatePostPaths = (postID?: string, tagSlugs: string[] = []) => {
   for (const path of ['/', '/explore', '/posts', '/top', '/submit']) revalidatePath(path);
   if (postID) revalidatePath(`/post/${postID}`);
   for (const tagSlug of tagSlugs) revalidatePath(`/r/${tagSlug}`);
+};
+
+const isFeedSort = (value: string | null): value is FeedSort => value === 'hot' || value === 'new' || value === 'top';
+const isVoteValue = (value: string | null): value is '1' | '-1' => value === '1' || value === '-1';
+
+export const GET = async (request: Request) => {
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get('id');
+  const mode = searchParams.get('mode');
+
+  if (mode === 'ids') {
+    return generateSuccessResponse(await listPostIDs());
+  }
+
+  if (id) {
+    const post = await getPostByID(id);
+    return post ? generateSuccessResponse(post) : generateErrorResponse('Post not found.', 404);
+  }
+
+  const requestedSort = searchParams.get('sort');
+  const sort: FeedSort = isFeedSort(requestedSort) ? requestedSort : 'hot';
+  const tag = searchParams.get('tag') ?? '';
+  const query = searchParams.get('q') ?? '';
+  const authorID = searchParams.get('authorID');
+  const votedBy = searchParams.get('votedBy');
+  const value = searchParams.get('value');
+  const viewerID = searchParams.get('viewerID') ?? undefined;
+
+  if (authorID) return generateSuccessResponse(await listPostsByAuthor(authorID, sort, viewerID));
+  if (votedBy && isVoteValue(value)) {
+    return generateSuccessResponse(await listVotedPostsByUser(votedBy, Number(value) as -1 | 1, viewerID));
+  }
+
+  return generateSuccessResponse(await listPostSorted(sort, tag, viewerID, query));
 };
 
 export const POST = async (request: Request) => {

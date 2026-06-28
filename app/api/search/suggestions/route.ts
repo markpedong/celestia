@@ -1,4 +1,4 @@
-import { searchSuggestions } from '@/lib/db/queries';
+import { searchSuggestions } from '@/lib/db/search.queries';
 import { NextResponse } from 'next/server';
 
 export const GET = async (request: Request) => {

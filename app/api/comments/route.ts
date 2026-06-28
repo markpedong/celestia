@@ -1,4 +1,5 @@
 import { getCurrentUserID } from '@/lib/auth';
+import { getCommentTree, listCommentsByAuthor, listVotedCommentsByUser } from '@/lib/db/comment.queries';
 import { prisma } from '@/lib/prisma';
 import type { Comment } from '@/lib/types';
 import { generateErrorResponse, generateSuccessResponse } from '@/services/request';
@@ -27,6 +28,23 @@ const addComment = async (input: {
     body: row.body,
     createdAt: row.createdAt.toISOString(),
   };
+};
+
+export const GET = async (request: Request) => {
+  const { searchParams } = new URL(request.url);
+  const postID = searchParams.get('postID');
+  const authorID = searchParams.get('authorID');
+  const votedBy = searchParams.get('votedBy');
+  const value = searchParams.get('value');
+  const viewerID = searchParams.get('viewerID') ?? undefined;
+
+  if (postID) return generateSuccessResponse(await getCommentTree(postID, viewerID));
+  if (authorID) return generateSuccessResponse(await listCommentsByAuthor(authorID));
+  if (votedBy && (value === '1' || value === '-1')) {
+    return generateSuccessResponse(await listVotedCommentsByUser(votedBy, Number(value) as -1 | 1));
+  }
+
+  return generateErrorResponse('Comment query is required.');
 };
 
 export const POST = async (request: Request) => {

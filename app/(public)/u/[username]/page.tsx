@@ -7,7 +7,6 @@ import { ProfileManagedCommunities } from '@/components/profile/profile-managed-
 import { EmptyState } from '@/components/ui/empty-state';
 import { StatGrid } from '@/components/ui/stat-grid';
 import {
-  batchAuthorsForIDs,
   batchUserStatsForIDs,
   getUserByUserName,
   getUserStats,
@@ -16,8 +15,9 @@ import {
   listCommunity,
   listVotedCommentsByUser,
   listVotedPostsByUser,
+  getAuthorByID,
   listUserNames,
-} from '@/lib/db/queries';
+} from '@/services';
 import type { CommentsListProps, FeedPostRow, UserCommentActivity, UserPageProps } from '@/lib/types';
 import { formatCount, formatTimeAgo } from '@/lib/utils';
 import { ArrowBigDown, ArrowBigUp, AtSign, CakeSlice, FileText, MessageSquare, Radio, Trophy } from 'lucide-react';
@@ -61,10 +61,11 @@ const UserPage = async ({ params }: UserPageProps) => {
     ]);
   const allRows = [...posts, ...upvotedPosts, ...downvotedPosts];
   const authorIDs = uniq(allRows.map(({ post }) => post.authorID).concat(profile.id));
-  const [authorsByID, authorStatsByID] = await Promise.all([
-    batchAuthorsForIDs(authorIDs),
+  const [authors, authorStatsByID] = await Promise.all([
+    Promise.all(authorIDs.map(getAuthorByID)),
     batchUserStatsForIDs(authorIDs),
   ]);
+  const authorsByID = new Map(authors.flatMap(author => author ? [[author.id, author] as const] : []));
   const tagsBySlug = new Map(tags.map(tag => [tag.slug, tag]));
   const hasActivity =
     posts.length +
@@ -156,7 +157,15 @@ const UserPage = async ({ params }: UserPageProps) => {
   ];
 
   return (
-    <ContentWithSidebar sidebar={<ProfileSidebar profileID={profile.id} karma={stats.karma} joinedAt={profile.createdAt.toISOString()} />}>
+    <ContentWithSidebar
+      sidebar={
+        <ProfileSidebar
+          profileID={profile.id}
+          karma={stats.karma}
+          joinedAt={profile.createdAt instanceof Date ? profile.createdAt.toISOString() : String(profile.createdAt)}
+        />
+      }
+    >
       <section className='celestia-card relative mb-5'>
         <div className='relative min-h-52 overflow-hidden bg-[linear-gradient(135deg,var(--primary),var(--accent))] md:min-h-64'>
           {profile.coverUrl ? (
@@ -271,7 +280,7 @@ const OverviewActivityFeed = ({
   isSignedIn,
 }: {
   items: OverviewActivity[];
-  authorsByID: Awaited<ReturnType<typeof batchAuthorsForIDs>>;
+  authorsByID: Map<string, NonNullable<Awaited<ReturnType<typeof getAuthorByID>>>>;
   authorStatsByID: Awaited<ReturnType<typeof batchUserStatsForIDs>>;
   tagsBySlug: Map<string, Awaited<ReturnType<typeof listCommunity>>[number]>;
   isSignedIn: boolean;

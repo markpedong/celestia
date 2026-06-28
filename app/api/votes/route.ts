@@ -1,5 +1,5 @@
 import { getCurrentUserID } from '@/lib/auth';
-import { toggleVote } from '@/lib/db/votes';
+import { getUserVote, toggleVote, voteSumsForTargets } from '@/lib/db/vote.queries';
 import { prisma } from '@/lib/prisma';
 import type { VoteActionValue, VoteTarget } from '@/lib/types';
 import { generateErrorResponse, generateSuccessResponse } from '@/services/request';
@@ -7,6 +7,21 @@ import { revalidatePath } from 'next/cache';
 
 const isVoteTarget = (value: unknown): value is VoteTarget => value === 'post' || value === 'comment';
 const isVoteValue = (value: unknown): value is VoteActionValue => value === 1 || value === -1;
+
+export const GET = async (request: Request) => {
+  const { searchParams } = new URL(request.url);
+  const target = searchParams.get('target');
+  const targetID = searchParams.get('targetID');
+  if (!isVoteTarget(target) || !targetID) return generateErrorResponse('Invalid vote target.');
+
+  const userID = await getCurrentUserID();
+  const [scoreMap, userVote] = await Promise.all([
+    voteSumsForTargets(target, [targetID]),
+    getUserVote(userID, target, targetID),
+  ]);
+
+  return generateSuccessResponse({ score: scoreMap.get(targetID) ?? 0, userVote });
+};
 
 export const POST = async (request: Request) => {
   const userID = await getCurrentUserID();

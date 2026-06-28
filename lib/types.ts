@@ -1,6 +1,7 @@
 import type { LucideIcon } from 'lucide-react';
 import type { ComponentProps, Dispatch, ReactNode, SetStateAction } from 'react';
 import { Input } from '@/components/ui/input';
+import type { CommentModel, CommunityModel, PostModel, UsersModel } from '@/lib/generated/prisma/models';
 
 export type ApiResponse<TResponse = null> = {
   message: string;
@@ -24,49 +25,22 @@ export type ErrorFormState<T extends object = Record<never, never>> = (T & {
   error?: string;
 }) | null;
 
-export type User = {
-  id: string;
-  userName: string;
-  email: string;
-  displayName: string | null;
-  bio: string | null;
-  avatarUrl: string | null;
-  coverUrl: string | null;
-  createdAt: Date;
-};
+export type User = UsersModel;
 
-export type Tag = {
-  slug: string;
-  label: string;
-  hashColor: string;
-  avatarUrl?: string | null;
-};
+export type Tag = Pick<CommunityModel, 'slug' | 'label' | 'hashColor' | 'avatarUrl'>;
 
-export type Community = Tag & {
-  description: string;
-  avatarUrl: string | null;
-  coverUrl: string | null;
+export type Community = Pick<CommunityModel, 'slug' | 'label' | 'description' | 'hashColor' | 'avatarUrl' | 'coverUrl'> & {
   createdByID?: string;
   createdAt?: string;
 };
 
-export type Post = {
-  id: string;
-  authorID: string;
-  title: string;
-  body: string;
-  imageUrls: string[];
+export type Post = Omit<PostModel, 'createdAt'> & {
   tagSlugs: string[];
   createdAt: string;
   commentCount: number;
 };
 
-export type Comment = {
-  id: string;
-  postID: string;
-  authorID: string;
-  parentID: string | null;
-  body: string;
+export type Comment = Omit<CommentModel, 'createdAt'> & {
   createdAt: string;
 };
 

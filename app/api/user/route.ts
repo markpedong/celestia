@@ -1,6 +1,6 @@
 import { USER_FIELDS } from '@/constants';
 import { getCurrentUserID } from '@/lib/auth';
-import { getUserByUserName } from '@/lib/db/queries';
+import { getAuthorByID, getUserByUserName, listUserNames } from '@/lib/db/user.queries';
 import { profileDetailsSchema } from '@/lib/form-schemas';
 import { prisma } from '@/lib/prisma';
 import { generateErrorResponse, generateSuccessResponse } from '@/services/request';
@@ -9,7 +9,18 @@ import { revalidatePath } from 'next/cache';
 
 export const GET = async (request: Request,) => {
   const { searchParams } = new URL(request.url);
+  const mode = searchParams.get('mode');
+  const id = searchParams.get('id');
   const userName = searchParams.get('username') ?? '';
+
+  if (mode === 'usernames') {
+    return generateSuccessResponse(await listUserNames());
+  }
+
+  if (id) {
+    const profile = await getAuthorByID(id);
+    return profile ? generateSuccessResponse(profile) : generateErrorResponse('User not found', 404);
+  }
 
   if (!userName) {
     return generateErrorResponse('Username is required');

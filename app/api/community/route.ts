@@ -5,6 +5,7 @@ import {
 } from '@/constants';
 import { HTTP_MESSAGE } from '@/constants/enums';
 import { getCurrentUserID } from '@/lib/auth';
+import { getCommunityBySlug, listCommunity } from '@/lib/db/community.queries';
 import { prisma } from '@/lib/prisma';
 import { generateErrorResponse, generateSuccessResponse } from '@/services/request';
 import { revalidatePath } from 'next/cache';
@@ -13,7 +14,9 @@ export const GET = async (request: Request,) => {
   const { searchParams } = new URL(request.url);
   const slug = searchParams.get('slug') ?? '';
 
-  const community = await prisma.community.findFirst({ where: { slug } });
+  if (!slug) return generateSuccessResponse(await listCommunity());
+
+  const community = await getCommunityBySlug(slug);
   if (!community) return generateErrorResponse('Community not found.', 404);
 
   return generateSuccessResponse(community);

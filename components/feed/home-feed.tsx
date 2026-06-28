@@ -2,9 +2,9 @@ import FeedSortTabs from '@/components/feed/feed-sort-tabs';
 import { PostList } from '@/components/feed/post-list';
 import { RightTrending } from '@/components/layout/right-trending';
 import { EmptyState } from '@/components/ui/empty-state';
-import { batchAuthorsForIDs, batchUserStatsForIDs, listPostSorted, listCommunity, tagsPostCounts } from '@/lib/db/queries';
 import { trendingToday } from '@/lib/trending';
 import type { FeedSort, SearchParams } from '@/lib/types';
+import { batchUserStatsForIDs, listPostSorted, listCommunity, tagsPostCounts, getAuthorByID } from '@/services';
 import { FileQuestion, Radio } from 'lucide-react';
 import uniq from 'lodash/uniq';
 
@@ -26,10 +26,11 @@ const HomeFeed = async ({ searchParams, sort, hotPath }: HomeFeedProps) => {
   ]);
 
   const authorIDs = uniq(rows.map(({ post }) => post.authorID));
-  const [authorByID, authorStatsByID] = await Promise.all([
-    batchAuthorsForIDs(authorIDs),
+  const [authors, authorStatsByID] = await Promise.all([
+    Promise.all(authorIDs.map(getAuthorByID)),
     batchUserStatsForIDs(authorIDs),
   ]);
+  const authorByID = new Map(authors.flatMap(author => author ? [[author.id, author] as const] : []));
 
   const tagsMap = new Map(tags.map(tag => [tag.slug, tag]));
   const communities = tagCounts

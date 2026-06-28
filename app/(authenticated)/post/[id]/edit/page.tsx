@@ -1,7 +1,7 @@
 import { EditPostForm } from '@/components/post/edit-post-form';
 import { getSessionUser } from '@/lib/auth';
-import { getPostByID } from '@/lib/db/queries';
 import type { PostPageProps } from '@/lib/types';
+import { getPostByID } from '@/services';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';

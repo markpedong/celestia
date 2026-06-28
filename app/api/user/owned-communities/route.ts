@@ -1,5 +1,5 @@
 import { getCurrentUserID } from '@/lib/auth';
-import { listOwnedCommunities } from '@/lib/db/queries';
+import { listOwnedCommunities } from '@/lib/db/community.queries';
 import { generateErrorResponse, generateSuccessResponse } from '@/services/request';
 
 export const dynamic = 'force-dynamic';
