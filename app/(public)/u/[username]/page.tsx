@@ -6,18 +6,16 @@ import { ProfileActivityTabs } from '@/components/profile/profile-activity-tabs'
 import { ProfileManagedCommunities } from '@/components/profile/profile-managed-communities';
 import { EmptyState } from '@/components/ui/empty-state';
 import { StatGrid } from '@/components/ui/stat-grid';
+import { listCommentsByAuthor, listVotedCommentsByUser } from '@/lib/db/comment.queries';
+import { listCommunity } from '@/lib/db/community.queries';
+import { listPostsByAuthor, listVotedPostsByUser } from '@/lib/db/post.queries';
 import {
   batchUserStatsForIDs,
+  getAuthorByID,
   getUserByUserName,
   getUserStats,
-  listCommentsByAuthor,
-  listPostsByAuthor,
-  listCommunity,
-  listVotedCommentsByUser,
-  listVotedPostsByUser,
-  getAuthorByID,
   listUserNames,
-} from '@/services';
+} from '@/lib/db/user.queries';
 import type { CommentsListProps, FeedPostRow, UserCommentActivity, UserPageProps } from '@/lib/types';
 import { formatCount, formatTimeAgo } from '@/lib/utils';
 import { ArrowBigDown, ArrowBigUp, AtSign, CakeSlice, FileText, MessageSquare, Radio, Trophy } from 'lucide-react';

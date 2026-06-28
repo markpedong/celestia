@@ -1,12 +1,9 @@
 import { unstable_cache } from 'next/cache';
-import { API_ENDPOINT } from '@/constants/enums';
+import { tagsPostCounts } from '@/lib/db/community.queries';
 import { trendingToday } from '@/lib/trending';
-import type { ApiResponse, TagPostCount } from '@/lib/types';
 
 export const getPublicShellData = unstable_cache(async () => {
-  const response = await fetch(`${process.env.DOMAIN}/api${API_ENDPOINT.COMMUNITY_COUNTS}`, { next: { revalidate: 300 } });
-  const payload = await response.json() as ApiResponse<TagPostCount[]>;
-  const tagCounts = payload.data ?? [];
+  const tagCounts = await tagsPostCounts();
   const communities = [...tagCounts]
     .sort((left, right) => right.count - left.count)
     .slice(0, 6)

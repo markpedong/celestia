@@ -4,7 +4,9 @@ import { RightTrending } from '@/components/layout/right-trending';
 import { EmptyState } from '@/components/ui/empty-state';
 import { trendingToday } from '@/lib/trending';
 import type { FeedSort, SearchParams } from '@/lib/types';
-import { batchUserStatsForIDs, listPostSorted, listCommunity, tagsPostCounts, getAuthorByID } from '@/services';
+import { listCommunity, tagsPostCounts } from '@/lib/db/community.queries';
+import { listPostSorted } from '@/lib/db/post.queries';
+import { batchUserStatsForIDs, getAuthorByID } from '@/lib/db/user.queries';
 import { FileQuestion, Radio } from 'lucide-react';
 import uniq from 'lodash/uniq';
 

@@ -2,7 +2,7 @@ import CommunityFeed from '@/components/feed/community-feed';
 import { ContentWithSidebar } from '@/components/layout/content-with-sidebar';
 import CommunityMembershipButton from '@/components/community/community-membership-button';
 import type { CommunityPageProps } from '@/lib/types';
-import { getCommunityBySlug, listCommunity } from '@/services';
+import { getCommunityBySlug, listCommunity } from '@/lib/db/community.queries';
 import { notFound } from 'next/navigation';
 import CommunitySidebar from '@/components/community/community-sidebar';
 import CommunityStats from '@/components/community/community-stats';
@@ -10,7 +10,6 @@ import Image from 'next/image';
 
 export const generateStaticParams = async () => {
   const communities = await listCommunity();
-  console.log("communities", communities);
   return communities.map(({ slug }) => ({ slug }));
 };
 
