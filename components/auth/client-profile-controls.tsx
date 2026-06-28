@@ -2,12 +2,13 @@
 
 import { CirclePlus, MessageCircleMore } from 'lucide-react';
 import Link from 'next/link';
+import classNames from 'classnames';
 import { Button } from '@/components/ui/button';
 import { useGetProfile, useStartDirectConversation } from '@/hooks/useQueries';
 import { useSession } from '@/hooks/useSession';
 import type { User } from '@/lib/types';
 
-export const ClientProfileControls = ({ profile }: { profile: User }) => {
+export const ClientProfileControls = ({ profile, className }: { profile: User; className?: string }) => {
   const { session } = useSession();
   const { data } = useGetProfile();
   const startDirectConversation = useStartDirectConversation();
@@ -19,9 +20,9 @@ export const ClientProfileControls = ({ profile }: { profile: User }) => {
 
   if (!isSignedIn) {
     return (
-      <div className='flex flex-wrap items-center gap-2'>
+      <div className={classNames('grid grid-cols-2 gap-2', className)}>
         <Button
-          className='h-10 rounded-full border-0 bg-[#1d6df2] px-4 text-sm font-semibold text-white disabled:opacity-100'
+          className='h-9 rounded-full border-0 bg-primary px-3 text-sm font-semibold text-primary-foreground shadow-[0_8px_22px_color-mix(in_srgb,var(--primary)_28%,transparent)] disabled:opacity-100'
           disabled
         >
           <CirclePlus />
@@ -29,11 +30,11 @@ export const ClientProfileControls = ({ profile }: { profile: User }) => {
         </Button>
         <Button
           asChild
-          className='h-10 rounded-full border-0 bg-[#30383c] px-4 text-sm font-semibold text-white hover:bg-[#3a4449]'
+          className='h-9 rounded-full border-0 bg-secondary px-3 text-sm font-semibold text-secondary-foreground hover:bg-muted'
         >
           <Link href='/auth/sign-in'>
             <MessageCircleMore />
-            Start Chat
+            Chat
           </Link>
         </Button>
       </div>
@@ -41,20 +42,20 @@ export const ClientProfileControls = ({ profile }: { profile: User }) => {
   }
 
   return (
-    <div className='flex flex-wrap items-center gap-2'>
+    <div className={classNames('grid grid-cols-2 gap-2', className)}>
       <Button
-        className='h-10 rounded-full border-0 bg-[#1d6df2] px-4 text-sm font-semibold text-white disabled:opacity-100'
+        className='h-9 rounded-full border-0 bg-primary px-3 text-sm font-semibold text-primary-foreground shadow-[0_8px_22px_color-mix(in_srgb,var(--primary)_28%,transparent)] disabled:opacity-100'
         disabled
       >
         <CirclePlus />
         Follow
       </Button>
       <Button
-        className='h-10 rounded-full border-0 bg-[#30383c] px-4 text-sm font-semibold text-white hover:bg-[#3a4449]'
+        className='h-9 rounded-full border-0 bg-secondary px-3 text-sm font-semibold text-secondary-foreground hover:bg-muted'
         onClick={() => startDirectConversation.mutate(profile)}
       >
         <MessageCircleMore />
-        Start Chat
+        Chat
       </Button>
     </div>
   );
