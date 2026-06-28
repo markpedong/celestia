@@ -10,7 +10,7 @@ import { UserAvatar } from '@/components/ui/user-avatar';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import type { ChatConversation } from '@/lib/types';
 import { chatConversationsQueryKey, chatMessagesQueryKey, useChatConversations, useChatMessages, useGetProfile, useMarkChatRead, useSendChatMessage } from '@/hooks/useQueries';
-import { OPEN_CHAT_EVENT, type OpenChatEventDetail } from '@/lib/chat-events';
+import { OPEN_CHAT_EVENT, PENDING_DIRECT_CONVERSATION_PREFIX, type OpenChatEventDetail } from '@/lib/chat-events';
 import styles from './chat-widget.module.scss';
 
 const supabase = createSupabaseBrowserClient();
@@ -90,6 +90,7 @@ export const ChatWidget = () => {
   }, [queryClient, selectedID]);
 
   const activeConversation = conversations.find(conversation => conversation.id === selectedID) ?? null;
+  const isPendingConversation = selectedID?.startsWith(PENDING_DIRECT_CONVERSATION_PREFIX) ?? false;
   const messages = useMemo(
     () => [...(messagesQuery.data?.pages ?? [])]
       .reverse()
@@ -102,13 +103,18 @@ export const ChatWidget = () => {
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
-    if (!selectedID || !draft.trim()) return;
+    const body = draft.trim();
+    if (!selectedID || !body) return;
 
+    setDraft('');
     sendMessage.mutate(
-      { conversationID: selectedID, body: draft },
+      { conversationID: selectedID, body },
       {
         onSuccess: response => {
-          if (response.success) setDraft('');
+          if (!response.success) setDraft(body);
+        },
+        onError: () => {
+          setDraft(body);
         },
       },
     );
@@ -166,13 +172,13 @@ export const ChatWidget = () => {
           <div className={styles.conversationText}>
             <div className={styles.title}>{activeConversation?.label ?? 'Select a chat'}</div>
             <div className={styles.subtitle}>
-              {activeConversation?.type === 'community' ? 'Community room' : 'Direct message'}
+              {isPendingConversation ? 'Opening direct message' : activeConversation?.type === 'community' ? 'Community room' : 'Direct message'}
             </div>
           </div>
         </header>
 
         <div className={styles.messages}>
-          {messagesQuery.hasNextPage ? (
+          {!isPendingConversation && messagesQuery.hasNextPage ? (
             <Button
               className={styles.loadOlder}
               variant='outline'
@@ -204,7 +210,7 @@ export const ChatWidget = () => {
           })}
 
           {!messagesQuery.isLoading && activeConversation && messages.length === 0 ? (
-            <p className={styles.empty}>Start the conversation.</p>
+            <p className={styles.empty}>{isPendingConversation ? 'Opening chat...' : 'Start the conversation.'}</p>
           ) : null}
           {!activeConversation ? <p className={styles.empty}>Select a conversation.</p> : null}
         </div>
@@ -215,8 +221,8 @@ export const ChatWidget = () => {
             value={draft}
             maxLength={2000}
             rows={1}
-            placeholder={activeConversation ? 'Message...' : 'Select a chat first'}
-            disabled={!activeConversation || sendMessage.isPending}
+            placeholder={isPendingConversation ? 'Opening chat...' : activeConversation ? 'Message...' : 'Select a chat first'}
+            disabled={!activeConversation || isPendingConversation}
             onChange={event => setDraft(event.target.value)}
             onKeyDown={event => {
               if (event.key === 'Enter' && !event.shiftKey) {
@@ -225,7 +231,7 @@ export const ChatWidget = () => {
               }
             }}
           />
-          <Button size='icon' aria-label='Send message' disabled={!activeConversation || !draft.trim()} isLoading={sendMessage.isPending}>
+          <Button size='icon' aria-label='Send message' disabled={!activeConversation || isPendingConversation || !draft.trim()}>
             <Send />
           </Button>
         </form>

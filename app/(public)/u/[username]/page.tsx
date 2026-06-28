@@ -18,7 +18,7 @@ import {
 } from '@/lib/db/user.queries';
 import type { CommentsListProps, FeedPostRow, UserCommentActivity, UserPageProps } from '@/lib/types';
 import { formatCount, formatTimeAgo } from '@/lib/utils';
-import { ArrowBigDown, ArrowBigUp, AtSign, CakeSlice, FileText, MessageSquare, Radio, Trophy } from 'lucide-react';
+import { ArrowBigDown, ArrowBigUp, AtSign, Ellipsis, FileText, MessageSquare, Radio } from 'lucide-react';
 import uniq from 'lodash/uniq';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -158,8 +158,9 @@ const UserPage = async ({ params }: UserPageProps) => {
     <ContentWithSidebar
       sidebar={
         <ProfileSidebar
-          profileID={profile.id}
+          profile={profile}
           karma={stats.karma}
+          contributions={stats.postCount + stats.commentCount}
           joinedAt={profile.createdAt instanceof Date ? profile.createdAt.toISOString() : String(profile.createdAt)}
         />
       }
@@ -192,7 +193,7 @@ const UserPage = async ({ params }: UserPageProps) => {
             </div>
           </div>
         </div>
-        <div className='relative grid gap-5 border-t border-border/70 p-5 pt-16 md:grid-cols-[minmax(0,1fr)_10rem] md:p-6 md:pt-6'>
+        <div className='relative grid gap-5 border-t border-border/70 p-5 pt-16 md:p-6 md:pt-6'>
           <div className='absolute right-5 -top-16 z-20 size-24 overflow-hidden rounded-2xl border-4 border-card bg-card shadow-2xl ring-1 ring-white/10 md:right-7 md:-top-28 md:size-32'>
             {profile.avatarUrl ? (
               <Image
@@ -218,9 +219,6 @@ const UserPage = async ({ params }: UserPageProps) => {
               </p>
             )}
           </div>
-          <div>
-            <ClientProfileControls profileID={profile.id} />
-          </div>
         </div>
         <div className='px-5 pb-5 md:px-6 md:pb-6'>
           <StatGrid
@@ -237,32 +235,57 @@ const UserPage = async ({ params }: UserPageProps) => {
   );
 };
 
-const ProfileSidebar = ({ profileID, karma, joinedAt }: { profileID: string; karma: number; joinedAt?: string }) => (
+const ProfileSidebar = ({
+  profile,
+  karma,
+  contributions,
+  joinedAt,
+}: {
+  profile: NonNullable<Awaited<ReturnType<typeof getUserByUserName>>>;
+  karma: number;
+  contributions: number;
+  joinedAt?: string;
+}) => (
   <div className='space-y-4'>
-    <section className='celestia-card overflow-hidden'>
-      <div className='h-2 bg-[linear-gradient(90deg,var(--primary),var(--accent))]' />
-      <div className='p-4'>
-        <h2 className='mb-3 text-sm font-semibold'>Profile details</h2>
-        <div className='space-y-2 text-xs text-muted-foreground'>
-          <div className='celestia-stat-row'>
-            <span className='flex items-center gap-2'>
-              <Trophy className='size-3.5 text-primary' /> Karma
-            </span>
-            <span className='font-mono font-semibold text-foreground'>{formatCount(karma)}</span>
+    <section className='rounded-[1.35rem] border border-border/50 bg-black p-5 text-white shadow-2xl shadow-black/30'>
+      <div className='mb-5 flex items-start justify-between gap-4'>
+        <h2 className='min-w-0 truncate text-2xl font-bold tracking-tight'>
+          {profile.displayName || profile.userName}
+        </h2>
+        <button
+          type='button'
+          className='grid size-11 shrink-0 place-items-center rounded-full bg-[#30383c] text-white transition hover:bg-[#3a4449]'
+          aria-label='More profile actions'
+        >
+          <Ellipsis className='size-5' />
+        </button>
+      </div>
+
+      <div className='space-y-6'>
+        <div>
+          <ClientProfileControls profile={profile} />
+        </div>
+
+        <div className='grid grid-cols-2 gap-x-8 gap-y-8'>
+          <div>
+            <div className='text-lg font-bold leading-6 text-white'>{formatCount(karma)}</div>
+            <div className='text-base leading-5 text-slate-400'>Karma</div>
+          </div>
+          <div>
+            <div className='text-lg font-bold leading-6 text-white'>{formatCount(contributions)}</div>
+            <div className='text-base leading-5 text-slate-400'>Contributions</div>
           </div>
           {joinedAt ? (
-            <div className='celestia-stat-row'>
-              <span className='flex items-center gap-2'>
-                <CakeSlice className='size-3.5 text-primary' /> Joined
-              </span>
-              <span className='font-mono font-semibold text-foreground'>{formatTimeAgo(joinedAt)}</span>
+            <div>
+              <div className='text-lg font-bold leading-6 text-white'>{formatTimeAgo(joinedAt)}</div>
+              <div className='text-base leading-5 text-slate-400'>Reddit Age</div>
             </div>
           ) : null}
         </div>
       </div>
     </section>
 
-    <ProfileManagedCommunities profileID={profileID} />
+    <ProfileManagedCommunities profileID={profile.id} />
   </div>
 );
 

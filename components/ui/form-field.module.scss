@@ -13,7 +13,7 @@
 }
 
 .visibilityButton {
-  @apply absolute inset-y-0 right-0 grid w-10 place-items-center text-muted-foreground hover:text-foreground;
+  @apply absolute inset-y-0 right-0 z-10 grid w-12 touch-manipulation place-items-center text-muted-foreground hover:text-foreground;
 }
 
 .icon {

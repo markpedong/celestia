@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, type FC } from 'react';
+import { useCallback, useEffect, useRef, useState, type FC } from 'react';
 import { Button } from '@/components/ui/button';
 import FormField from '@/components/ui/form-field';
 import { useAuthForm } from '@/hooks/use-auth-form';
@@ -17,15 +17,18 @@ const providers = [
 const authOptionClassName =
   'flex h-11 items-center justify-center gap-2 rounded-sm border border-border bg-background text-sm font-medium text-card-foreground transition-colors hover:bg-muted disabled:opacity-60';
 const activationCooldown = 900;
+const formValue = (formData: FormData, name: string) => String(formData.get(name) ?? '').trim();
 
 const AuthMethods: FC<AuthMethodsProps> = ({ mode }) => {
   const lastMfaActivationRef = useRef(0);
+  const authFormRef = useRef<HTMLFormElement>(null);
+  const [hasRequiredAuthValues, setHasRequiredAuthValues] = useState(false);
   const {
     backupCode,
     cancelMfaChallenge,
     register,
     handleSubmit,
-    formState: { errors, isSubmitted, isValid, touchedFields },
+    formState: { errors, isSubmitted },
     continueWithPasskey,
     continueWithProvider,
     hasBackupCodes,
@@ -33,7 +36,6 @@ const AuthMethods: FC<AuthMethodsProps> = ({ mode }) => {
     message,
     mfaCode,
     mfaStep,
-    onFormKeyDown,
     pending,
     setBackupCode,
     setMfaCode,
@@ -42,6 +44,32 @@ const AuthMethods: FC<AuthMethodsProps> = ({ mode }) => {
     submitBackupCode,
     submitMfaCode,
   } = useAuthForm(mode);
+  const updateRequiredAuthValues = useCallback(() => {
+    if (!authFormRef.current) return;
+
+    const formData = new FormData(authFormRef.current);
+    const hasValues = isSignUp
+      ? Boolean(
+          formValue(formData, 'userName') &&
+          formValue(formData, 'email') &&
+          formValue(formData, 'password') &&
+          formValue(formData, 'confirmPassword')
+        )
+      : Boolean(formValue(formData, 'email') && formValue(formData, 'password'));
+
+    setHasRequiredAuthValues(hasValues);
+  }, [isSignUp]);
+
+  useEffect(() => {
+    updateRequiredAuthValues();
+    const timers = [100, 500, 1000].map(delay => window.setTimeout(updateRequiredAuthValues, delay));
+    const interval = window.setInterval(updateRequiredAuthValues, 250);
+
+    return () => {
+      timers.forEach(timer => window.clearTimeout(timer));
+      window.clearInterval(interval);
+    };
+  }, [updateRequiredAuthValues]);
 
   if (mfaStep) {
     const isBackupCode = mfaStep === 'backup';
@@ -161,21 +189,31 @@ const AuthMethods: FC<AuthMethodsProps> = ({ mode }) => {
         <span className='text-xs font-medium text-muted-foreground'>or continue with email</span>
         <span className='h-px flex-1 bg-border' />
       </div>
-      <form onSubmit={handleSubmit(submit)} onKeyDown={onFormKeyDown} className='space-y-4' noValidate>
+      <form
+        ref={authFormRef}
+        onSubmit={handleSubmit(submit)}
+        onInput={updateRequiredAuthValues}
+        onChange={updateRequiredAuthValues}
+        onFocus={updateRequiredAuthValues}
+        className='space-y-4'
+        noValidate
+      >
         {isSignUp && (
           <FormField
             label='Username'
             labelClassName='text-card-foreground'
             placeholder='johndoe'
-            error={errors.userName && (touchedFields.userName || isSubmitted) ? errors.userName.message : undefined}
+            error={errors.userName && isSubmitted ? errors.userName.message : undefined}
             maxLength={20}
+            autoComplete='username'
             {...register('userName')}
           />
         )}
         <FormField
           label={isSignUp ? 'Email' : 'Email or userName'}
           placeholder={isSignUp ? 'you@example.com' : 'you@example.com or userName'}
-          error={errors.email && (touchedFields.email || isSubmitted) ? errors.email.message : undefined}
+          error={errors.email && isSubmitted ? errors.email.message : undefined}
+          autoComplete={isSignUp ? 'email' : 'username'}
           {...register('email')}
         />
         <FormField
@@ -183,7 +221,8 @@ const AuthMethods: FC<AuthMethodsProps> = ({ mode }) => {
           labelClassName='text-card-foreground'
           type='password'
           placeholder='Enter your password'
-          error={errors.password && (touchedFields.password || isSubmitted) ? errors.password.message : undefined}
+          error={errors.password && isSubmitted ? errors.password.message : undefined}
+          autoComplete={isSignUp ? 'new-password' : 'current-password'}
           {...register('password')}
         />
         {isSignUp && (
@@ -192,17 +231,14 @@ const AuthMethods: FC<AuthMethodsProps> = ({ mode }) => {
             labelClassName='text-card-foreground'
             type='password'
             placeholder='Re-enter your password'
-            error={
-              errors.confirmPassword && (touchedFields.confirmPassword || isSubmitted)
-                ? errors.confirmPassword.message
-                : undefined
-            }
+            error={errors.confirmPassword && isSubmitted ? errors.confirmPassword.message : undefined}
+            autoComplete='new-password'
             {...register('confirmPassword')}
           />
         )}
         <Button
           type='submit'
-          disabled={!isValid}
+          disabled={pending || !hasRequiredAuthValues}
           isLoading={pending}
           loadingText={isSignUp ? 'Creating account...' : 'Signing in...'}
           className='celestia-primary-action h-11 w-full'

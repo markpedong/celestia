@@ -2,12 +2,12 @@
 
 import { STALE_TIME } from '@/constants';
 import { createComment, createCommunity, createPost, getChatConversations, getChatMessages, getCommunity, getCommunityFeed, getCommunityMember, getCommunityStats, getOwnedCommunities, getProfile, joinCommunity, markChatRead, sendChatMessage, startDirectConversation, updateCommunity, updatePost, updateProfile, uploadImages, vote } from '@/services';
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient, type InfiniteData } from '@tanstack/react-query';
 import { useSession } from './useSession';
-import type { ApiResponse, CommentFormState, CommunityStats, FeedSort, ImageBucket, VoteActionValue, VoteTarget } from '@/lib/types';
+import type { ApiResponse, ChatConversation, ChatMessagesPage, CommentFormState, CommunityStats, FeedSort, ImageBucket, User, VoteActionValue, VoteTarget } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { OPEN_CHAT_EVENT, type OpenChatEventDetail } from '@/lib/chat-events';
+import { OPEN_CHAT_EVENT, PENDING_DIRECT_CONVERSATION_PREFIX, type OpenChatEventDetail } from '@/lib/chat-events';
 
 export const communityMemberQueryKey = (slug: string) => ['community-member', slug] as const;
 export const communityStatsQueryKey = (slug: string) => ['community-stats', slug] as const;
@@ -208,7 +208,7 @@ export const useChatMessages = (conversationID: string | null) => {
   return useInfiniteQuery({
     queryKey: chatMessagesQueryKey(conversationID ?? 'none'),
     queryFn: ({ pageParam }) => getChatMessages(conversationID!, pageParam),
-    enabled: Boolean(conversationID),
+    enabled: Boolean(conversationID) && !conversationID?.startsWith(PENDING_DIRECT_CONVERSATION_PREFIX),
     initialPageParam: null as string | null,
     getNextPageParam: lastPage => lastPage.data?.nextCursor ?? undefined,
     staleTime: STALE_TIME,
@@ -217,11 +217,70 @@ export const useChatMessages = (conversationID: string | null) => {
 
 export const useSendChatMessage = () => {
   const queryClient = useQueryClient();
+  const profile = useGetProfile().data?.data;
 
   return useMutation({
     mutationFn: sendChatMessage,
-    onSuccess: response => {
+    onMutate: async body => {
+      if (!profile) return;
+
+      const queryKey = chatMessagesQueryKey(body.conversationID);
+      await queryClient.cancelQueries({ queryKey });
+
+      const previousMessages = queryClient.getQueryData<InfiniteData<ApiResponse<ChatMessagesPage>>>(queryKey);
+      const now = new Date().toISOString();
+      const optimisticMessage = {
+        id: `optimistic:${Date.now()}`,
+        conversationID: body.conversationID,
+        authorID: profile.id,
+        body: body.body.trim(),
+        createdAt: now,
+        deletedAt: null,
+        author: profile,
+      };
+
+      queryClient.setQueryData<InfiniteData<ApiResponse<ChatMessagesPage>>>(queryKey, current => {
+        const firstPage = current?.pages[0] ?? {
+          success: true,
+          message: 'Data fetched successfully',
+          data: { messages: [], nextCursor: null },
+        };
+
+        const pages = current?.pages.length
+          ? current.pages.map((page, index) => index === 0 ? {
+            ...page,
+            data: {
+              messages: [...(page.data?.messages ?? []), optimisticMessage],
+              nextCursor: page.data?.nextCursor ?? null,
+            },
+          } : page)
+          : [{
+            ...firstPage,
+            data: { messages: [optimisticMessage], nextCursor: null },
+          }];
+
+        return {
+          pageParams: current?.pageParams ?? [null],
+          pages,
+        };
+      });
+
+      queryClient.setQueryData<ApiResponse<ChatConversation[]>>(chatConversationsQueryKey, current => current?.data ? {
+        ...current,
+        data: current.data.map(conversation => conversation.id === body.conversationID ? {
+          ...conversation,
+          lastMessage: optimisticMessage,
+          updatedAt: now,
+        } : conversation),
+      } : current);
+
+      return { previousMessages, queryKey };
+    },
+    onSuccess: (response, _body, context) => {
       if (!response.success || !response.data) {
+        if (context?.previousMessages) {
+          queryClient.setQueryData(context.queryKey, context.previousMessages);
+        }
         toast.error(response.message || 'Unable to send message.');
         return;
       }
@@ -229,7 +288,10 @@ export const useSendChatMessage = () => {
       void queryClient.invalidateQueries({ queryKey: chatMessagesQueryKey(response.data.conversationID) });
       void queryClient.invalidateQueries({ queryKey: chatConversationsQueryKey });
     },
-    onError: error => {
+    onError: (error, _body, context) => {
+      if (context?.previousMessages) {
+        queryClient.setQueryData(context.queryKey, context.previousMessages);
+      }
       toast.error(error instanceof Error ? error.message : 'Unable to send message.');
     },
   });
@@ -237,27 +299,74 @@ export const useSendChatMessage = () => {
 
 export const useStartDirectConversation = () => {
   const queryClient = useQueryClient();
+  const profile = useGetProfile().data?.data;
 
   return useMutation({
-    mutationFn: startDirectConversation,
-    onSuccess: response => {
+    mutationFn: (target: User) => startDirectConversation(target.id),
+    onMutate: async target => {
+      if (!profile) return;
+
+      await queryClient.cancelQueries({ queryKey: chatConversationsQueryKey });
+      const previousConversations = queryClient.getQueryData<ApiResponse<ChatConversation[]>>(chatConversationsQueryKey);
+      const now = new Date().toISOString();
+      const optimisticID = `${PENDING_DIRECT_CONVERSATION_PREFIX}${target.id}`;
+      const optimisticConversation: ChatConversation = {
+        id: optimisticID,
+        type: 'direct',
+        communitySlug: null,
+        directKey: null,
+        label: target.displayName ?? target.userName,
+        createdAt: now,
+        updatedAt: now,
+        community: null,
+        participants: [
+          { user: profile, lastReadAt: now },
+          { user: target, lastReadAt: null },
+        ],
+        lastMessage: null,
+        unreadCount: 0,
+      };
+
+      queryClient.setQueryData<ApiResponse<ChatConversation[]>>(chatConversationsQueryKey, current => {
+        const existing = current?.data ?? [];
+        const conversations = existing.some(row => row.id === optimisticID)
+          ? existing
+          : [optimisticConversation, ...existing];
+
+        return {
+          message: current?.message ?? 'Conversation opening.',
+          success: current?.success ?? true,
+          data: conversations,
+        };
+      });
+
+      window.dispatchEvent(new CustomEvent<OpenChatEventDetail>(OPEN_CHAT_EVENT, {
+        detail: { conversationID: optimisticID },
+      }));
+
+      return { optimisticID, previousConversations };
+    },
+    onSuccess: (response, _target, context) => {
       if (!response.success || !response.data) {
+        if (context?.previousConversations) {
+          queryClient.setQueryData(chatConversationsQueryKey, context.previousConversations);
+        }
         toast.error(response.message || 'Unable to start conversation.');
         return;
       }
 
       const conversation = response.data;
 
-      queryClient.setQueryData<ApiResponse<typeof conversation[]>>(chatConversationsQueryKey, current => {
+      queryClient.setQueryData<ApiResponse<ChatConversation[]>>(chatConversationsQueryKey, current => {
         const existing = current?.data ?? [];
-        const conversations = existing.some(row => row.id === conversation.id)
-          ? existing.map(row => row.id === conversation.id ? conversation : row)
-          : [conversation, ...existing];
+        const withoutDuplicates = existing.filter(row =>
+          row.id !== conversation.id && row.id !== context?.optimisticID,
+        );
 
         return {
           message: current?.message ?? response.message,
           success: current?.success ?? true,
-          data: conversations,
+          data: [conversation, ...withoutDuplicates],
         };
       });
       void queryClient.invalidateQueries({ queryKey: chatConversationsQueryKey });
@@ -266,7 +375,10 @@ export const useStartDirectConversation = () => {
         detail: { conversationID: conversation.id },
       }));
     },
-    onError: error => {
+    onError: (error, _target, context) => {
+      if (context?.previousConversations) {
+        queryClient.setQueryData(chatConversationsQueryKey, context.previousConversations);
+      }
       toast.error(error instanceof Error ? error.message : 'Unable to start conversation.');
     },
   });

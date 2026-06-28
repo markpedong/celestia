@@ -1,7 +1,7 @@
 import { KeyboardEventHandler, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import type { DefaultValues, FieldErrors, FieldPath, FieldValues, Path } from 'react-hook-form';
+import type { DefaultValues, FieldErrors, FieldPath, FieldValues, Path, UseFormProps } from 'react-hook-form';
 import type { ZodType } from 'zod';
 import { toast } from 'sonner';
 
@@ -9,9 +9,17 @@ interface IUseValidate<TForm extends FieldValues> {
   defaultValues?: DefaultValues<TForm>;
   values?: TForm;
   schema?: ZodType<TForm, TForm>;
+  mode?: UseFormProps<TForm>['mode'];
+  reValidateMode?: UseFormProps<TForm>['reValidateMode'];
 }
 
-const useFormValidate = <TForm extends FieldValues>({ schema, defaultValues, values }: IUseValidate<TForm>) => {
+const useFormValidate = <TForm extends FieldValues>({
+  schema,
+  defaultValues,
+  values,
+  mode = 'onChange',
+  reValidateMode = 'onChange',
+}: IUseValidate<TForm>) => {
   const {
     getValues,
     setValue,
@@ -27,8 +35,8 @@ const useFormValidate = <TForm extends FieldValues>({ schema, defaultValues, val
     defaultValues,
     values,
     resolver: schema ? zodResolver(schema) : undefined,
-    mode: 'onChange',
-    reValidateMode: 'onChange',
+    mode,
+    reValidateMode,
   });
 
   const onChangeValue = useCallback(

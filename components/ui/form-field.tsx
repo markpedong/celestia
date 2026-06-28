@@ -1,6 +1,6 @@
 'use client';
 
-import { forwardRef, useState } from 'react';
+import { forwardRef, useRef, useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import classNames from 'classnames';
 import { Input } from './input';
@@ -28,6 +28,7 @@ const FormField = forwardRef<HTMLInputElement | HTMLTextAreaElement, FormFieldPr
     ref
   ) => {
     const [isVisible, setIsVisible] = useState(false);
+    const ignoreNextClickRef = useRef(false);
 
     const inputID = htmlFor ?? id ?? name;
     const isTextarea = as === 'textarea';
@@ -59,9 +60,9 @@ const FormField = forwardRef<HTMLInputElement | HTMLTextAreaElement, FormFieldPr
                 id={inputID}
                 name={name}
                 aria-invalid={fieldProps['aria-invalid'] ?? Boolean(error)}
-                autoComplete='off'
                 {...(fieldProps as React.ComponentProps<'input'>)}
                 type={isPassword && isVisible ? 'text' : inputType}
+                autoComplete={(fieldProps as React.ComponentProps<'input'>).autoComplete ?? 'off'}
                 className={classNames(className, {
                   [styles.passwordInput]: isPassword,
                 })}
@@ -71,7 +72,25 @@ const FormField = forwardRef<HTMLInputElement | HTMLTextAreaElement, FormFieldPr
           {isPassword && !children ? (
             <button
               type='button'
-              onClick={() => setIsVisible(visible => !visible)}
+              onMouseDown={event => event.preventDefault()}
+              onPointerDown={event => {
+                if (event.pointerType === 'mouse') return;
+
+                event.preventDefault();
+                ignoreNextClickRef.current = true;
+                window.setTimeout(() => {
+                  ignoreNextClickRef.current = false;
+                }, 500);
+                setIsVisible(visible => !visible);
+              }}
+              onClick={() => {
+                if (ignoreNextClickRef.current) {
+                  ignoreNextClickRef.current = false;
+                  return;
+                }
+
+                setIsVisible(visible => !visible);
+              }}
               className={styles.visibilityButton}
               aria-label={isVisible ? 'Hide password' : 'Show password'}
             >

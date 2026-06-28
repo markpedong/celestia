@@ -61,6 +61,8 @@ export const useAuthForm = (mode: AuthMode) => {
   const form = useFormValidate<AuthValues>({
     schema,
     defaultValues: { userName: isSignIn ? 'sign_in' : '', email: '', password: '', confirmPassword: '' },
+    mode: 'onSubmit',
+    reValidateMode: 'onSubmit',
   });
 
   const submit = (values: AuthValues) => {

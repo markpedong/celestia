@@ -139,15 +139,6 @@ export const createOrGetDirectConversation = async (userID: string, targetUserID
   const target = await prisma.users.findUnique({ where: { id: targetUserID }, select: { id: true } });
   if (!target) throw new Error('User not found.');
 
-  const sharedCommunity = await prisma.communityMembers.findFirst({
-    where: {
-      userID,
-      community: { memberships: { some: { userID: targetUserID } } },
-    },
-    select: { communitySlug: true },
-  });
-  if (!sharedCommunity) throw new Error('You can only message mutual community members.');
-
   const directKey = [userID, targetUserID].sort().join(':');
   const conversation = await prisma.chatConversation.upsert({
     where: { directKey },
