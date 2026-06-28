@@ -1,51 +1,32 @@
 'use client';
 
-import type { FC } from 'react';
 import Image from 'next/image';
+import type { PointerEvent } from 'react';
 import { useRef, useState } from 'react';
 import { useKeenSlider } from 'keen-slider/react';
 
 import 'keen-slider/keen-slider.min.css';
 
-const PostImageGallery: FC<{ images: string[] }> = ({ images }) => {
+const PostImageGallery = ({ images }: { images: string[] }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const targetSlideRef = useRef(0);
 
+  const syncSlide = (index: number) => {
+    targetSlideRef.current = index;
+    setCurrentSlide(index);
+  };
+
   const [sliderRef, instanceRef] = useKeenSlider<HTMLDivElement>({
     initial: 0,
-    loop: false,
-    mode: 'snap',
-    defaultAnimation: {
-      duration: 280,
-    },
-    slides: {
-      perView: 1,
-      spacing: 0,
-    },
-    slideChanged(slider) {
-      const nextSlide = slider.track.details.rel;
-
-      if (!slider.animator.active) {
-        targetSlideRef.current = nextSlide;
-        setCurrentSlide(nextSlide);
-      }
-    },
     animationEnded(slider) {
-      const nextSlide = slider.track.details.rel;
-      targetSlideRef.current = nextSlide;
-      setCurrentSlide(nextSlide);
+      syncSlide(slider.track.details.rel);
     },
     dragEnded(slider) {
-      const nextSlide = slider.track.details.rel;
-      targetSlideRef.current = nextSlide;
-      setCurrentSlide(nextSlide);
+      syncSlide(slider.track.details.rel);
     },
   });
 
   if (!images.length) return null;
-
-  const isFirstSlide = currentSlide === 0;
-  const isLastSlide = currentSlide === images.length - 1;
 
   const goBy = (delta: -1 | 1) => {
     const safeIndex = Math.max(0, Math.min(targetSlideRef.current + delta, images.length - 1));
@@ -53,8 +34,7 @@ const PostImageGallery: FC<{ images: string[] }> = ({ images }) => {
 
     if (safeIndex === targetSlideRef.current) return;
 
-    targetSlideRef.current = safeIndex;
-    setCurrentSlide(safeIndex);
+    syncSlide(safeIndex);
 
     if (!slider) return;
 
@@ -62,9 +42,21 @@ const PostImageGallery: FC<{ images: string[] }> = ({ images }) => {
     slider.moveToIdx(safeIndex, true, { duration: 280 });
   };
 
+  const handlePreviousPointerDown = (event: PointerEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    goBy(-1);
+  };
+
+  const handleNextPointerDown = (event: PointerEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    goBy(1);
+  };
+
   return (
     <div className='mt-5 w-full min-w-0 overflow-hidden'>
-      <div className='relative w-full overflow-hidden rounded-lg'>
+      <div className='relative w-full overflow-hidden rounded'>
         <div ref={sliderRef} className='keen-slider aspect-[3/2] w-full bg-muted'>
           {images.map((url, index) => (
             <div key={`${url}-${index}`} className='keen-slider__slide relative'>
@@ -85,26 +77,18 @@ const PostImageGallery: FC<{ images: string[] }> = ({ images }) => {
           <>
             <button
               type='button'
-              aria-disabled={isFirstSlide}
+              aria-disabled={currentSlide === 0}
               className='absolute left-3 top-1/2 z-20 -translate-y-1/2 rounded-full bg-black/50 px-3 py-2 text-white aria-disabled:opacity-30'
-              onPointerDown={event => {
-                event.preventDefault();
-                event.stopPropagation();
-                goBy(-1);
-              }}
+              onPointerDown={handlePreviousPointerDown}
             >
               ‹
             </button>
 
             <button
               type='button'
-              aria-disabled={isLastSlide}
+              aria-disabled={currentSlide === images.length - 1}
               className='absolute right-3 top-1/2 z-20 -translate-y-1/2 rounded-full bg-black/50 px-3 py-2 text-white aria-disabled:opacity-30'
-              onPointerDown={event => {
-                event.preventDefault();
-                event.stopPropagation();
-                goBy(1);
-              }}
+              onPointerDown={handleNextPointerDown}
             >
               ›
             </button>
