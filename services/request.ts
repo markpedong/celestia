@@ -24,15 +24,17 @@ export type TApiArgs = {
   endpoint: API_ENDPOINT;
   init?: TRequestInit;
   params?: Record<string, string>;
+  includeCookies?: boolean;
 };
 
-export const __api = async <TApiResponse = null>({ endpoint, params, init }: TApiArgs) => {
-  const parameters = await generateParameters(params);
-  const requestInput = process.env.DOMAIN + "/api" + endpoint + parameters;
-  const requestInit = await generateRequestInit(init);
+export const __api = async <TApiResponse = null>({ endpoint, params, init, includeCookies = true }: TApiArgs) => {
+  const parameters = generateParameters(params);
+  const requestInput = `${process.env.DOMAIN}/api${endpoint}${parameters}`;
+  const requestInit = await generateRequestInit(init, includeCookies);
+
   const response = await fetch<TApiResponse>(requestInput, requestInit);
 
-  return await response.json();
+  return response.json();
 };
 
 export const generateSuccessResponse = <T>(data: T, status = 200, message = "Data fetched successfully") => {

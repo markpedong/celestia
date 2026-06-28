@@ -57,6 +57,7 @@ export const getAuthorByID = async (id: string) => {
     params: { id },
     init: { method: REQUEST_METHOD.GET },
     endpoint: API_ENDPOINT.USER,
+    includeCookies: false,
   });
 
   return response.data;
@@ -66,6 +67,7 @@ export const listUserNames = async () => {
   const response = await __api<string[]>({
     init: { method: REQUEST_METHOD.GET },
     endpoint: API_ENDPOINT.USER,
+    includeCookies: false,
   })
   return response.data ?? [];
 };
@@ -127,6 +129,7 @@ export const listCommunity = async () => {
   const response = await __api<Tag[]>({
     init: { method: REQUEST_METHOD.GET },
     endpoint: API_ENDPOINT.COMMUNITY,
+    includeCookies: false,
   });
   return response.data ?? [];
 };
