@@ -6,7 +6,7 @@ import { Clock } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
-export const PostMeta: FC<PostMetaProps> = ({ author, authorStats, post, tagsBySlug, className, compact = false }) => {
+export const PostMeta: FC<PostMetaProps> = ({ author, authorStats, post, tagsBySlug, className, compact = false, afterTag }) => {
   const primarySlug = post.tagSlugs[0];
   const primaryTag = primarySlug ? tagsBySlug.get(primarySlug) : undefined;
   const displayAuthor = author ?? {
@@ -66,6 +66,7 @@ export const PostMeta: FC<PostMetaProps> = ({ author, authorStats, post, tagsByS
           >
             {primaryTag.label}
           </Link>
+          {afterTag}
         </>
       ) : null}
     </div>

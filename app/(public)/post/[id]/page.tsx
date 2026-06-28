@@ -1,4 +1,5 @@
 import VoteButtons from '@/components/feed/vote-buttons';
+import { ClientCommunityJoinButton } from '@/components/auth/client-community-join-button';
 import { ClientCommentComposerGate } from '@/components/auth/client-comment-composer-gate';
 import { ClientPostControls } from '@/components/auth/client-post-controls';
 import { PostMeta } from '@/components/feed/post-meta';
@@ -69,7 +70,13 @@ const Page = async ({ params }: PostPageProps) => {
             <VoteButtons target='post' targetID={post.id} score={score} userVote={0} isSignedIn={false} />
           </div>
           <div className='min-w-0 flex-1 p-5 md:p-6'>
-            <PostMeta author={author ?? undefined} post={post} tagsBySlug={tagsBySlug} className='mb-4' />
+            <PostMeta
+              author={author ?? undefined}
+              post={post}
+              tagsBySlug={tagsBySlug}
+              className='mb-4'
+              afterTag={communitySlug ? <ClientCommunityJoinButton communitySlug={communitySlug} /> : null}
+            />
             <h1 className='text-balance text-2xl font-bold leading-tight text-foreground md:text-3xl'>{post.title}</h1>
             {post.imageUrls.length > 0 ? (
               <PostImageGallery imageUrls={post.imageUrls} title={post.title} variant='gallery' />

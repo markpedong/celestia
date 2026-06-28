@@ -24,6 +24,8 @@ export const SetPasswordDialog = ({ open, onCloseAction, onSuccessAction }: SetP
   });
 
   const onSubmit = async ({ newPassword, confirmPassword }: { newPassword: string; confirmPassword: string }) => {
+    if (pending) return;
+
     startTransition(async () => {
       const result = await setPasswordAction({ newPassword, confirmPassword });
 
@@ -49,7 +51,7 @@ export const SetPasswordDialog = ({ open, onCloseAction, onSuccessAction }: SetP
         <FormField label='New password' type='password' error={errors.newPassword?.message} {...register('newPassword', { required: 'Enter a new password.', minLength: { value: 6, message: 'Use at least 6 characters.' } })} />
         <FormField label='Confirm new password' type='password' error={errors.confirmPassword?.message} {...register('confirmPassword')} />
 
-        <DialogActions submitLabel='Set password' submitLoading={pending} />
+        <DialogActions submitLabel='Set password' submitDisabled={pending} submitLoading={pending} />
       </form>
     </SettingsDialog>
   );

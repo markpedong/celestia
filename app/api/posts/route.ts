@@ -73,13 +73,8 @@ export const PATCH = async (request: Request) => {
   if (existing.authorID !== userID) return generateErrorResponse('Only the post author can edit this post.', 403);
 
   let imageUrls = removeImages ? [] : existing.imageUrls;
-  let replacesExistingImages = Boolean(removeImages);
   try {
-    const uploadedImages = parsePostImageUrls(images);
-    if (uploadedImages.length > 0) {
-      imageUrls = uploadedImages;
-      replacesExistingImages = true;
-    }
+    if (Array.isArray(images)) imageUrls = parsePostImageUrls(images);
   } catch (error) {
     return generateErrorResponse(getUploadErrorMessage(error, 'We could not upload your images. Please try again.'));
   }
@@ -89,9 +84,10 @@ export const PATCH = async (request: Request) => {
     data: { title: String(title ?? '').trim(), body: String(body ?? '').trim(), imageUrls },
   });
 
-  if (replacesExistingImages && existing.imageUrls.length > 0) {
+  const removedImageUrls = existing.imageUrls.filter(imageUrl => !imageUrls.includes(imageUrl));
+  if (removedImageUrls.length > 0) {
     try {
-      await removeStoredImages(existing.imageUrls, 'post-images');
+      await removeStoredImages(removedImageUrls, 'post-images');
     } catch {
       // Post save already succeeded; stale storage cleanup can be retried later.
     }

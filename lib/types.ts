@@ -208,6 +208,7 @@ export type PostMetaProps = WithClassName<{
   post: Pick<Post, 'createdAt' | 'tagSlugs'>;
   tagsBySlug: Map<string, Tag>;
   compact?: boolean;
+  afterTag?: ReactNode;
 }>;
 
 export type VoteButtonsProps = {

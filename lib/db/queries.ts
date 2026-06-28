@@ -546,7 +546,7 @@ export const getCommentTree = async (
   return nestCommentRows(enriched);
 };
 
-export const batchUserVotesForComments = async (userID: string, commentIDs: string[]): Promise<Map<string, -1 | 0 | 1>> => {
+const batchUserVotesForComments = async (userID: string, commentIDs: string[]): Promise<Map<string, -1 | 0 | 1>> => {
   if (commentIDs.length === 0) return new Map();
   const rows = await prisma.vote.findMany({
     where: {
@@ -562,7 +562,7 @@ export const batchUserVotesForComments = async (userID: string, commentIDs: stri
   return m;
 }
 
-export const batchCommentScores = async (commentIDs: string[]): Promise<Map<string, number>> => {
+const batchCommentScores = async (commentIDs: string[]): Promise<Map<string, number>> => {
   if (commentIDs.length === 0) return new Map();
 
   const rows = await prisma.vote.groupBy({
@@ -582,7 +582,7 @@ export const batchCommentScores = async (commentIDs: string[]): Promise<Map<stri
   return m
 }
 
-export const listCommentsForPost = async (postID: string): Promise<Comment[]> => {
+const listCommentsForPost = async (postID: string): Promise<Comment[]> => {
   const rows = await prisma.comment.findMany({ where: { postID: postID } });
 
   return rows.map(c => ({

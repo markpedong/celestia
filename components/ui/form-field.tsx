@@ -55,11 +55,11 @@ const FormField = forwardRef<HTMLInputElement | HTMLTextAreaElement, FormFieldPr
                 ref={ref as React.Ref<HTMLInputElement>}
                 id={inputID}
                 name={name}
-                type={isPassword && isVisible ? 'text' : inputType}
                 aria-invalid={fieldProps['aria-invalid'] ?? Boolean(error)}
-                className={cn(className, isPassword && 'pr-10')}
                 autoComplete='off'
                 {...(fieldProps as React.ComponentProps<'input'>)}
+                type={isPassword && isVisible ? 'text' : inputType}
+                className={cn(className, isPassword && 'pr-10')}
               />
             ))}
 

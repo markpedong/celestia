@@ -33,9 +33,7 @@ export const CommentNode: FC<CommentNodeProps> = ({
       <div className='relative flex gap-3'>
         <div className='relative flex w-9 shrink-0 justify-center'>
           <UserAvatar user={node.author} />
-          {hasChildren ? (
-            <span className='absolute top-10 bottom-0 w-px rounded-full bg-border hover:bg-primary/50' aria-hidden />
-          ) : null}
+          <span className='absolute top-10 bottom-[-0.75rem] w-px rounded-full bg-border/80 transition-colors hover:bg-primary/50' aria-hidden />
         </div>
         <div className='min-w-0 flex-1 pb-2'>
           <div className='flex flex-wrap items-center gap-2 text-xs text-muted-foreground'>
@@ -105,7 +103,7 @@ export const CommentNode: FC<CommentNodeProps> = ({
       </div>
 
       {node.children.length > 0 && !hideComments && (
-        <ul className='mt-2 ml-4 space-y-3 border-l border-border/80 pl-5'>
+        <ul className='relative mt-2 ml-4 space-y-3 border-l border-border/80 pl-5'>
           {node.children.map(ch => (
             <CommentNode
               key={ch.id}

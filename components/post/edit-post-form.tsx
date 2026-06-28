@@ -17,6 +17,7 @@ import { useUpdatePost } from '@/hooks/useQueries';
 
 export const EditPostForm: FC<EditPostFormProps> = ({ post }) => {
   const [uploadingImages, setUploadingImages] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const { editPostSchema } = useFormSchema();
   const updatePost = useUpdatePost();
   const {
@@ -28,7 +29,7 @@ export const EditPostForm: FC<EditPostFormProps> = ({ post }) => {
     schema: editPostSchema,
     defaultValues: { title: post.title, body: post.body },
   });
-  const pending = updatePost.isPending;
+  const pending = updatePost.isPending || isNavigating;
   const onSubmit: FormEventHandler<HTMLFormElement> = event => {
     const formData = new FormData(event.currentTarget);
     void handleSubmit(values => {
@@ -37,6 +38,11 @@ export const EditPostForm: FC<EditPostFormProps> = ({ post }) => {
         ...values,
         images: JSON.parse(String(formData.get('images') ?? '[]')) as string[],
         removeImages: String(formData.get('removeImages') ?? '') === 'true',
+      }, {
+        onSuccess: result => {
+          if (result && !('error' in result)) setIsNavigating(true);
+        },
+        onError: () => setIsNavigating(false),
       });
     })(event);
   };

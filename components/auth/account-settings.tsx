@@ -42,6 +42,7 @@ export const AccountSettings = () => {
 
   const identities = user?.identities ?? [];
   const hasProvider = (provider: 'google' | 'apple') => identities.some(identity => identity.provider === provider);
+  const hasOAuthProvider = identities.some(identity => identity.provider !== 'email');
 
   // OAuth identities stay OAuth identities after a password is added. The
   // server-owned flag is therefore the reliable source for linked accounts.
@@ -50,6 +51,11 @@ export const AccountSettings = () => {
     user?.app_metadata.has_password === true ||
     identities.some(identity => identity.provider === 'email') ||
     (Array.isArray(user?.app_metadata.providers) && user.app_metadata.providers.includes('email'));
+  const hasPasskeyFallbackSignIn = hasPassword || hasOAuthProvider;
+  const isCancelledAuthError = (error: unknown) => {
+    const message = error instanceof Error ? error.message : typeof error === 'string' ? error : '';
+    return /cancel|abort|not allowed|timed out/i.test(message);
+  };
 
   const copyText = async (text: string, successMessage: string) => {
     try {
@@ -153,7 +159,9 @@ export const AccountSettings = () => {
 
     setPending(null);
 
-    if (error) toast.error(error.message);
+    if (error) {
+      if (!isCancelledAuthError(error)) toast.error(error.message);
+    }
     else {
       toast.success('Passkey added.');
       await refreshSecurity();
@@ -163,7 +171,7 @@ export const AccountSettings = () => {
   const removePasskey = async (passkeyID: string) => {
     if (!(await hasAal2Session())) return;
 
-    if (passkeys.length === 1 && identities.length < 2) {
+    if (passkeys.length === 1 && !hasPasskeyFallbackSignIn) {
       toast.error('Add another sign-in method before removing your last passkey.');
       return;
     }
@@ -179,6 +187,31 @@ export const AccountSettings = () => {
       toast.success('Passkey removed.');
       await refreshSecurity();
     }
+  };
+
+  const removeAllPasskeys = async () => {
+    if (!(await hasAal2Session()) || passkeys.length === 0) return;
+
+    if (!hasPasskeyFallbackSignIn) {
+      toast.error('Add another sign-in method before revoking all passkeys.');
+      return;
+    }
+
+    setPending('passkeys-all');
+
+    const results = await Promise.all(passkeys.map(passkey => supabase.auth.passkey.delete({ passkeyId: passkey.id })));
+    const firstError = results.find(result => result.error)?.error;
+
+    setPending(null);
+
+    if (firstError) {
+      toast.error(firstError.message);
+      await refreshSecurity();
+      return;
+    }
+
+    toast.success('All passkeys revoked.');
+    await refreshSecurity();
   };
 
   const enrollMfa = async () => {
@@ -263,7 +296,6 @@ export const AccountSettings = () => {
     setEnrollment(null);
     setMfaCode('');
     setDialog(null);
-    toast.success('Authenticator setup cancelled.');
     await refreshSecurity();
   };
 
@@ -370,6 +402,19 @@ export const AccountSettings = () => {
               </Button>
             </div>
           ))}
+          {passkeys.length > 0 ? (
+            <div className='flex justify-end'>
+              <Button
+                size='xs'
+                variant='ghost'
+                onClick={() => void removeAllPasskeys()}
+                isLoading={pending === 'passkeys-all'}
+                disabled={!hasPasskeyFallbackSignIn}
+              >
+                Revoke all passkeys
+              </Button>
+            </div>
+          ) : null}
         </div>
 
         <div className='space-y-3 rounded-md border border-border p-3'>
@@ -482,8 +527,6 @@ export const AccountSettings = () => {
           setting={dialog.setting}
           onCloseAction={() => setDialog(null)}
           onVerifiedAction={async result => {
-            toast.success(result.success);
-
             if (result.setting === 'passkey') {
               setDialog(null);
               await registerPasskey();

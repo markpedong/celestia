@@ -4,10 +4,12 @@ import type { FC } from 'react';
 import type { CommentSubmitResult, CommentThreadProps, EnrichedCommentNode, PendingCommentInput } from '@/lib/types';
 import { CommentNode } from './comment-node';
 import { CommentSubmissionContext, createPendingComment } from './comment-submission-context';
+import { useRouter } from 'next/navigation';
 import { useOptimistic, useState, useTransition } from 'react';
 import { useCreateComment } from '@/hooks/useQueries';
 
 const CommentThread: FC<CommentThreadProps> = ({ tree, postAuthorID, sessionUser, communitySlug, children }) => {
+  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const createCommentMutation = useCreateComment();
   const [activeReplyID, setActiveReplyID] = useState<string | null>(null);
@@ -19,8 +21,12 @@ const CommentThread: FC<CommentThreadProps> = ({ tree, postAuthorID, sessionUser
   const submitComment = (pendingComment: PendingCommentInput) =>
     new Promise<CommentSubmitResult>(resolve => {
       startTransition(async () => {
+        addOptimisticComment(createPendingComment(pendingComment));
         const result = await createCommentMutation.mutateAsync(pendingComment);
-        if (result?.ok) addOptimisticComment(createPendingComment(pendingComment));
+        if (result?.ok) {
+          setActiveReplyID(null);
+          router.refresh();
+        }
         resolve(result);
       });
     });
@@ -46,13 +52,13 @@ const CommentThread: FC<CommentThreadProps> = ({ tree, postAuthorID, sessionUser
 };
 
 const appendComment = (tree: EnrichedCommentNode[], comment: EnrichedCommentNode): EnrichedCommentNode[] => {
-  if (!comment.parentID) return [...tree, comment];
+  if (!comment.parentID) return [comment, ...tree];
 
   for (let index = 0; index < tree.length; index += 1) {
     const node = tree[index];
     if (node.id === comment.parentID) {
       return tree.map((candidate, candidateIndex) =>
-        candidateIndex === index ? { ...candidate, children: [...candidate.children, comment] } : candidate
+        candidateIndex === index ? { ...candidate, children: [comment, ...candidate.children] } : candidate
       );
     }
 

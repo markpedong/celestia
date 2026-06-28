@@ -1,7 +1,7 @@
 import { USER_FIELDS } from '@/constants';
 import { getCurrentUserID } from '@/lib/auth';
 import { getUserByUserName } from '@/lib/db/queries';
-import { profileSettingsSchema } from '@/lib/form-schemas';
+import { profileDetailsSchema } from '@/lib/form-schemas';
 import { prisma } from '@/lib/prisma';
 import { generateErrorResponse, generateSuccessResponse } from '@/services/request';
 import pick from 'lodash/pick';
@@ -40,14 +40,16 @@ export const POST = async (request: Request) => {
     return generateErrorResponse('No fields to update.', 400);
   }
 
-  const profile = await prisma.users.findUnique({ where: { id: userID }, select: { userName: true } });
+  const profile = await prisma.users.findUnique({
+    where: { id: userID },
+    select: { userName: true, displayName: true, bio: true },
+  });
   if (!profile) return generateErrorResponse('User not found.', 404);
 
   if ('displayName' in data || 'bio' in data) {
-    const parsed = profileSettingsSchema.safeParse({
-      userName: profile.userName,
-      displayName: data.displayName ?? '',
-      bio: data.bio ?? '',
+    const parsed = profileDetailsSchema.safeParse({
+      displayName: data.displayName ?? profile.displayName ?? '',
+      bio: data.bio ?? profile.bio ?? '',
     });
     if (!parsed.success) return generateErrorResponse(parsed.error.issues[0]?.message ?? 'Check your profile details.');
     data.displayName = parsed.data.displayName || null;
