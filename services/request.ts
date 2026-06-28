@@ -33,8 +33,10 @@ export const __api = async <TApiResponse = null>({ endpoint, params, init, inclu
   const requestInit = await generateRequestInit(init, includeCookies);
 
   const response = await fetch<TApiResponse>(requestInput, requestInit);
+  const responseJSON = await response.json();
+  console.log("responseJSON", responseJSON);
 
-  return response.json();
+  return responseJSON
 };
 
 export const generateSuccessResponse = <T>(data: T, status = 200, message = "Data fetched successfully") => {

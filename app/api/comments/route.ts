@@ -1,5 +1,5 @@
 import { getCurrentUserID } from '@/lib/auth';
-import { getCommentTree, listCommentsByAuthor, listVotedCommentsByUser } from '@/lib/db/comment.queries';
+import { getCommentTree, listComments, listVotedCommentsByUser } from '@/lib/db/comment.queries';
 import { prisma } from '@/lib/prisma';
 import type { Comment } from '@/lib/types';
 import { generateErrorResponse, generateSuccessResponse } from '@/services/request';
@@ -39,7 +39,7 @@ export const GET = async (request: Request) => {
   const viewerID = searchParams.get('viewerID') ?? undefined;
 
   if (postID) return generateSuccessResponse(await getCommentTree(postID, viewerID));
-  if (authorID) return generateSuccessResponse(await listCommentsByAuthor(authorID));
+  if (authorID) return generateSuccessResponse(await listComments({ authorID }));
   if (votedBy && (value === '1' || value === '-1')) {
     return generateSuccessResponse(await listVotedCommentsByUser(votedBy, Number(value) as -1 | 1));
   }

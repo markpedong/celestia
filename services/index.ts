@@ -25,6 +25,9 @@ export const getProfileByUserName = async ({ username }: { username: string }) =
     includeCookies: false,
   });
 
+  console.log("response", response);
+
+  
   return response;
 };
 

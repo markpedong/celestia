@@ -3,28 +3,21 @@
 import { STALE_TIME } from '@/constants';
 import { createComment, createCommunity, createPost, getCommunity, getCommunityFeed, getCommunityMember, getCommunityStats, getOwnedCommunities, getProfileByUserName, joinCommunity, updateCommunity, updatePost, updateProfile, uploadImages, vote } from '@/services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { Session } from '@supabase/supabase-js';
 import { useSession } from './useSession';
 import type { ApiResponse, CommentFormState, CommunityStats, FeedSort, ImageBucket, VoteActionValue, VoteTarget } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-
-const getUserNameByAuth = (user?: Session['user']) => {
-  const userName = user?.user_metadata.userName;
-  return typeof userName === 'string' ? userName : user?.email?.split('@')[0] ?? '';
-};
 
 export const communityMemberQueryKey = (slug: string) => ['community-member', slug] as const;
 export const communityStatsQueryKey = (slug: string) => ['community-stats', slug] as const;
 
 export const useGetProfile = () => {
   const { user: authUser } = useSession();
-  const username = getUserNameByAuth(authUser);
 
   return useQuery({
-    queryKey: ['profile', username],
-    queryFn: () => getProfileByUserName({ username }),
-    enabled: Boolean(username),
+    queryKey: ['profile', authUser?.id],
+    queryFn: () => getProfileByUserName(authUser?.user_metadata.userName),
+    enabled: Boolean(authUser?.id),
     staleTime: STALE_TIME,
   });
 };

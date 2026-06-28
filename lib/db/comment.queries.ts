@@ -3,11 +3,10 @@ import { Prisma } from '@/lib/generated/prisma/client';
 import { nestCommentRows } from '@/lib/comment-tree';
 import { prisma } from '@/lib/prisma';
 import type { EnrichedCommentNode, UserCommentActivity } from '@/lib/types';
-import { mapCommentRow } from './mappers';
 import { batchAuthorsForIDs } from './user.queries';
 import { listVotedTargetIDs, userVotesForTargets, voteSumsForTargets } from './vote.queries';
 
-const listComments = async (where: Prisma.CommentWhereInput): Promise<UserCommentActivity[]> => {
+export const listComments = async (where: Prisma.CommentWhereInput): Promise<UserCommentActivity[]> => {
   const rows = await prisma.comment.findMany({
     where,
     orderBy: { createdAt: 'desc' },
@@ -24,10 +23,6 @@ const listComments = async (where: Prisma.CommentWhereInput): Promise<UserCommen
   }));
 };
 
-export const listCommentsByAuthor = async (authorID: string): Promise<UserCommentActivity[]> => {
-  return listComments({ authorID });
-};
-
 export const listVotedCommentsByUser = async (
   userID: string,
   value: -1 | 1,
@@ -36,16 +31,18 @@ export const listVotedCommentsByUser = async (
   return commentIDs.length ? listComments({ id: { in: commentIDs } }) : [];
 };
 
-const listCommentsForPost = async (postID: string) => {
-  const rows = await prisma.comment.findMany({ where: { postID } });
-  return rows.map(mapCommentRow);
-};
-
 export const getCommentTree = async (
   postID: string,
   sessionID?: string,
 ): Promise<EnrichedCommentNode[]> => {
-  const flat = await listCommentsForPost(postID);
+  const flat = (await prisma.comment.findMany({ where: { postID } })).map((row) => ({
+    id: row.id,
+    postID: row.postID,
+    authorID: row.authorID,
+    parentID: row.parentID,
+    body: row.body,
+    createdAt: row.createdAt.toISOString(),
+  }));
   if (flat.length === 0) return [];
 
   const authorIDs = uniq(flat.map(comment => comment.authorID));

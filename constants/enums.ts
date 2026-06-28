@@ -1,5 +1,6 @@
 export enum API_ENDPOINT {
   USER = '/user',
+  USERS = '/users',
   USER_COMMUNITIES = '/user/communities',
   USER_OWNED_COMMUNITIES = '/user/owned-communities',
   USER_STATS = '/user/stats',

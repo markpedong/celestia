@@ -6,7 +6,7 @@ import { ProfileActivityTabs } from '@/components/profile/profile-activity-tabs'
 import { ProfileManagedCommunities } from '@/components/profile/profile-managed-communities';
 import { EmptyState } from '@/components/ui/empty-state';
 import { StatGrid } from '@/components/ui/stat-grid';
-import { listCommentsByAuthor, listVotedCommentsByUser } from '@/lib/db/comment.queries';
+import { listComments, listVotedCommentsByUser } from '@/lib/db/comment.queries';
 import { listCommunity } from '@/lib/db/community.queries';
 import { listPostsByAuthor, listVotedPostsByUser } from '@/lib/db/post.queries';
 import {
@@ -51,7 +51,7 @@ const UserPage = async ({ params }: UserPageProps) => {
       listCommunity(),
       getUserStats(profile.id),
       listPostsByAuthor(profile.id, 'new', undefined),
-      listCommentsByAuthor(profile.id),
+      listComments({ authorID: profile.id }),
       listVotedPostsByUser(profile.id, 1, undefined),
       listVotedCommentsByUser(profile.id, 1),
       listVotedPostsByUser(profile.id, -1, undefined),
@@ -63,7 +63,7 @@ const UserPage = async ({ params }: UserPageProps) => {
     Promise.all(authorIDs.map(getAuthorByID)),
     batchUserStatsForIDs(authorIDs),
   ]);
-  const authorsByID = new Map(authors.flatMap(author => author ? [[author.id, author] as const] : []));
+  const authorsByID = new Map(authors.flatMap(author => (author ? [[author.id, author] as const] : [])));
   const tagsBySlug = new Map(tags.map(tag => [tag.slug, tag]));
   const hasActivity =
     posts.length +

@@ -1,11 +1,10 @@
 import type {
-  CommentModel,
   CommunityMembersModel,
   CommunityModel,
   PostModel,
-  UsersModel,
+  UsersModel
 } from '@/lib/generated/prisma/models';
-import type { Comment, Community, CommunityMember, Post, SearchTagSuggestion, Tag } from '@/lib/types';
+import type { Community, CommunityMember, Post, SearchTagSuggestion, Tag } from '@/lib/types';
 
 export const mapTagRow = (row: Pick<CommunityModel, 'slug' | 'label' | 'hashColor' | 'avatarUrl'>): Tag => ({
   slug: row.slug,
@@ -38,15 +37,6 @@ export const mapPostRow = (
   tagSlugs,
   createdAt: row.createdAt.toISOString(),
   commentCount,
-});
-
-export const mapCommentRow = (row: CommentModel): Comment => ({
-  id: row.id,
-  postID: row.postID,
-  authorID: row.authorID,
-  parentID: row.parentID,
-  body: row.body,
-  createdAt: row.createdAt.toISOString(),
 });
 
 export const mapCommunityMemberRow = (
