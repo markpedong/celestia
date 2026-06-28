@@ -3,35 +3,37 @@
 import { type FC } from 'react';
 import { Plus, Zap } from 'lucide-react';
 import Link from 'next/link';
-import { cn } from '@/lib/utils';
+import classNames from 'classnames';
 import { buttonVariants } from '../ui/button';
 import SearchBox from './search-box';
 import type { NavbarProps } from '@/lib/types';
 import { useGetProfile } from '@/hooks/useQueries';
 import { AccountMenuDynamic } from '@/components/dynamic-import';
+import styles from './navbar.module.scss';
 
 const Navbar: FC<NavbarProps> = ({ trending, communities }) => {
   const user = useGetProfile().data?.data;
 
   return (
-    <header className='celestia-nav-shadow sticky top-0 z-50 border-b border-border/80 bg-background/88 backdrop-blur-xl'>
-      <div className='mx-auto flex h-14 w-full max-w-400 items-center gap-3 px-4'>
-        <Link href='/' className='group flex shrink-0 items-center gap-2 font-semibold tracking-tight text-foreground'>
-          <span className='celestia-brand-mark size-8'>
-            <Zap className='size-4 fill-current' aria-hidden />
+    <header className={classNames('celestia-nav-shadow', styles.header)}>
+      <div className={styles.inner}>
+        <Link href='/' className={classNames('group', styles.brand)}>
+          <span className={classNames('celestia-brand-mark', styles.mark)}>
+            <Zap className={styles.brandIcon} aria-hidden />
           </span>
-          <span className='hidden text-lg font-bold tracking-wide sm:inline'>Celestia</span>
+          <span className={styles.name}>Celestia</span>
         </Link>
 
         <SearchBox trending={trending} communities={communities} />
 
         {user ? (
-          <div className='ml-auto flex shrink-0 items-center gap-2'>
+          <div className={styles.actions}>
             <Link
               href='/submit'
-              className={cn(
+              className={classNames(
                 buttonVariants({ variant: 'default', size: 'sm' }),
-                'celestia-primary-action hidden sm:inline-flex'
+                'celestia-primary-action',
+                styles.newPost
               )}
             >
               <Plus />
@@ -42,13 +44,13 @@ const Navbar: FC<NavbarProps> = ({ trending, communities }) => {
         ) : null}
 
         {!user ? (
-          <div className='ml-auto flex items-center gap-2'>
-            <Link href={'/auth/sign-in'} className={cn(buttonVariants({ variant: 'ghost', size: 'default' }))}>
+          <div className={styles.guestActions}>
+            <Link href={'/auth/sign-in'} className={classNames(buttonVariants({ variant: 'ghost', size: 'default' }))}>
               Sign in
             </Link>
             <Link
               href={'/auth/sign-up'}
-              className={cn(buttonVariants({ variant: 'default' }), 'celestia-primary-action')}
+              className={classNames(buttonVariants({ variant: 'default' }), 'celestia-primary-action')}
             >
               Join
             </Link>

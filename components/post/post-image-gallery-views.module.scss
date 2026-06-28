@@ -1,0 +1,81 @@
+@reference "../../app/globals.css";
+
+.placeholder {
+  @apply size-full;
+}
+
+.placeholderInner {
+  @apply flex size-full flex-col items-center justify-center gap-1 bg-muted text-xs text-muted-foreground;
+}
+
+.zoomOverlay {
+  @apply absolute inset-0 flex items-center justify-center bg-foreground/0 text-transparent transition-colors hover:bg-foreground/35 hover:text-background;
+}
+
+.zoomOverlaySubtle {
+  @apply hover:bg-foreground/30;
+}
+
+.thumbnail {
+  @apply relative h-20 w-28 shrink-0 self-center overflow-hidden rounded border border-border/80 shadow-inner;
+}
+
+.thumbnailImage {
+  @apply object-cover transition-transform duration-200 hover:scale-105;
+}
+
+.countBadge {
+  @apply absolute right-1.5 bottom-1.5 inline-flex items-center gap-1 rounded-md bg-background/90 px-1.5 py-0.5 text-[10px] font-semibold text-foreground shadow-sm;
+}
+
+.feed {
+  @apply relative mt-4 overflow-hidden rounded border border-border/80 bg-muted;
+}
+
+.feedButton {
+  @apply relative aspect-[16/9] w-full text-left md:aspect-[2.35/1];
+}
+
+.feedImage {
+  @apply object-cover transition-transform duration-300 group-hover:scale-[1.015];
+}
+
+.singleWrap {
+  @apply mt-5;
+}
+
+.singleButton {
+  @apply relative aspect-[16/9] w-full overflow-hidden rounded-2xl border border-border/80 bg-muted text-left;
+}
+
+.gallery {
+  @apply relative mt-5 overflow-hidden rounded border border-border/80 bg-muted;
+}
+
+.track {
+  @apply flex transition-transform duration-300 ease-out;
+}
+
+.slide {
+  @apply relative aspect-[16/9] w-full shrink-0 text-left;
+}
+
+.galleryImage {
+  @apply object-cover transition-transform duration-200 hover:scale-[1.02];
+}
+
+.nav {
+  @apply absolute top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-full bg-background/90 text-foreground shadow-sm transition-colors hover:bg-background;
+}
+
+.previous {
+  @apply left-3;
+}
+
+.next {
+  @apply right-3;
+}
+
+.counter {
+  @apply absolute right-3 bottom-3 rounded-md bg-background/90 px-2 py-1 text-xs font-medium text-foreground shadow-sm;
+}

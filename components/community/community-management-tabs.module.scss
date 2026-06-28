@@ -1,0 +1,33 @@
+@reference "../../app/globals.css";
+
+.card {
+  @apply overflow-hidden;
+}
+
+.nav {
+  @apply relative flex overflow-x-auto border-b border-border/80 bg-muted/20 px-2 text-sm font-semibold;
+}
+
+.tab {
+  @apply relative inline-flex h-12 shrink-0 items-center gap-2 px-3 text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset md:px-4;
+}
+
+.activeTab {
+  @apply text-primary;
+}
+
+.icon {
+  @apply size-4;
+}
+
+.count {
+  @apply rounded bg-background px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground;
+}
+
+.indicator {
+  @apply pointer-events-none absolute bottom-0 left-0 h-0.5 bg-primary transition-[transform,width] duration-200 ease-out;
+}
+
+.panel {
+  @apply relative overflow-hidden p-4 md:p-5;
+}

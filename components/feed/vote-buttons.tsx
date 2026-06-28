@@ -1,14 +1,16 @@
 'use client';
 
 import type { FC } from 'react';
-import { cn, formatCount } from '@/lib/utils';
+import { formatCount } from '@/lib/utils';
 import type { VoteActionValue, VoteButtonsProps, VoteValue } from '@/lib/types';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import classNames from 'classnames';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { useSession } from '@/hooks/useSession';
 import { useVote } from '@/hooks/useQueries';
+import styles from './vote-buttons.module.scss';
 
 const VoteButtons: FC<VoteButtonsProps> = ({ target, targetID, score, userVote, isSignedIn = false }) => {
   const router = useRouter();
@@ -60,35 +62,38 @@ const VoteButtons: FC<VoteButtonsProps> = ({ target, targetID, score, userVote, 
     });
   };
 
-  const buttonClass = isPost ? 'p-1.5' : 'p-1';
-  const scoreClass = isPost ? 'min-w-9 text-xs' : 'min-w-6';
-
   return (
     <div
-      className={cn(
-        'inline-flex items-center overflow-hidden text-sm',
-        isPost ? 'flex-col gap-0.5 rounded-none border-0 bg-transparent shadow-none' : ''
-      )}
+      className={classNames(styles.root, {
+        [styles.postRoot]: isPost,
+      })}
     >
       <button
         onClick={() => vote(1)}
         disabled={voteMutation.isPending}
-        className={cn(
-          'flex items-center rounded-lg transition-all hover:scale-110 hover:bg-muted disabled:opacity-50',
-          buttonClass,
-          voteState.userVote === 1 ? 'text-upvote' : 'text-muted-foreground hover:text-upvote'
+        className={classNames(
+          styles.button,
+          styles.commentButton,
+          styles.upvoteInactive,
+          {
+            [styles.postButton]: isPost,
+            [styles.upvoteActive]: voteState.userVote === 1,
+          }
         )}
         aria-label={isPost ? 'Upvote' : 'Upvote comment'}
         aria-pressed={voteState.userVote === 1}
       >
-        <ChevronUp className='size-4' />
+        <ChevronUp className={styles.icon} />
       </button>
       <span
-        className={cn(
-          'text-center font-mono font-medium tabular-nums',
-          scoreClass,
-          voteState.userVote === 1 && 'text-upvote',
-          voteState.userVote === -1 && 'text-downvote'
+        className={classNames(
+          styles.score,
+          styles.commentScore,
+          {
+            [styles.postScore]: isPost,
+            [styles.upvoteActive]: voteState.userVote === 1,
+            [styles.downvoteActive]: voteState.userVote === -1,
+          }
         )}
       >
         {formatCount(voteState.score)}
@@ -96,15 +101,19 @@ const VoteButtons: FC<VoteButtonsProps> = ({ target, targetID, score, userVote, 
       <button
         onClick={() => vote(-1)}
         disabled={voteMutation.isPending}
-        className={cn(
-          'flex items-center rounded-lg transition-all hover:scale-110 hover:bg-muted disabled:opacity-50',
-          buttonClass,
-          voteState.userVote === -1 ? 'text-downvote' : 'text-muted-foreground hover:text-downvote'
+        className={classNames(
+          styles.button,
+          styles.commentButton,
+          styles.downvoteInactive,
+          {
+            [styles.postButton]: isPost,
+            [styles.downvoteActive]: voteState.userVote === -1,
+          }
         )}
         aria-label={isPost ? 'Downvote' : 'Downvote comment'}
         aria-pressed={voteState.userVote === -1}
       >
-        <ChevronDown className='size-4' />
+        <ChevronDown className={styles.icon} />
       </button>
     </div>
   );

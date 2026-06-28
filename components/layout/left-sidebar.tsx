@@ -1,8 +1,8 @@
 'use client';
 
 import type { FC } from 'react';
-import { cn } from '@/lib/utils';
 import { BarChart2, Compass, Hash, Home, Radio } from 'lucide-react';
+import classNames from 'classnames';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import LeftTags from './left-tags';
@@ -10,6 +10,7 @@ import JoinCtaCard from './join-cta';
 import { Tag } from '@/lib/types';
 import packageJson from '@/package.json';
 import { useSession } from '@/hooks/useSession';
+import styles from './left-sidebar.module.scss';
 
 const nav = [
   { href: '/', label: 'Home', icon: Home },
@@ -36,8 +37,8 @@ const LeftSidebar: FC<{
   const { session } = useSession();
 
   return (
-    <aside className='sticky top-14 hidden h-[calc(100vh-3.5rem)] w-56 shrink-0 border-r border-border/80 bg-sidebar/50 lg:block'>
-      <nav className='space-y-1 p-4'>
+    <aside className={styles.sidebar}>
+      <nav className={styles.nav}>
         {nav.map(item => {
           const active = pathname === item.href;
 
@@ -45,28 +46,26 @@ const LeftSidebar: FC<{
             <Link
               key={item.href}
               href={item.href}
-              className={cn(
-                'group flex items-center gap-3 rounded px-3 py-2.5 text-sm font-medium text-muted-foreground celestia-hover-surface',
-                active && 'bg-primary/12 text-primary ring-1 ring-primary/20'
-              )}
+              className={classNames('group celestia-hover-surface', styles.link, {
+                [styles.activeLink]: active,
+              })}
             >
               <item.icon
-                className={cn(
-                  'size-4 shrink-0',
-                  active ? 'text-primary drop-shadow-[0_0_5px_var(--primary)]' : 'text-muted-foreground'
-                )}
+                className={classNames(styles.icon, {
+                  [styles.activeIcon]: active,
+                })}
               />
               {item.label}
               {active ? (
-                <span className='ml-auto h-3.5 w-1 rounded-full bg-primary shadow-[0_0_8px] shadow-primary/40' />
+                <span className={styles.indicator} />
               ) : null}
             </Link>
           );
         })}
       </nav>
-      <div className='mt-4 px-4'>
-        <p className='mb-3 flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-muted-foreground'>
-          <Hash className='size-3' />
+      <div className={styles.tags}>
+        <p className={styles.tagsLabel}>
+          <Hash className={styles.tagsIcon} />
           {communityLabel}
         </p>
         <LeftTags
@@ -75,11 +74,11 @@ const LeftSidebar: FC<{
         />
       </div>
       {session === null && (
-        <div className='mt-8 px-4'>
+        <div className={styles.cta}>
           <JoinCtaCard />
         </div>
       )}
-      <p className='mt-auto px-7 pb-4 pt-8 font-mono text-[10px] leading-relaxed text-muted-foreground/50'>
+      <p className={styles.version}>
         Celestia v{packageJson.version} · Community Forum
       </p>
     </aside>

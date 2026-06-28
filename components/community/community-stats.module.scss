@@ -1,0 +1,5 @@
+@reference "../../app/globals.css";
+
+.stats {
+  @apply max-w-lg md:max-w-none;
+}

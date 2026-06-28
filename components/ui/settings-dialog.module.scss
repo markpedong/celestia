@@ -1,0 +1,13 @@
+@reference "../../app/globals.css";
+
+.content {
+  @apply p-5 sm:max-w-md sm:p-6;
+}
+
+.header {
+  @apply pr-8;
+}
+
+.body {
+  @apply [&_input]:bg-background;
+}

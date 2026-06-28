@@ -2,11 +2,12 @@
 
 import { forwardRef, useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import classNames from 'classnames';
 import { Input } from './input';
 import { Label } from './label';
 import type { FormFieldProps } from '@/lib/types';
 import { Textarea } from './textarea';
+import styles from './form-field.module.scss';
 
 const FormField = forwardRef<HTMLInputElement | HTMLTextAreaElement, FormFieldProps>(
   (
@@ -34,12 +35,14 @@ const FormField = forwardRef<HTMLInputElement | HTMLTextAreaElement, FormFieldPr
     const isPassword = inputType === 'password';
 
     return (
-      <div className={cn('space-y-2', wrapperClassName)}>
+      <div className={classNames(styles.wrapper, wrapperClassName)}>
         <Label htmlFor={inputID} className={labelClassName}>
           {label}
         </Label>
 
-        <div className={cn(isPassword && !children && 'relative')}>
+        <div className={classNames({
+          [styles.passwordShell]: isPassword && !children,
+        })}>
           {children ??
             (isTextarea ? (
               <Textarea
@@ -59,7 +62,9 @@ const FormField = forwardRef<HTMLInputElement | HTMLTextAreaElement, FormFieldPr
                 autoComplete='off'
                 {...(fieldProps as React.ComponentProps<'input'>)}
                 type={isPassword && isVisible ? 'text' : inputType}
-                className={cn(className, isPassword && 'pr-10')}
+                className={classNames(className, {
+                  [styles.passwordInput]: isPassword,
+                })}
               />
             ))}
 
@@ -67,16 +72,16 @@ const FormField = forwardRef<HTMLInputElement | HTMLTextAreaElement, FormFieldPr
             <button
               type='button'
               onClick={() => setIsVisible(visible => !visible)}
-              className='absolute inset-y-0 right-0 grid w-10 place-items-center text-muted-foreground hover:text-foreground'
+              className={styles.visibilityButton}
               aria-label={isVisible ? 'Hide password' : 'Show password'}
             >
-              {isVisible ? <Eye className='size-4' /> : <EyeOff className='size-4' />}
+              {isVisible ? <Eye className={styles.icon} /> : <EyeOff className={styles.icon} />}
             </button>
           ) : null}
         </div>
 
-        {hint ? <p className='text-xs text-muted-foreground'>{hint}</p> : null}
-        {error ? <p className='text-xs text-destructive'>{error}</p> : null}
+        {hint ? <p className={styles.hint}>{hint}</p> : null}
+        {error ? <p className={styles.error}>{error}</p> : null}
       </div>
     );
   }

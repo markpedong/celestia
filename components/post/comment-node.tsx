@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { UserAvatar } from '../ui/user-avatar';
 import { useGetCommunityMember, useGetProfile } from '@/hooks/useQueries';
 import { formatTimeAgo } from '@/lib/utils';
+import styles from './comment-node.module.scss';
 
 export const CommentNode: FC<CommentNodeProps> = ({
   node,
@@ -29,33 +30,33 @@ export const CommentNode: FC<CommentNodeProps> = ({
   const Icon = hasChildren ? (hideComments ? PlusCircle : MinusCircle) : null;
 
   return (
-    <li className='relative'>
-      <div className='relative flex gap-3'>
-        <div className='relative flex w-9 shrink-0 justify-center'>
+    <li className={styles.node}>
+      <div className={styles.row}>
+        <div className={styles.avatarRail}>
           <UserAvatar user={node.author} />
-          <span className='absolute top-10 bottom-[-0.75rem] w-px rounded-full bg-border/80 transition-colors hover:bg-primary/50' aria-hidden />
+          <span className={styles.railLine} aria-hidden />
         </div>
-        <div className='min-w-0 flex-1 pb-2'>
-          <div className='flex flex-wrap items-center gap-2 text-xs text-muted-foreground'>
-            <Link href={`/u/${node.author.userName}`} className='font-semibold text-card-foreground hover:text-primary'>
+        <div className={styles.body}>
+          <div className={styles.meta}>
+            <Link href={`/u/${node.author.userName}`} className={styles.author}>
               {node.author.displayName ?? node.author.userName}
             </Link>
             {isOp ? (
               <Badge
                 variant='secondary'
-                className='border-primary/20 bg-primary/10 px-1.5 text-[10px] font-semibold uppercase text-primary'
+                className={styles.opBadge}
               >
                 OP
               </Badge>
             ) : null}
-            <span className='text-muted-foreground/40'>·</span>
-            <span className='flex items-center gap-1 font-mono text-[11px]'>
+            <span className={styles.separator}>·</span>
+            <span className={styles.timestamp}>
               <Clock className='size-3' />
               {formatTimeAgo(node.createdAt)}
             </span>
           </div>
-          <p className='mt-2 whitespace-pre-wrap text-sm leading-7 text-card-foreground'>{node.body}</p>
-          <div className='mt-2 flex flex-wrap items-center gap-1 text-xs font-medium text-muted-foreground'>
+          <p className={styles.copy}>{node.body}</p>
+          <div className={styles.actions}>
             {Icon ? (
               <button
                 type='button'
@@ -93,7 +94,7 @@ export const CommentNode: FC<CommentNodeProps> = ({
           </div>
 
           {viewer && isReplying && (
-            <div className='mt-3 border-t border-border/70 pt-3'>
+            <div className={styles.replyForm}>
               <CommentComposer postID={node.postID} user={viewer} parentID={node.id} placeholder='Write a reply...' compact />
             </div>
           )}
@@ -101,7 +102,7 @@ export const CommentNode: FC<CommentNodeProps> = ({
       </div>
 
       {node.children.length > 0 && !hideComments && (
-        <ul className='relative mt-2 ml-4 space-y-3 border-l border-border/80 pl-5'>
+        <ul className={styles.children}>
           {node.children.map(ch => (
             <CommentNode
               key={ch.id}

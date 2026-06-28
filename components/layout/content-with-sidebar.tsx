@@ -1,13 +1,14 @@
 import type { FC } from 'react';
-import { cn } from '@/lib/utils';
+import classNames from 'classnames';
 import type { ContentWithSidebarProps } from '@/lib/types';
+import styles from './content-with-sidebar.module.scss';
 
 export const ContentWithSidebar: FC<ContentWithSidebarProps> = ({ children, sidebar, className, contentClassName, sidebarClassName }) => {
   return (
-    <div className={cn('grid gap-6 xl:grid-cols-[minmax(0,1fr)_18rem]', className)}>
-      <div className={cn('min-w-0', contentClassName)}>{children}</div>
-      <aside className={cn('hidden xl:block', sidebarClassName)}>
-        <div className='sticky top-20 space-y-4'>{sidebar}</div>
+    <div className={classNames(styles.root, className)}>
+      <div className={classNames(styles.content, contentClassName)}>{children}</div>
+      <aside className={classNames(styles.sidebar, sidebarClassName)}>
+        <div className={styles.sidebarInner}>{sidebar}</div>
       </aside>
     </div>
   );

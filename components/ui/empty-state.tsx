@@ -1,14 +1,15 @@
 import type { FC } from 'react';
-import { cn } from '@/lib/utils';
+import classNames from 'classnames';
 import type { EmptyStateProps } from '@/lib/types';
+import styles from './empty-state.module.scss';
 
 export const EmptyState: FC<EmptyStateProps> = ({ icon: Icon, title, description, className, children }) => {
   return (
-    <div className={cn('celestia-card px-6 py-16 text-center', className)}>
-      <Icon className='mx-auto mb-3 size-8 text-primary' aria-hidden />
-      <h2 className='text-base font-semibold'>{title}</h2>
-      <p className='mt-2 text-sm text-muted-foreground'>{description}</p>
-      {children ? <div className='mt-4'>{children}</div> : null}
+    <div className={classNames('celestia-card', styles.root, className)}>
+      <Icon className={styles.icon} aria-hidden />
+      <h2 className={styles.title}>{title}</h2>
+      <p className={styles.description}>{description}</p>
+      {children ? <div className={styles.children}>{children}</div> : null}
     </div>
   );
 };

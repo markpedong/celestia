@@ -1,8 +1,9 @@
 import type { FC } from 'react';
 import type { FeedSort, FeedSortTabsProps } from '@/lib/types';
-import { cn } from '@/lib/utils';
 import { BarChart2, Clock, Flame, type LucideIcon } from 'lucide-react';
+import classNames from 'classnames';
 import Link from 'next/link';
+import styles from './feed-sort-tabs.module.scss';
 
 const rootPathFor = (sort: FeedSort, hotPath: string) => {
   if (sort === 'new') return '/posts';
@@ -29,11 +30,11 @@ const FeedSortTabs: FC<FeedSortTabsProps> = ({ current, tag, query, basePath = '
   ];
 
   return (
-    <div className='mb-4 border-b border-border/80'>
+    <div className={styles.root}>
       <div>
-        <h1 className='sr-only'>{query ? 'Search results' : tag ? 'Filtered Posts' : 'Community Feed'}</h1>
+        <h1 className={styles.heading}>{query ? 'Search results' : tag ? 'Filtered Posts' : 'Community Feed'}</h1>
       </div>
-      <div className='flex items-center'>
+      <div className={styles.list}>
         {tabs.map(({ id, label, icon: Icon }) => {
           const active = activeSort === id;
 
@@ -41,14 +42,15 @@ const FeedSortTabs: FC<FeedSortTabsProps> = ({ current, tag, query, basePath = '
             <Link
               key={id}
               href={hrefFor(id, tag, query, basePath, hotPath)}
-              className={cn(
-                'relative inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold transition-colors',
-                active ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
-              )}
+              className={classNames(styles.tab, {
+                [styles.activeTab]: active,
+              })}
             >
-              <Icon className={cn('size-3.5', active ? 'text-primary' : 'text-muted-foreground')} />
+              <Icon className={classNames(styles.icon, {
+                [styles.activeIcon]: active,
+              })} />
               {label}
-              {active ? <span className='absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-primary shadow-[0_0_8px] shadow-primary/40' /> : null}
+              {active ? <span className={styles.indicator} /> : null}
             </Link>
           );
         })}

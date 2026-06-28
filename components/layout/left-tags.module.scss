@@ -1,0 +1,29 @@
+@reference "../../app/globals.css";
+
+.list {
+  @apply space-y-1;
+}
+
+.empty {
+  @apply px-3 py-2 text-xs leading-5 text-muted-foreground;
+}
+
+.link {
+  @apply flex items-center justify-between gap-2 rounded px-3 py-2 text-sm;
+}
+
+.labelWrap {
+  @apply flex min-w-0 items-center gap-2.5;
+}
+
+.dot {
+  @apply size-1.5 shrink-0 rounded-full shadow-[0_0_6px_currentColor];
+}
+
+.label {
+  @apply truncate text-muted-foreground hover:text-foreground;
+}
+
+.count {
+  @apply shrink-0 font-mono text-xs text-muted-foreground/70;
+}

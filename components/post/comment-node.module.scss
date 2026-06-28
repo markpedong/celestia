@@ -1,0 +1,57 @@
+@reference "../../app/globals.css";
+
+.node {
+  @apply relative;
+}
+
+.row {
+  @apply relative flex gap-3;
+}
+
+.avatarRail {
+  @apply relative flex w-9 shrink-0 justify-center;
+}
+
+.railLine {
+  @apply absolute top-10 bottom-[-0.75rem] w-px rounded-full bg-border/80 transition-colors hover:bg-primary/50;
+}
+
+.body {
+  @apply min-w-0 flex-1 pb-2;
+}
+
+.meta {
+  @apply flex flex-wrap items-center gap-2 text-xs text-muted-foreground;
+}
+
+.author {
+  @apply font-semibold text-card-foreground hover:text-primary;
+}
+
+.opBadge {
+  @apply border-primary/20 bg-primary/10 px-1.5 text-[10px] font-semibold uppercase text-primary;
+}
+
+.separator {
+  @apply text-muted-foreground/40;
+}
+
+.timestamp {
+  @apply flex items-center gap-1 font-mono text-[11px];
+}
+
+.copy {
+  @apply mt-2 whitespace-pre-wrap text-sm leading-7 text-card-foreground;
+}
+
+.actions {
+  @apply mt-2 flex flex-wrap items-center gap-1 text-xs font-medium text-muted-foreground;
+}
+
+.replyForm {
+  @apply mt-3 border-t border-border/70 pt-3;
+}
+
+.children {
+  @apply relative mt-2 ml-4 space-y-3 border-l border-border/80 pl-5;
+}

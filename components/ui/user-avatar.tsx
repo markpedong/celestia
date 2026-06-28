@@ -1,23 +1,25 @@
 import type { FC } from 'react';
 import type { UserAvatarProps } from '@/lib/types';
-import { cn } from '@/lib/utils';
+import classNames from 'classnames';
 import Image from 'next/image';
+import styles from './user-avatar.module.scss';
 
 export const UserAvatar: FC<UserAvatarProps> = ({ user, size = 'default', className }) => {
   const label = user.displayName ?? user.userName;
-  const sizeClass = size === 'sm' ? 'size-6' : size === 'lg' ? 'size-10' : 'size-8';
 
   return (
-    <span className={cn('relative flex shrink-0 overflow-hidden rounded-full', sizeClass, className)}>
+    <span className={classNames(styles.root, styles.defaultSize, {
+      [styles.small]: size === 'sm',
+      [styles.large]: size === 'lg',
+    }, className)}>
       {user.avatarUrl ? (
-        <Image src={user.avatarUrl} width={20} height={20} unoptimized className='size-full rounded-full object-cover' alt={label} />
+        <Image src={user.avatarUrl} width={20} height={20} unoptimized className={styles.image} alt={label} />
       ) : (
         <span
-          className={cn(
-            'flex size-full items-center justify-center rounded-full bg-primary/15 text-sm font-semibold text-primary',
-            size === 'sm' && 'text-xs',
-            size === 'lg' && 'text-base'
-          )}
+          className={classNames(styles.fallback, {
+            [styles.smallText]: size === 'sm',
+            [styles.largeText]: size === 'lg',
+          })}
         >
           {label.slice(0, 1).toUpperCase()}
         </span>

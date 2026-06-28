@@ -1,0 +1,33 @@
+@reference "../../app/globals.css";
+
+.card {
+  @apply flex flex-col gap-4 overflow-hidden rounded bg-card py-4 text-sm text-card-foreground ring-1 ring-foreground/10;
+}
+
+.content {
+  @apply grid auto-rows-min items-start gap-1 rounded-t-xl px-4 pb-2 [.border-b]:pb-4;
+}
+
+.mark {
+  @apply mb-2 size-11 rounded;
+}
+
+.icon {
+  @apply size-5;
+}
+
+.title {
+  @apply font-heading text-base leading-snug font-medium;
+}
+
+.description {
+  @apply text-sm text-muted-foreground;
+}
+
+.actionWrap {
+  @apply px-4;
+}
+
+.action {
+  @apply w-full justify-center;
+}

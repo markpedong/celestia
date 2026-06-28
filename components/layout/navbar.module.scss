@@ -1,0 +1,37 @@
+@reference "../../app/globals.css";
+
+.header {
+  @apply sticky top-0 z-50 border-b border-border/80 bg-background/88 backdrop-blur-xl;
+}
+
+.inner {
+  @apply mx-auto flex h-14 w-full max-w-400 items-center gap-3 px-4;
+}
+
+.brand {
+  @apply flex shrink-0 items-center gap-2 font-semibold tracking-tight text-foreground;
+}
+
+.mark {
+  @apply size-8;
+}
+
+.brandIcon {
+  @apply size-4 fill-current;
+}
+
+.name {
+  @apply hidden text-lg font-bold tracking-wide sm:inline;
+}
+
+.actions {
+  @apply ml-auto flex shrink-0 items-center gap-2;
+}
+
+.guestActions {
+  @apply ml-auto flex items-center gap-2;
+}
+
+.newPost {
+  @apply hidden sm:inline-flex;
+}

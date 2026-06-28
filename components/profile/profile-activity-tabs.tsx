@@ -2,8 +2,9 @@
 
 import { useLayoutEffect, useRef, useState, type FC } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
+import classNames from 'classnames';
 import type { ProfileActivityTab, ProfileActivityTabsProps } from '@/lib/types';
+import styles from './profile-activity-tabs.module.scss';
 
 const tabs: { id: ProfileActivityTab; label: string }[] = [
   { id: 'overview', label: 'Overview' },
@@ -39,7 +40,7 @@ export const ProfileActivityTabs: FC<ProfileActivityTabsProps> = ({ children }) 
 
   return (
     <>
-      <nav className='relative mb-4 flex overflow-x-auto border-b border-border/80 text-sm font-semibold' aria-label='Profile sections'>
+      <nav className={styles.nav} aria-label='Profile sections'>
         {tabs.map(tab => (
           <button
             key={tab.id}
@@ -49,21 +50,20 @@ export const ProfileActivityTabs: FC<ProfileActivityTabsProps> = ({ children }) 
             type='button'
             aria-current={activeTab === tab.id ? 'page' : undefined}
             onClick={() => selectTab(tab.id)}
-            className={cn(
-              'relative shrink-0 px-4 py-2.5 transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset',
-              activeTab === tab.id ? 'text-primary' : 'text-muted-foreground',
-            )}
+            className={classNames(styles.tab, {
+              [styles.activeTab]: activeTab === tab.id,
+            })}
           >
             {tab.label}
           </button>
         ))}
         <span
           aria-hidden='true'
-          className='pointer-events-none absolute bottom-0 left-0 h-0.5 bg-primary transition-[transform,width] duration-200 ease-out'
+          className={styles.indicator}
           style={{ transform: `translateX(${indicator.left}px)`, width: indicator.width }}
         />
       </nav>
-      <div className='relative overflow-hidden'>
+      <div className={styles.panel}>
         <AnimatePresence initial={false} mode='popLayout' custom={direction}>
           <motion.div
             key={activeTab}

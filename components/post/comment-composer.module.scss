@@ -1,0 +1,25 @@
+@reference "../../app/globals.css";
+
+.form {
+  @apply flex gap-3;
+}
+
+.avatar {
+  @apply mt-1;
+}
+
+.fields {
+  @apply min-w-0 flex-1 space-y-2;
+}
+
+.textarea {
+  @apply min-h-0 resize-y rounded border-border bg-secondary/80 text-sm leading-7 focus-visible:border-primary/40 focus-visible:ring-primary/20;
+}
+
+.error {
+  @apply text-xs text-destructive;
+}
+
+.submit {
+  @apply rounded;
+}

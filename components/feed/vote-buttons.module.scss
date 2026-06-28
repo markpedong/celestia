@@ -1,0 +1,53 @@
+@reference "../../app/globals.css";
+
+.root {
+  @apply inline-flex items-center overflow-hidden text-sm;
+}
+
+.postRoot {
+  @apply flex-col gap-0.5 rounded-none border-0 bg-transparent shadow-none;
+}
+
+.button {
+  @apply flex items-center rounded-lg transition-all hover:scale-110 hover:bg-muted disabled:opacity-50;
+}
+
+.commentButton {
+  @apply p-1;
+}
+
+.postButton {
+  @apply p-1.5;
+}
+
+.upvoteInactive {
+  @apply text-muted-foreground hover:text-upvote;
+}
+
+.downvoteInactive {
+  @apply text-muted-foreground hover:text-downvote;
+}
+
+.upvoteActive {
+  @apply text-upvote;
+}
+
+.downvoteActive {
+  @apply text-downvote;
+}
+
+.score {
+  @apply text-center font-mono font-medium tabular-nums;
+}
+
+.commentScore {
+  @apply min-w-6;
+}
+
+.postScore {
+  @apply min-w-9 text-xs;
+}
+
+.icon {
+  @apply size-4;
+}

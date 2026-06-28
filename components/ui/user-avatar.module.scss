@@ -1,0 +1,33 @@
+@reference "../../app/globals.css";
+
+.root {
+  @apply relative flex shrink-0 overflow-hidden rounded-full;
+}
+
+.defaultSize {
+  @apply size-8;
+}
+
+.small {
+  @apply size-6;
+}
+
+.large {
+  @apply size-10;
+}
+
+.image {
+  @apply size-full rounded-full object-cover;
+}
+
+.fallback {
+  @apply flex size-full items-center justify-center rounded-full bg-primary/15 text-sm font-semibold text-primary;
+}
+
+.smallText {
+  @apply text-xs;
+}
+
+.largeText {
+  @apply text-base;
+}

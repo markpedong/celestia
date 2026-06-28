@@ -4,7 +4,8 @@ import type { FC } from 'react';
 import * as React from "react"
 import { Separator as SeparatorPrimitive } from "radix-ui"
 
-import { cn } from "@/lib/utils"
+import classNames from 'classnames';
+import styles from './separator.module.scss';
 
 const Separator: FC<React.ComponentProps<typeof SeparatorPrimitive.Root>> = ({
   className,
@@ -17,10 +18,7 @@ const Separator: FC<React.ComponentProps<typeof SeparatorPrimitive.Root>> = ({
       data-slot="separator"
       decorative={decorative}
       orientation={orientation}
-      className={cn(
-        "shrink-0 bg-border data-horizontal:h-px data-horizontal:w-full data-vertical:w-px data-vertical:self-stretch",
-        className
-      )}
+      className={classNames(styles.separator, className)}
       {...props}
     />
   )

@@ -1,14 +1,15 @@
 import type { FC } from 'react';
-import { cn } from '@/lib/utils';
+import classNames from 'classnames';
 import type { StatGridProps } from '@/lib/types';
+import styles from './stat-grid.module.scss';
 
 export const StatGrid: FC<StatGridProps> = ({ stats, className }) => {
   return (
-    <div className={cn('grid grid-cols-3 gap-2 text-sm', className)}>
+    <div className={classNames(styles.grid, className)}>
       {stats.map(({ label, value }) => (
-        <div key={label} className='rounded border border-border bg-muted/35 px-3 py-3 shadow-inner shadow-background/20'>
-          <p className='font-mono text-base font-bold text-foreground'>{value}</p>
-          <p className='mt-0.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground'>{label}</p>
+        <div key={label} className={styles.item}>
+          <p className={styles.value}>{value}</p>
+          <p className={styles.label}>{label}</p>
         </div>
       ))}
     </div>

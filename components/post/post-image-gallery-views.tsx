@@ -4,6 +4,8 @@ import type { FC } from 'react';
 import { ChevronLeft, ChevronRight, ImageOff, Images, ZoomIn } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
+import classNames from 'classnames';
+import styles from './post-image-gallery-views.module.scss';
 
 const FeedInlineImageGallery = dynamic(() =>
   import('./feed-inline-image-gallery').then(module => module.FeedInlineImageGallery)
@@ -30,16 +32,16 @@ export const isImageUrl = (url: string) => {
 };
 
 const ImagePlaceholder: FC<{ ratio: number }> = ({ ratio }) => (
-  <div className='size-full' style={{ aspectRatio: ratio }}>
-    <div className='flex size-full flex-col items-center justify-center gap-1 bg-muted text-xs text-muted-foreground'>
+  <div className={styles.placeholder} style={{ aspectRatio: ratio }}>
+    <div className={styles.placeholderInner}>
       <ImageOff className='size-5' />
       Image unavailable
     </div>
   </div>
 );
 
-const ZoomOverlay: FC<{ size?: string; className?: string }> = ({ size = 'size-6', className = 'hover:bg-foreground/35' }) => (
-  <span className={`absolute inset-0 flex items-center justify-center bg-foreground/0 text-transparent transition-colors ${className} hover:text-background`}>
+const ZoomOverlay: FC<{ size?: string; className?: string }> = ({ size = 'size-6', className }) => (
+  <span className={classNames(styles.zoomOverlay, className)}>
     <ZoomIn className={size} />
   </span>
 );
@@ -52,7 +54,7 @@ export const ThumbnailImageGallery: FC<ImageGalleryViewProps> = ({ imageUrls, ti
       type='button'
       onClick={() => onOpen(0)}
       disabled={isImageUnavailable(imageUrl)}
-      className='group relative h-20 w-28 shrink-0 self-center overflow-hidden rounded border border-border/80 shadow-inner'
+      className={classNames('group', styles.thumbnail)}
       aria-label={`View ${imageUrls.length} image${imageUrls.length === 1 ? '' : 's'} attached to ${title}`}
     >
       {isImageUnavailable(imageUrl) ? (
@@ -65,7 +67,7 @@ export const ThumbnailImageGallery: FC<ImageGalleryViewProps> = ({ imageUrls, ti
             fill
             unoptimized
             sizes='112px'
-            className='object-cover transition-transform duration-200 hover:scale-105'
+            className={styles.thumbnailImage}
             loading='eager'
             onError={() => onImageError(imageUrl)}
           />
@@ -73,7 +75,7 @@ export const ThumbnailImageGallery: FC<ImageGalleryViewProps> = ({ imageUrls, ti
         </>
       )}
       {imageUrls.length > 1 ? (
-        <span className='absolute right-1.5 bottom-1.5 inline-flex items-center gap-1 rounded-md bg-background/90 px-1.5 py-0.5 text-[10px] font-semibold text-foreground shadow-sm'>
+        <span className={styles.countBadge}>
           <Images className='size-3' /> {imageUrls.length}
         </span>
       ) : null}
@@ -90,12 +92,12 @@ export const FeedImageGallery: FC<ImageGalleryViewProps> = props => {
   }
 
   return (
-    <div className='relative mt-4 overflow-hidden rounded border border-border/80 bg-muted'>
+    <div className={styles.feed}>
       <button
         type='button'
         onClick={() => onOpen(activeIndex)}
         disabled={isImageUnavailable(imageUrl)}
-        className='group relative aspect-[16/9] w-full text-left md:aspect-[2.35/1]'
+        className={classNames('group', styles.feedButton)}
         aria-label={`View image ${activeIndex + 1} of ${imageUrls.length} attached to ${title}`}
       >
         {isImageUnavailable(imageUrl) ? (
@@ -107,12 +109,12 @@ export const FeedImageGallery: FC<ImageGalleryViewProps> = props => {
             fill
             unoptimized
             sizes='(max-width: 768px) calc(100vw - 5rem), 760px'
-            className='object-cover transition-transform duration-300 group-hover:scale-[1.015]'
+            className={styles.feedImage}
             loading='eager'
             onError={() => onImageError(imageUrl)}
           />
         )}
-        {!isImageUnavailable(imageUrl) ? <ZoomOverlay className='hover:bg-foreground/30' /> : null}
+        {!isImageUnavailable(imageUrl) ? <ZoomOverlay className={styles.zoomOverlaySubtle} /> : null}
       </button>
     </div>
   );
@@ -125,12 +127,12 @@ export const GalleryImageGallery: FC<ImageGalleryViewProps> = props => {
     const imageUrl = imageUrls[0];
 
     return (
-      <div className='mt-5'>
+      <div className={styles.singleWrap}>
         <button
           type='button'
           onClick={() => onOpen(0)}
           disabled={isImageUnavailable(imageUrl)}
-          className='group relative aspect-[16/9] w-full overflow-hidden rounded-2xl border border-border/80 bg-muted text-left'
+          className={classNames('group', styles.singleButton)}
           aria-label={`View image attached to ${title}`}
         >
           {isImageUnavailable(imageUrl) ? (
@@ -142,7 +144,7 @@ export const GalleryImageGallery: FC<ImageGalleryViewProps> = props => {
               fill
               unoptimized
               sizes='(max-width: 768px) calc(100vw - 8rem), 672px'
-              className='object-cover transition-transform duration-200 hover:scale-[1.02]'
+              className={styles.galleryImage}
               loading='eager'
               onError={() => onImageError(imageUrl)}
             />
@@ -154,15 +156,15 @@ export const GalleryImageGallery: FC<ImageGalleryViewProps> = props => {
   }
 
   return (
-    <div className='relative mt-5 overflow-hidden rounded border border-border/80 bg-muted'>
-      <div className='flex transition-transform duration-300 ease-out' style={{ transform: `translateX(-${activeIndex * 100}%)` }}>
+    <div className={styles.gallery}>
+      <div className={styles.track} style={{ transform: `translateX(-${activeIndex * 100}%)` }}>
         {imageUrls.map((imageUrl, index) => (
           <button
             key={imageUrl}
             type='button'
             onClick={() => onOpen(index)}
             disabled={isImageUnavailable(imageUrl)}
-            className='group relative aspect-[16/9] w-full shrink-0 text-left'
+            className={classNames('group', styles.slide)}
             aria-label={`View image ${index + 1} of ${imageUrls.length} attached to ${title}`}
           >
             {isImageUnavailable(imageUrl) ? (
@@ -174,7 +176,7 @@ export const GalleryImageGallery: FC<ImageGalleryViewProps> = props => {
                 fill
                 unoptimized
                 sizes='(max-width: 768px) calc(100vw - 8rem), 672px'
-                className='object-cover transition-transform duration-200 hover:scale-[1.02]'
+                className={styles.galleryImage}
                 loading={index === 0 ? 'eager' : 'lazy'}
                 onError={() => onImageError(imageUrl)}
               />
@@ -186,7 +188,7 @@ export const GalleryImageGallery: FC<ImageGalleryViewProps> = props => {
       <button
         type='button'
         onClick={onPrevious}
-        className='absolute top-1/2 left-3 grid size-9 -translate-y-1/2 place-items-center rounded-full bg-background/90 text-foreground shadow-sm transition-colors hover:bg-background'
+        className={classNames(styles.nav, styles.previous)}
         aria-label='Previous image'
       >
         <ChevronLeft className='size-5' />
@@ -194,12 +196,12 @@ export const GalleryImageGallery: FC<ImageGalleryViewProps> = props => {
       <button
         type='button'
         onClick={onNext}
-        className='absolute top-1/2 right-3 grid size-9 -translate-y-1/2 place-items-center rounded-full bg-background/90 text-foreground shadow-sm transition-colors hover:bg-background'
+        className={classNames(styles.nav, styles.next)}
         aria-label='Next image'
       >
         <ChevronRight className='size-5' />
       </button>
-      <div className='absolute right-3 bottom-3 rounded-md bg-background/90 px-2 py-1 text-xs font-medium text-foreground shadow-sm' aria-live='polite'>
+      <div className={styles.counter} aria-live='polite'>
         {activeIndex + 1} / {imageUrls.length}
       </div>
     </div>

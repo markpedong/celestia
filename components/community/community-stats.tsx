@@ -3,8 +3,10 @@
 import { usePathname } from 'next/navigation';
 import { StatGrid } from '../ui/stat-grid';
 import { useGetCommunityStats } from '@/hooks/useQueries';
-import { cn, formatCount } from '@/lib/utils';
+import { formatCount } from '@/lib/utils';
+import classNames from 'classnames';
 import type { FC } from 'react';
+import styles from './community-stats.module.scss';
 
 const CommunityStats: FC<{ className?: string }> = ({ className }) => {
   const slug = usePathname().split('/').pop() ?? '';
@@ -12,7 +14,7 @@ const CommunityStats: FC<{ className?: string }> = ({ className }) => {
 
   return (
     <StatGrid
-      className={cn('max-w-lg md:max-w-none', className)}
+      className={classNames(styles.stats, className)}
       stats={[
         { label: 'Posts', value: formatCount(stats?.postCount) },
         { label: 'Members', value: formatCount(stats?.memberCount) },

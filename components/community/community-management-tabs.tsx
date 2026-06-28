@@ -1,9 +1,10 @@
 'use client';
 
-import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { BarChart3, FileText, ImageIcon, Info, UsersRound } from 'lucide-react';
+import classNames from 'classnames';
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import styles from './community-management-tabs.module.scss';
 
 type CommunityManagementTab = 'overview' | 'details' | 'visuals' | 'members' | 'posts';
 
@@ -65,9 +66,9 @@ export const CommunityManagementTabs = ({
   };
 
   return (
-    <section className='celestia-card overflow-hidden'>
+    <section className={classNames('celestia-card', styles.card)}>
       <nav
-        className='relative flex overflow-x-auto border-b border-border/80 bg-muted/20 px-2 text-sm font-semibold'
+        className={styles.nav}
         aria-label='Community management sections'
       >
         {tabs.map(tab => {
@@ -81,15 +82,14 @@ export const CommunityManagementTabs = ({
               type='button'
               aria-current={activeTab === tab.id ? 'page' : undefined}
               onClick={() => selectTab(tab.id)}
-              className={cn(
-                'relative inline-flex h-12 shrink-0 items-center gap-2 px-3 transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset md:px-4',
-                activeTab === tab.id ? 'text-primary' : 'text-muted-foreground',
-              )}
+              className={classNames(styles.tab, {
+                [styles.activeTab]: activeTab === tab.id,
+              })}
             >
-              <Icon className='size-4' />
+              <Icon className={styles.icon} />
               {tab.label}
               {tab.count ? (
-                <span className='rounded bg-background px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground'>
+                <span className={styles.count}>
                   {counts[tab.count]}
                 </span>
               ) : null}
@@ -98,11 +98,11 @@ export const CommunityManagementTabs = ({
         })}
         <span
           aria-hidden='true'
-          className='pointer-events-none absolute bottom-0 left-0 h-0.5 bg-primary transition-[transform,width] duration-200 ease-out'
+          className={styles.indicator}
           style={{ transform: `translateX(${indicator.left}px)`, width: indicator.width }}
         />
       </nav>
-      <div className='relative overflow-hidden p-4 md:p-5'>
+      <div className={styles.panel}>
         <AnimatePresence initial={false} mode='popLayout' custom={direction}>
           <motion.div
             key={activeTab}

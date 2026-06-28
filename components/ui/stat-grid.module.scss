@@ -1,0 +1,17 @@
+@reference "../../app/globals.css";
+
+.grid {
+  @apply grid grid-cols-3 gap-2 text-sm;
+}
+
+.item {
+  @apply rounded border border-border bg-muted/35 px-3 py-3 shadow-inner shadow-background/20;
+}
+
+.value {
+  @apply font-mono text-base font-bold text-foreground;
+}
+
+.label {
+  @apply mt-0.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground;
+}

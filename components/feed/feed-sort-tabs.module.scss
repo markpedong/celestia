@@ -1,0 +1,33 @@
+@reference "../../app/globals.css";
+
+.root {
+  @apply mb-4 border-b border-border/80;
+}
+
+.heading {
+  @apply sr-only;
+}
+
+.list {
+  @apply flex items-center;
+}
+
+.tab {
+  @apply relative inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground;
+}
+
+.activeTab {
+  @apply text-primary;
+}
+
+.icon {
+  @apply size-3.5 text-muted-foreground;
+}
+
+.activeIcon {
+  @apply text-primary;
+}
+
+.indicator {
+  @apply absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-primary shadow-[0_0_8px] shadow-primary/40;
+}

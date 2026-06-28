@@ -3,6 +3,7 @@
 import type { FC } from 'react';
 import type { CommentComposerProps } from '@/lib/types';
 import { useRouter } from 'next/navigation';
+import classNames from 'classnames';
 import { useEffect, useRef, useTransition } from 'react';
 import { toast } from 'sonner';
 import { Textarea } from '../ui/textarea';
@@ -13,6 +14,7 @@ import useFormValidate from '@/hooks/useFormValidate';
 import useFormSchema from '@/hooks/useFormSchema';
 import { MAX_COMMENT_LENGTH } from '@/constants';
 import { useCreateComment } from '@/hooks/useQueries';
+import styles from './comment-composer.module.scss';
 
 const CommentComposer: FC<CommentComposerProps> = ({ postID, user, compact, parentID, placeholder }) => {
   const { commentSchema } = useFormSchema();
@@ -54,14 +56,14 @@ const CommentComposer: FC<CommentComposerProps> = ({ postID, user, compact, pare
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} onKeyDown={onFormKeyDown} className='flex gap-3' noValidate>
-      <UserAvatar user={user} size={compact ? 'sm' : 'default'} className='mt-1' />
-      <div className='min-w-0 flex-1 space-y-2'>
+    <form onSubmit={handleSubmit(onSubmit)} onKeyDown={onFormKeyDown} className={styles.form} noValidate>
+      <UserAvatar user={user} size={compact ? 'sm' : 'default'} className={styles.avatar} />
+      <div className={styles.fields}>
         <Textarea
           placeholder={placeholder}
           rows={compact ? 2 : 3}
           maxLength={MAX_COMMENT_LENGTH}
-          className='min-h-0 resize-y rounded border-border bg-secondary/80 text-sm leading-7 focus-visible:border-primary/40 focus-visible:ring-primary/20'
+          className={styles.textarea}
           aria-invalid={Boolean(errors.body && (touchedFields.body || isSubmitted))}
           {...bodyField}
           ref={element => {
@@ -69,13 +71,13 @@ const CommentComposer: FC<CommentComposerProps> = ({ postID, user, compact, pare
             bodyRef.current = element;
           }}
         />
-        {errors.body && (touchedFields.body || isSubmitted) ? <p className='text-xs text-destructive'>{errors.body.message}</p> : null}
+        {errors.body && (touchedFields.body || isSubmitted) ? <p className={styles.error}>{errors.body.message}</p> : null}
         <Button
           type='submit'
           size='sm'
           disabled={!isValid || submitting}
           aria-busy={submitting}
-          className='celestia-primary-action rounded'
+          className={classNames('celestia-primary-action', styles.submit)}
         >
           {parentID ? 'Reply' : 'Comment'}
         </Button>

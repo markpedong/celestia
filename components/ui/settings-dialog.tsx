@@ -2,7 +2,8 @@
 
 import type { ComponentProps, ReactNode } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { cn } from '@/lib/utils';
+import classNames from 'classnames';
+import styles from './settings-dialog.module.scss';
 
 type SettingsDialogProps = ComponentProps<typeof Dialog> & {
   title: string;
@@ -13,13 +14,13 @@ type SettingsDialogProps = ComponentProps<typeof Dialog> & {
 
 const SettingsDialog = ({ children, contentClassName, description, title, ...props }: SettingsDialogProps) => (
   <Dialog {...props}>
-    <DialogContent className={cn('p-5 sm:max-w-md sm:p-6', contentClassName)}>
-      <DialogHeader className='pr-8'>
+    <DialogContent className={classNames(styles.content, contentClassName)}>
+      <DialogHeader className={styles.header}>
         <DialogTitle>{title}</DialogTitle>
         {description ? <DialogDescription>{description}</DialogDescription> : null}
       </DialogHeader>
 
-      <div className='[&_input]:bg-background'>{children}</div>
+      <div className={styles.body}>{children}</div>
     </DialogContent>
   </Dialog>
 );

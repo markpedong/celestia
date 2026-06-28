@@ -1,0 +1,17 @@
+@reference "../../app/globals.css";
+
+.root {
+  @apply grid gap-6 xl:grid-cols-[minmax(0,1fr)_18rem];
+}
+
+.content {
+  @apply min-w-0;
+}
+
+.sidebar {
+  @apply hidden xl:block;
+}
+
+.sidebarInner {
+  @apply sticky top-20 space-y-4;
+}

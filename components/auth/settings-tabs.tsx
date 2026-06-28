@@ -2,7 +2,8 @@
 
 import { useLayoutEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
+import classNames from 'classnames';
+import styles from './settings-tabs.module.scss';
 
 type SettingsTab = 'account' | 'profile';
 
@@ -41,7 +42,7 @@ export const SettingsTabs = ({ account, profile }: SettingsTabsProps) => {
 
   return (
     <>
-      <nav className='relative mb-5 flex border-b border-border/80 text-sm font-semibold' aria-label='Settings sections'>
+      <nav className={styles.nav} aria-label='Settings sections'>
         {tabs.map(tab => (
           <button
             key={tab.id}
@@ -51,21 +52,20 @@ export const SettingsTabs = ({ account, profile }: SettingsTabsProps) => {
             type='button'
             aria-current={activeTab === tab.id ? 'page' : undefined}
             onClick={() => selectTab(tab.id)}
-            className={cn(
-              'relative px-4 py-2.5 transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset',
-              activeTab === tab.id ? 'text-primary' : 'text-muted-foreground',
-            )}
+            className={classNames(styles.tab, {
+              [styles.activeTab]: activeTab === tab.id,
+            })}
           >
             {tab.label}
           </button>
         ))}
         <span
           aria-hidden='true'
-          className='pointer-events-none absolute bottom-0 left-0 h-0.5 bg-primary transition-[transform,width] duration-200 ease-out'
+          className={styles.indicator}
           style={{ transform: `translateX(${indicator.left}px)`, width: indicator.width }}
         />
       </nav>
-      <div className='relative overflow-hidden'>
+      <div className={styles.panel}>
         <AnimatePresence initial={false} mode='popLayout' custom={direction}>
           <motion.div
             key={activeTab}

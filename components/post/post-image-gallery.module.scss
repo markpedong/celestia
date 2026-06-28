@@ -1,0 +1,45 @@
+@reference "../../app/globals.css";
+
+.root {
+  @apply mt-5 w-full min-w-0 overflow-hidden;
+}
+
+.frame {
+  @apply relative w-full overflow-hidden rounded;
+}
+
+.slider {
+  @apply aspect-3/2 w-full bg-muted opacity-0 transition-opacity duration-150;
+}
+
+.ready {
+  @apply opacity-100;
+}
+
+.slide {
+  @apply relative;
+}
+
+.image {
+  @apply object-cover;
+}
+
+.nav {
+  @apply absolute top-1/2 z-20 grid size-9 -translate-y-1/2 place-items-center rounded-full bg-black/50 text-white transition-colors hover:bg-black/65 aria-disabled:opacity-30;
+}
+
+.previous {
+  @apply left-3;
+}
+
+.next {
+  @apply right-3;
+}
+
+.navIcon {
+  @apply size-5;
+}
+
+.counter {
+  @apply absolute bottom-3 left-1/2 z-20 -translate-x-1/2 rounded-full bg-black/50 px-2 py-1 text-xs text-white;
+}

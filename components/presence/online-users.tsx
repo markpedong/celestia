@@ -5,6 +5,8 @@ import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { useGetProfile } from '@/hooks/useQueries';
 import { UserAvatar } from '../ui/user-avatar';
 import type { User } from '@/lib/types';
+import classNames from 'classnames';
+import styles from './online-users.module.scss';
 
 const supabase = createSupabaseBrowserClient();
 
@@ -37,24 +39,24 @@ export const ActiveNow = () => {
   }, [profile]);
 
   return (
-    <section className='celestia-card p-4'>
-      <h3 className='mb-3 flex items-center gap-2 text-xs font-semibold text-foreground'>
-        <span className='size-1.5 rounded-full bg-success shadow-[0_0_6px] shadow-success/40' />
+    <section className={classNames('celestia-card', styles.card)}>
+      <h3 className={styles.heading}>
+        <span className={styles.statusDot} />
         Active Now
       </h3>
-      <div className='flex items-center'>
-        <div className='flex items-center'>
+      <div className={styles.row}>
+        <div className={styles.avatars}>
           {activeUsers.map((user, index) => (
             <div
               key={user.id}
               style={{ marginLeft: index ? -8 : 0, zIndex: 10 - index }}
             >
-              <UserAvatar user={user} className='border-2 border-card bg-secondary shadow-sm' />
+              <UserAvatar user={user} className={styles.avatar} />
             </div>
           ))}
         </div>
 
-        <span className='ml-3 text-xs text-muted-foreground'>
+        <span className={styles.label}>
           {activeUsers.length > 0 ? `+${activeUsers.length} online` : 'No one online'}
         </span>
       </div>

@@ -4,6 +4,7 @@ import type { FC } from 'react';
 import { Images } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { Inline } from 'yet-another-react-lightbox/plugins';
+import styles from './feed-inline-image-gallery.module.scss';
 
 const InlineLightbox = dynamic(() => import('yet-another-react-lightbox'), { ssr: false });
 
@@ -16,7 +17,7 @@ type FeedInlineImageGalleryProps = {
 };
 
 export const FeedInlineImageGallery: FC<FeedInlineImageGalleryProps> = ({ imageUrls, title, index, onView, onOpen }) => (
-  <div className='relative mt-4 overflow-hidden rounded border border-border/80 bg-muted'>
+  <div className={styles.root}>
     <InlineLightbox
       open
       plugins={[Inline]}
@@ -34,10 +35,10 @@ export const FeedInlineImageGallery: FC<FeedInlineImageGalleryProps> = ({ imageU
       controller={{ closeOnBackdropClick: false }}
       toolbar={{ buttons: [] }}
       inline={{
-        className: 'aspect-[16/9] w-full md:aspect-[2.35/1]',
+        className: styles.lightbox,
       }}
     />
-    <span className='pointer-events-none absolute right-3 bottom-3 z-20 inline-flex items-center gap-1 rounded bg-background/90 px-2 py-1 text-xs font-semibold text-foreground shadow-sm'>
+    <span className={styles.counter}>
       <Images className='size-3.5' /> {index + 1} / {imageUrls.length}
     </span>
   </div>

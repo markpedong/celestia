@@ -1,10 +1,11 @@
 'use client';
 
-import { cn } from '@/lib/utils';
+import classNames from 'classnames';
 import { Compass, House, PlusCircle, Radio, UserRound } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession } from '@/hooks/useSession';
+import styles from './mobile-bottom-nav.module.scss';
 
 const MobileBottomNav = () => {
   const { user } = useSession();
@@ -35,22 +36,26 @@ const MobileBottomNav = () => {
   return (
     <nav
       aria-label='Mobile navigation'
-      className='fixed inset-x-0 bottom-0 z-40 border-t border-border/80 bg-background/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl lg:hidden'
+      className={styles.nav}
     >
-      <div className={cn('mx-auto grid max-w-lg', isSignedIn ? 'grid-cols-5' : 'grid-cols-3')}>
+      <div className={classNames(styles.grid, {
+        [styles.signedIn]: isSignedIn,
+        [styles.signedOut]: !isSignedIn,
+      })}>
         {items.map(({ href, label, icon: Icon, active }) => (
           <Link
             key={label}
             href={href}
             aria-current={active ? 'page' : undefined}
-            className={cn(
-              'relative flex h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-lg text-[10px] font-medium transition-colors',
-              active ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
-            )}
+            className={classNames(styles.item, {
+              [styles.activeItem]: active,
+            })}
           >
-            <Icon className={cn('size-5', active && 'drop-shadow-[0_0_6px_var(--primary)]')} />
-            <span className='truncate'>{label}</span>
-            {active ? <span className='absolute bottom-0 h-0.5 w-5 rounded-full bg-primary' /> : null}
+            <Icon className={classNames(styles.icon, {
+              [styles.activeIcon]: active,
+            })} />
+            <span className={styles.label}>{label}</span>
+            {active ? <span className={styles.indicator} /> : null}
           </Link>
         ))}
       </div>

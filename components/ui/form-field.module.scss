@@ -1,0 +1,29 @@
+@reference "../../app/globals.css";
+
+.wrapper {
+  @apply space-y-2;
+}
+
+.passwordShell {
+  @apply relative;
+}
+
+.passwordInput {
+  @apply pr-10;
+}
+
+.visibilityButton {
+  @apply absolute inset-y-0 right-0 grid w-10 place-items-center text-muted-foreground hover:text-foreground;
+}
+
+.icon {
+  @apply size-4;
+}
+
+.hint {
+  @apply text-xs text-muted-foreground;
+}
+
+.error {
+  @apply text-xs text-destructive;
+}

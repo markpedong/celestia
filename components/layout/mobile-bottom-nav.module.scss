@@ -1,0 +1,41 @@
+@reference "../../app/globals.css";
+
+.nav {
+  @apply fixed inset-x-0 bottom-0 z-40 border-t border-border/80 bg-background/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl lg:hidden;
+}
+
+.grid {
+  @apply mx-auto grid max-w-lg;
+}
+
+.signedIn {
+  @apply grid-cols-5;
+}
+
+.signedOut {
+  @apply grid-cols-3;
+}
+
+.item {
+  @apply relative flex h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-lg text-[10px] font-medium text-muted-foreground transition-colors hover:text-foreground;
+}
+
+.activeItem {
+  @apply text-primary;
+}
+
+.icon {
+  @apply size-5;
+}
+
+.activeIcon {
+  @apply drop-shadow-[0_0_6px_var(--primary)];
+}
+
+.label {
+  @apply truncate;
+}
+
+.indicator {
+  @apply absolute bottom-0 h-0.5 w-5 rounded-full bg-primary;
+}

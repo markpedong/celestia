@@ -5,6 +5,8 @@ import type { PointerEvent } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { useKeenSlider } from 'keen-slider/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import classNames from 'classnames';
+import styles from './post-image-gallery.module.scss';
 
 import 'keen-slider/keen-slider.min.css';
 
@@ -66,21 +68,23 @@ const PostImageGallery = ({ images }: { images: string[] }) => {
   };
 
   return (
-    <div className='mt-5 w-full min-w-0 overflow-hidden'>
-      <div className='relative w-full overflow-hidden rounded'>
+    <div className={styles.root}>
+      <div className={styles.frame}>
         <div
           ref={sliderRef}
-          className={`keen-slider aspect-3/2 w-full bg-muted transition-opacity duration-150 ${ready ? 'opacity-100' : 'opacity-0'}`}
+          className={classNames('keen-slider', styles.slider, {
+            [styles.ready]: ready,
+          })}
         >
           {images.map((url, index) => (
-            <div key={`${url}-${index}`} className='keen-slider__slide relative'>
+            <div key={`${url}-${index}`} className={classNames('keen-slider__slide', styles.slide)}>
               <Image
                 src={url}
                 alt=''
                 fill
                 unoptimized
                 sizes='(max-width: 768px) calc(100vw - 5rem), 760px'
-                className='object-cover'
+                className={styles.image}
                 draggable={false}
               />
             </div>
@@ -92,24 +96,24 @@ const PostImageGallery = ({ images }: { images: string[] }) => {
             <button
               type='button'
               aria-disabled={currentSlide === 0}
-              className='absolute top-1/2 left-3 z-20 grid size-9 -translate-y-1/2 place-items-center rounded-full bg-black/50 text-white transition-colors hover:bg-black/65 aria-disabled:opacity-30'
+              className={classNames(styles.nav, styles.previous)}
               onPointerDown={handlePreviousPointerDown}
               aria-label='Previous image'
             >
-              <ChevronLeft className='size-5' />
+              <ChevronLeft className={styles.navIcon} />
             </button>
 
             <button
               type='button'
               aria-disabled={currentSlide === images.length - 1}
-              className='absolute top-1/2 right-3 z-20 grid size-9 -translate-y-1/2 place-items-center rounded-full bg-black/50 text-white transition-colors hover:bg-black/65 aria-disabled:opacity-30'
+              className={classNames(styles.nav, styles.next)}
               onPointerDown={handleNextPointerDown}
               aria-label='Next image'
             >
-              <ChevronRight className='size-5' />
+              <ChevronRight className={styles.navIcon} />
             </button>
 
-            <div className='absolute bottom-3 left-1/2 z-20 -translate-x-1/2 rounded-full bg-black/50 px-2 py-1 text-xs text-white'>
+            <div className={styles.counter}>
               {currentSlide + 1} / {images.length}
             </div>
           </>

@@ -7,6 +7,7 @@ import { CommentSubmissionContext, createPendingComment } from './comment-submis
 import { useRouter } from 'next/navigation';
 import { useOptimistic, useState, useTransition } from 'react';
 import { useCreateComment } from '@/hooks/useQueries';
+import styles from './comment-thread.module.scss';
 
 const CommentThread: FC<CommentThreadProps> = ({ tree, postAuthorID, sessionUser, communitySlug, children }) => {
   const router = useRouter();
@@ -34,7 +35,7 @@ const CommentThread: FC<CommentThreadProps> = ({ tree, postAuthorID, sessionUser
   return (
     <CommentSubmissionContext value={{ submitComment, pending: pending || createCommentMutation.isPending }}>
       {children}
-      <ul className='space-y-3'>
+      <ul className={styles.list}>
         {optimisticTree.map(node => (
           <CommentNode
             key={node.id}
