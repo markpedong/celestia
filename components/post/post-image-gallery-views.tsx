@@ -186,7 +186,7 @@ export const GalleryImageGallery: FC<ImageGalleryViewProps> = props => {
       <button
         type='button'
         onClick={onPrevious}
-        className='absolute top-1/2 left-3 -translate-y-1/2 rounded-full bg-background/90 p-2 text-foreground shadow-sm transition-colors hover:bg-background'
+        className='absolute top-1/2 left-3 grid size-9 -translate-y-1/2 place-items-center rounded-full bg-background/90 text-foreground shadow-sm transition-colors hover:bg-background'
         aria-label='Previous image'
       >
         <ChevronLeft className='size-5' />
@@ -194,7 +194,7 @@ export const GalleryImageGallery: FC<ImageGalleryViewProps> = props => {
       <button
         type='button'
         onClick={onNext}
-        className='absolute top-1/2 right-3 -translate-y-1/2 rounded-full bg-background/90 p-2 text-foreground shadow-sm transition-colors hover:bg-background'
+        className='absolute top-1/2 right-3 grid size-9 -translate-y-1/2 place-items-center rounded-full bg-background/90 text-foreground shadow-sm transition-colors hover:bg-background'
         aria-label='Next image'
       >
         <ChevronRight className='size-5' />

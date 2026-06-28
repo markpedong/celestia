@@ -4,6 +4,7 @@ import Image from 'next/image';
 import type { PointerEvent } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { useKeenSlider } from 'keen-slider/react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 import 'keen-slider/keen-slider.min.css';
 
@@ -91,19 +92,21 @@ const PostImageGallery = ({ images }: { images: string[] }) => {
             <button
               type='button'
               aria-disabled={currentSlide === 0}
-              className='absolute left-3 top-1/2 z-20 -translate-y-1/2 rounded-full bg-black/50 px-3 py-2 text-white aria-disabled:opacity-30'
+              className='absolute top-1/2 left-3 z-20 grid size-9 -translate-y-1/2 place-items-center rounded-full bg-black/50 text-white transition-colors hover:bg-black/65 aria-disabled:opacity-30'
               onPointerDown={handlePreviousPointerDown}
+              aria-label='Previous image'
             >
-              ‹
+              <ChevronLeft className='size-5' />
             </button>
 
             <button
               type='button'
               aria-disabled={currentSlide === images.length - 1}
-              className='absolute right-3 top-1/2 z-20 -translate-y-1/2 rounded-full bg-black/50 px-3 py-2 text-white aria-disabled:opacity-30'
+              className='absolute top-1/2 right-3 z-20 grid size-9 -translate-y-1/2 place-items-center rounded-full bg-black/50 text-white transition-colors hover:bg-black/65 aria-disabled:opacity-30'
               onPointerDown={handleNextPointerDown}
+              aria-label='Next image'
             >
-              ›
+              <ChevronRight className='size-5' />
             </button>
 
             <div className='absolute bottom-3 left-1/2 z-20 -translate-x-1/2 rounded-full bg-black/50 px-2 py-1 text-xs text-white'>
