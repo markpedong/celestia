@@ -250,42 +250,42 @@ const ProfileSidebar = ({
     <section className='celestia-card overflow-hidden'>
       <div className='h-1.5 bg-[linear-gradient(90deg,var(--primary),var(--accent))]' />
       <div className='p-4'>
-      <div className='mb-4 flex items-start justify-between gap-3'>
-        <div className='min-w-0'>
-          <h2 className='truncate text-lg font-bold leading-6 tracking-tight text-card-foreground'>
-            {profile.displayName || profile.userName}
-          </h2>
-          <p className='truncate font-mono text-xs text-muted-foreground'>u/{profile.userName}</p>
+        <div className='mb-4 flex items-start justify-between gap-3'>
+          <div className='min-w-0'>
+            <h2 className='truncate text-lg font-bold leading-6 tracking-tight text-card-foreground'>
+              {profile.displayName || profile.userName}
+            </h2>
+            <p className='truncate font-mono text-xs text-muted-foreground'>u/{profile.userName}</p>
+          </div>
+          <button
+            type='button'
+            className='grid size-9 shrink-0 place-items-center rounded-full border border-border bg-secondary/80 text-muted-foreground transition hover:bg-muted hover:text-foreground'
+            aria-label='More profile actions'
+          >
+            <Ellipsis className='size-4' />
+          </button>
         </div>
-        <button
-          type='button'
-          className='grid size-9 shrink-0 place-items-center rounded-full border border-border bg-secondary/80 text-muted-foreground transition hover:bg-muted hover:text-foreground'
-          aria-label='More profile actions'
-        >
-          <Ellipsis className='size-4' />
-        </button>
-      </div>
 
-      <div className='space-y-4'>
-        <ClientProfileControls profile={profile} />
+        <div className='space-y-4'>
+          <ClientProfileControls profile={profile} />
 
-        <div className='grid grid-cols-2 gap-2'>
-          <div className='rounded border border-border bg-muted/30 p-3'>
-            <div className='font-mono text-base font-bold leading-5 text-card-foreground'>{formatCount(karma)}</div>
-            <div className='mt-1 text-xs leading-4 text-muted-foreground'>Karma</div>
-          </div>
-          <div className='rounded border border-border bg-muted/30 p-3'>
-            <div className='font-mono text-base font-bold leading-5 text-card-foreground'>{formatCount(contributions)}</div>
-            <div className='mt-1 text-xs leading-4 text-muted-foreground'>Contributions</div>
-          </div>
-          {joinedAt ? (
-            <div className='col-span-2 rounded border border-border bg-muted/30 p-3'>
-              <div className='font-mono text-base font-bold leading-5 text-card-foreground'>{formatTimeAgo(joinedAt)}</div>
-              <div className='mt-1 text-xs leading-4 text-muted-foreground'>Celestia Age</div>
+          <div className='grid grid-cols-2 gap-2'>
+            <div className='rounded border border-border bg-muted/30 p-3'>
+              <div className='font-mono text-base font-bold leading-5 text-card-foreground'>{formatCount(karma)}</div>
+              <div className='mt-1 text-xs leading-4 text-muted-foreground'>Karma</div>
             </div>
-          ) : null}
+            <div className='rounded border border-border bg-muted/30 p-3'>
+              <div className='font-mono text-base font-bold leading-5 text-card-foreground'>{formatCount(contributions)}</div>
+              <div className='mt-1 text-xs leading-4 text-muted-foreground'>Contributions</div>
+            </div>
+            {joinedAt ? (
+              <div className='col-span-2 rounded border border-border bg-muted/30 p-3'>
+                <div className='font-mono text-base font-bold leading-5 text-card-foreground'>{formatTimeAgo(joinedAt)}</div>
+                <div className='mt-1 text-xs leading-4 text-muted-foreground'>Celestia Age</div>
+              </div>
+            ) : null}
+          </div>
         </div>
-      </div>
       </div>
     </section>
 
