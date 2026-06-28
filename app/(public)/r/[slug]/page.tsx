@@ -10,6 +10,7 @@ import Image from 'next/image';
 
 export const generateStaticParams = async () => {
   const communities = await listCommunity();
+  console.log("communities", communities);
   return communities.map(({ slug }) => ({ slug }));
 };
 

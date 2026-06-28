@@ -33,6 +33,7 @@ export const getProfileByUserName = async ({ username }: { username: string }) =
     params: { username },
     init: { method: REQUEST_METHOD.GET },
     endpoint: API_ENDPOINT.USER,
+    includeCookies: false,
   });
 
   return response;
@@ -74,7 +75,7 @@ export const listUserNames = async () => {
 
 export const listJoinedCommunities = async () => {
   const response = await __api<Community[]>({
-  init: { method: REQUEST_METHOD.GET },
+    init: { method: REQUEST_METHOD.GET },
     endpoint: API_ENDPOINT.USER_COMMUNITIES,
   });
 
@@ -120,6 +121,7 @@ export const getCommunity = async (slug: string) => {
     params: { slug },
     init: { method: REQUEST_METHOD.GET },
     endpoint: API_ENDPOINT.COMMUNITY,
+    includeCookies: false,
   });
 
   return response.data;
@@ -317,17 +319,21 @@ export const getPostByID = async (id: string) => {
     params: { id },
     init: { method: REQUEST_METHOD.GET },
     endpoint: API_ENDPOINT.POSTS,
+    includeCookies: false,
   });
 
   return response.data ?? undefined;
 };
 
 export const listPostIDs = async () => {
-  const response = await fetch(`${process.env.DOMAIN}/api${API_ENDPOINT.POSTS}?${new URLSearchParams({ mode: 'ids' })}`, {
-    cache: 'no-store',
+  const response = await __api<string[]>({
+    init: { method: REQUEST_METHOD.GET },
+    endpoint: API_ENDPOINT.POSTS,
+    params: { mode: 'ids' },
+    includeCookies: false,
   });
-  if (!response.ok) return [];
-  return ((await response.json()) as ApiResponse<string[]>).data ?? [];
+
+  return response.data ?? [];
 };
 
 export const getPostScore = async (targetID: string) => {
@@ -335,6 +341,7 @@ export const getPostScore = async (targetID: string) => {
     params: { target: 'post', targetID },
     init: { method: REQUEST_METHOD.GET },
     endpoint: API_ENDPOINT.VOTES,
+    includeCookies: false,
   });
 
   return response.data?.score ?? 0;
