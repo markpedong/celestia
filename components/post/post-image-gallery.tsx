@@ -2,13 +2,14 @@
 
 import Image from 'next/image';
 import type { PointerEvent } from 'react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useKeenSlider } from 'keen-slider/react';
 
 import 'keen-slider/keen-slider.min.css';
 
 const PostImageGallery = ({ images }: { images: string[] }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [ready, setReady] = useState(false);
   const targetSlideRef = useRef(0);
 
   const syncSlide = (index: number) => {
@@ -18,6 +19,10 @@ const PostImageGallery = ({ images }: { images: string[] }) => {
 
   const [sliderRef, instanceRef] = useKeenSlider<HTMLDivElement>({
     initial: 0,
+    created(slider) {
+      setReady(true);
+      requestAnimationFrame(() => slider.update());
+    },
     animationEnded(slider) {
       syncSlide(slider.track.details.rel);
     },
@@ -25,6 +30,11 @@ const PostImageGallery = ({ images }: { images: string[] }) => {
       syncSlide(slider.track.details.rel);
     },
   });
+
+  useEffect(() => {
+    if (!instanceRef.current) return;
+    requestAnimationFrame(() => instanceRef.current?.update());
+  }, [images, instanceRef]);
 
   if (!images.length) return null;
 
@@ -57,7 +67,10 @@ const PostImageGallery = ({ images }: { images: string[] }) => {
   return (
     <div className='mt-5 w-full min-w-0 overflow-hidden'>
       <div className='relative w-full overflow-hidden rounded'>
-        <div ref={sliderRef} className='keen-slider aspect-[3/2] w-full bg-muted'>
+        <div
+          ref={sliderRef}
+          className={`keen-slider aspect-[3/2] w-full bg-muted transition-opacity duration-150 ${ready ? 'opacity-100' : 'opacity-0'}`}
+        >
           {images.map((url, index) => (
             <div key={`${url}-${index}`} className='keen-slider__slide relative'>
               <Image
