@@ -21,7 +21,11 @@ export const Toaster = () => {
       duration={2000}
       toastOptions={{
         classNames: {
-          toast: '!border-border !shadow-lg',
+          toast: '!border-border !font-sans !shadow-lg',
+          title: '!font-sans',
+          description: '!font-sans',
+          actionButton: '!font-sans',
+          cancelButton: '!font-sans',
           closeButton: '!hidden',
         },
       }}

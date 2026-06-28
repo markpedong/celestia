@@ -24,6 +24,7 @@ const CommentComposer: FC<CommentComposerProps> = ({ postID, user, compact, pare
     schema: commentSchema,
     defaultValues: { body: '' },
   });
+  const submitting = pending || createCommentMutation.isPending || Boolean(commentSubmission?.pending);
 
   const onSubmit = async ({ body }: { body: string }) => {
     const pendingComment = { postID: postID, parentID: parentID ?? null, body: body.trim(), author: user };
@@ -62,9 +63,8 @@ const CommentComposer: FC<CommentComposerProps> = ({ postID, user, compact, pare
         <Button
           type='submit'
           size='sm'
-          disabled={!isValid}
-          isLoading={pending || createCommentMutation.isPending || Boolean(commentSubmission?.pending)}
-          loadingText='Posting...'
+          disabled={!isValid || submitting}
+          aria-busy={submitting}
           className='celestia-primary-action rounded'
         >
           {parentID ? 'Reply' : 'Comment'}

@@ -58,7 +58,7 @@ export const SubmitPostForm: FC<SubmitPostFormProps> = ({ communities, defaultCo
           id='title'
           maxLength={MAX_POST_TITLE_LENGTH}
           placeholder='What do you want to discuss?'
-          className='h-10 rounded border-border bg-secondary/80 px-4 text-[15px] focus-visible:border-primary/40 focus-visible:ring-primary/20'
+          className='celestia-input-surface h-10 px-4 text-[15px]'
           aria-invalid={Boolean(errors.title && (touchedFields.title || isSubmitted))}
           {...register('title')}
         />
@@ -74,7 +74,7 @@ export const SubmitPostForm: FC<SubmitPostFormProps> = ({ communities, defaultCo
           rows={5}
           maxLength={MAX_POST_BODY_LENGTH}
           placeholder='Add context, details, links...'
-          className='resize-y rounded border-border bg-secondary/80 px-4 py-3 leading-6 focus-visible:border-primary/40 focus-visible:ring-primary/20'
+          className='celestia-input-surface resize-y px-4 py-3 leading-6'
           aria-invalid={Boolean(errors.body && (touchedFields.body || isSubmitted))}
           {...register('body')}
         />
@@ -93,7 +93,7 @@ export const SubmitPostForm: FC<SubmitPostFormProps> = ({ communities, defaultCo
         <select
           id='communitySlug'
           disabled={communities.length === 0 || pending}
-          className='h-10 w-full rounded border border-border bg-secondary/80 px-4 text-sm text-foreground outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60'
+          className='celestia-field-shell h-10 w-full px-4 text-sm text-foreground outline-none disabled:cursor-not-allowed disabled:opacity-60'
           aria-invalid={Boolean(errors.communitySlug && (touchedFields.communitySlug || isSubmitted))}
           {...register('communitySlug')}
         >

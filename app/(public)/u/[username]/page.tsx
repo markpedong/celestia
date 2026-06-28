@@ -237,14 +237,14 @@ const ProfileSidebar = ({ profileID, karma, joinedAt }: { profileID: string; kar
       <div className='p-4'>
         <h2 className='mb-3 text-sm font-semibold'>Profile details</h2>
         <div className='space-y-2 text-xs text-muted-foreground'>
-          <div className='flex items-center justify-between rounded border border-border bg-muted/30 px-3 py-2'>
+          <div className='celestia-stat-row'>
             <span className='flex items-center gap-2'>
               <Trophy className='size-3.5 text-primary' /> Karma
             </span>
             <span className='font-mono font-semibold text-foreground'>{formatCount(karma)}</span>
           </div>
           {joinedAt ? (
-            <div className='flex items-center justify-between rounded border border-border bg-muted/30 px-3 py-2'>
+            <div className='celestia-stat-row'>
               <span className='flex items-center gap-2'>
                 <CakeSlice className='size-3.5 text-primary' /> Joined
               </span>

@@ -75,6 +75,22 @@
   @apply transition-colors hover:bg-muted hover:text-foreground;
 }
 
+.celestia-input-surface {
+  @apply rounded border-border bg-secondary/80 focus-visible:border-primary/40 focus-visible:ring-primary/20;
+}
+
+.celestia-field-shell {
+  @apply rounded border border-border bg-secondary/80 focus-within:border-primary/40 focus-within:ring-2 focus-within:ring-primary/20;
+}
+
+.celestia-stat-row {
+  @apply flex items-center justify-between rounded border border-border bg-muted/30 px-3 py-2;
+}
+
+.celestia-inline-action {
+  @apply inline-flex items-center gap-1 rounded px-2 py-1 transition-colors hover:bg-muted hover:text-foreground;
+}
+
 .celestia-vote-rail {
   @apply bg-muted/60;
 }

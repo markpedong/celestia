@@ -60,16 +60,14 @@ export const CommentNode: FC<CommentNodeProps> = ({
               <button
                 type='button'
                 onClick={() => setHideComments(prev => !prev)}
-                className='inline-flex items-center gap-1 rounded px-2 py-1 celestia-hover-surface'
+                className='celestia-inline-action'
                 aria-label={hideComments ? 'Expand replies' : 'Collapse replies'}
               >
                 <Icon className='size-4' />
                 {node.children.length}
               </button>
             ) : null}
-            {node.isPending ? (
-              <span className='px-2 py-1 text-muted-foreground'>Sending...</span>
-            ) : (
+            {!node.isPending ? (
               <VoteButtons
                 target='comment'
                 targetID={node.id}
@@ -77,18 +75,18 @@ export const CommentNode: FC<CommentNodeProps> = ({
                 userVote={node.userVote}
                 isSignedIn={Boolean(viewer)}
               />
-            )}
+            ) : null}
             {viewer && isMember && !node.isPending ? (
               <button
                 type='button'
                 onClick={() => onReplyChangeAction(isReplying ? null : node.id)}
-                className='inline-flex items-center gap-1 rounded px-2 py-1 celestia-hover-surface'
+                className='celestia-inline-action'
               >
                 <CornerDownRight className='size-3.5' />
                 Reply
               </button>
             ) : null}
-            <button type='button' className='inline-flex items-center gap-1 rounded px-2 py-1 celestia-hover-surface'>
+            <button type='button' className='celestia-inline-action'>
               <Share2 className='size-3.5' />
               Share
             </button>

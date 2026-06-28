@@ -33,19 +33,19 @@ const CommunitySidebar: FC<{ community?: Community }> = ({ community }) => {
             `r/${slug} is a place for focused discussions, shared posts, and member-led conversations.`}
         </p>
         <div className='mt-4 grid gap-2 text-xs'>
-          <div className='flex items-center justify-between rounded border border-border bg-muted/30 px-3 py-2'>
+          <div className='celestia-stat-row'>
             <span className='flex items-center gap-2 text-muted-foreground'>
               <Users className='size-3.5 text-primary' /> Members
             </span>
             <span className='font-mono font-semibold text-foreground'>{formatCount(stats?.data?.memberCount)}</span>
           </div>
-          <div className='flex items-center justify-between rounded border border-border bg-muted/30 px-3 py-2'>
+          <div className='celestia-stat-row'>
             <span className='flex items-center gap-2 text-muted-foreground'>
               <MessageSquare className='size-3.5 text-primary' /> Comments
             </span>
             <span className='font-mono font-semibold text-foreground'>{formatCount(stats?.data?.commentCount)}</span>
           </div>
-          <div className='flex items-center justify-between rounded border border-border bg-muted/30 px-3 py-2'>
+          <div className='celestia-stat-row'>
             <span className='flex items-center gap-2 text-muted-foreground'>
               <Hash className='size-3.5 text-primary' /> Posts
             </span>

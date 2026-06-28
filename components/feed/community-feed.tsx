@@ -8,7 +8,6 @@ import { useState } from 'react';
 import { PostList } from './post-list';
 import { EmptyState } from '../ui/empty-state';
 import { usePathname } from 'next/navigation';
-import { CelestiaSignalLoader } from '../ui/celestia-signal-loader';
 import Skeleton from 'react-loading-skeleton';
 
 const sortTabs = [
@@ -19,19 +18,30 @@ const sortTabs = [
 
 const CommunityFeedLoader = () => (
   <div className='space-y-3' aria-label='Loading posts' role='status'>
-    <div className='celestia-card flex items-center gap-3 p-4'>
-      <CelestiaSignalLoader size='sm' className='shrink-0' />
-      <div>
-        <p className='text-sm font-semibold text-foreground'>Receiving community posts</p>
-        <p className='mt-0.5 text-xs text-muted-foreground'>A few signals are on their way.</p>
-      </div>
-    </div>
     {[0, 1, 2].map(index => (
-      <div key={index} className='celestia-card p-4'>
-        <Skeleton width={112} height={12} />
-        <Skeleton width='66%' height={16} />
-        <Skeleton height={12} />
-      </div>
+      <article key={index} className='celestia-card flex w-full overflow-hidden'>
+        <div className='celestia-vote-rail flex min-w-[50px] flex-col items-center justify-start border-r border-border/60 px-2.5 py-4'>
+          <Skeleton circle width={22} height={22} />
+          <Skeleton className='my-1' width={28} height={14} />
+          <Skeleton circle width={22} height={22} />
+        </div>
+        <div className='min-w-0 flex-1 p-4 md:p-5'>
+          <div className='mb-2 flex items-center gap-2'>
+            <Skeleton circle width={20} height={20} />
+            <Skeleton width={120} height={12} />
+            <Skeleton width={72} height={12} />
+            <Skeleton width={92} height={18} />
+          </div>
+          <Skeleton width='68%' height={20} />
+          <Skeleton className='mt-2' width='92%' height={14} />
+          <Skeleton width='74%' height={14} />
+          {index !== 1 ? <Skeleton className='mt-4' height={220} /> : null}
+          <div className='mt-4 flex items-center gap-2'>
+            <Skeleton width={96} height={26} />
+            <Skeleton width={68} height={26} />
+          </div>
+        </div>
+      </article>
     ))}
   </div>
 );
@@ -72,7 +82,6 @@ const CommunityFeed = () => {
           })}
           {isFetching && !isLoading ? (
             <div className='ml-auto flex items-center gap-1.5 text-xs font-medium text-muted-foreground' role='status' aria-live='polite'>
-              <CelestiaSignalLoader size='sm' className='shrink-0' />
               <span>Refreshing posts</span>
             </div>
           ) : null}
