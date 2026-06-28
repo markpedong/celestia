@@ -1,7 +1,7 @@
 'use client';
 
 import { type FC } from 'react';
-import { Plus, Zap } from 'lucide-react';
+import { Menu, Plus, Zap } from 'lucide-react';
 import Link from 'next/link';
 import classNames from 'classnames';
 import { buttonVariants } from '../ui/button';
@@ -9,6 +9,7 @@ import SearchBox from './search-box';
 import type { NavbarProps } from '@/lib/types';
 import { useGetProfile } from '@/hooks/useQueries';
 import { AccountMenuDynamic } from '@/components/dynamic-import';
+import { OPEN_LEFT_SIDEBAR_EVENT } from '@/lib/layout-events';
 import styles from './navbar.module.scss';
 
 const Navbar: FC<NavbarProps> = ({ trending, communities }) => {
@@ -17,6 +18,15 @@ const Navbar: FC<NavbarProps> = ({ trending, communities }) => {
   return (
     <header className={classNames('celestia-nav-shadow', styles.header)}>
       <div className={styles.inner}>
+        <button
+          type='button'
+          className={styles.menuButton}
+          aria-label='Open sidebar'
+          onClick={() => window.dispatchEvent(new Event(OPEN_LEFT_SIDEBAR_EVENT))}
+        >
+          <Menu aria-hidden />
+        </button>
+
         <Link href='/' className={classNames('group', styles.brand)}>
           <span className={classNames('celestia-brand-mark', styles.mark)}>
             <Zap className={styles.brandIcon} aria-hidden />

@@ -1,0 +1,24 @@
+@reference "../globals.css";
+
+.shell {
+  @apply mx-auto flex w-full max-w-[1600px] gap-0 px-4;
+}
+
+.sidebarFallback {
+  @apply hidden w-56 shrink-0;
+}
+
+.main {
+  @apply min-w-0 flex-1 pb-[calc(4.5rem+env(safe-area-inset-bottom))] pt-6;
+}
+
+@media (min-width: 992px) {
+  .sidebarFallback {
+    @apply block;
+  }
+
+  .main {
+    @apply px-6 pb-0;
+  }
+}
+

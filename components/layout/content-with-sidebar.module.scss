@@ -1,7 +1,7 @@
 @reference "../../app/globals.css";
 
 .root {
-  @apply grid gap-6 xl:grid-cols-[minmax(0,1fr)_18rem];
+  @apply grid gap-6;
 }
 
 .content {
@@ -9,9 +9,27 @@
 }
 
 .sidebar {
-  @apply hidden xl:block;
+  @apply hidden;
 }
 
 .sidebarInner {
   @apply sticky top-20 space-y-4;
+}
+
+.mobileSidebar {
+  @apply mt-5 space-y-4;
+}
+
+@media (min-width: 992px) {
+  .root {
+    @apply grid-cols-[minmax(0,1fr)_18rem];
+  }
+
+  .sidebar {
+    @apply block;
+  }
+
+  .mobileSidebar {
+    @apply hidden;
+  }
 }

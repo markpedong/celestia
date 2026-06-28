@@ -12,6 +12,10 @@
   @apply flex shrink-0 items-center gap-2 font-semibold tracking-tight text-foreground;
 }
 
+.menuButton {
+  @apply grid size-9 shrink-0 place-items-center rounded border border-border bg-secondary/60 text-muted-foreground transition hover:bg-muted hover:text-foreground;
+}
+
 .mark {
   @apply size-8;
 }
@@ -34,4 +38,10 @@
 
 .newPost {
   @apply hidden sm:inline-flex;
+}
+
+@media (min-width: 992px) {
+  .menuButton {
+    @apply hidden;
+  }
 }

@@ -6,7 +6,10 @@ import styles from './content-with-sidebar.module.scss';
 export const ContentWithSidebar: FC<ContentWithSidebarProps> = ({ children, sidebar, className, contentClassName, sidebarClassName }) => {
   return (
     <div className={classNames(styles.root, className)}>
-      <div className={classNames(styles.content, contentClassName)}>{children}</div>
+      <div className={classNames(styles.content, contentClassName)}>
+        {children}
+        <div className={styles.mobileSidebar}>{sidebar}</div>
+      </div>
       <aside className={classNames(styles.sidebar, sidebarClassName)}>
         <div className={styles.sidebarInner}>{sidebar}</div>
       </aside>

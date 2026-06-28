@@ -1,24 +1,70 @@
 @reference "../../app/globals.css";
 
 .launcher {
-  @apply fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom))] right-4 z-40 h-11 gap-2 rounded-sm px-3 shadow-lg lg:bottom-5;
+  @apply fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom))] right-4 z-40 hidden h-11 gap-2 rounded-sm px-3 shadow-lg;
 }
 
 .shell {
-  @apply fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom))] right-4 z-40 flex h-[min(38rem,calc(100vh-7rem))] w-[calc(100vw-2rem)] max-w-[48rem] overflow-hidden rounded-md border border-border bg-card shadow-2xl lg:bottom-5;
+  @apply fixed inset-0 z-50 flex overflow-hidden bg-background;
+  animation: inboxEnter 180ms ease-out both;
+}
+
+.shellClosing {
+  animation: inboxExit 180ms ease-in both;
+  pointer-events: none;
 }
 
 .rail {
-  @apply flex w-36 shrink-0 flex-col border-r border-border bg-muted/40 sm:w-56;
+  @apply flex min-w-0 flex-1 flex-col bg-background;
 }
 
-.railHeader,
+.inboxHeader,
 .chatHeader {
-  @apply flex h-12 shrink-0 items-center justify-between gap-2 border-b border-border px-3;
+  @apply flex h-16 shrink-0 items-center justify-between gap-3 border-b border-border px-4;
+}
+
+.inboxHeader {
+  @apply pt-[env(safe-area-inset-top)];
+}
+
+.menuButton,
+.backButton {
+  @apply grid size-9 shrink-0 place-items-center rounded border border-border bg-secondary/70 text-muted-foreground transition hover:bg-muted hover:text-foreground;
+}
+
+.menuButton svg,
+.backButton svg {
+  @apply size-4;
+}
+
+.inboxTitle {
+  @apply min-w-0 flex-1 truncate text-center text-2xl font-black tracking-tight text-foreground;
 }
 
 .title {
   @apply truncate text-sm font-semibold;
+}
+
+.tabs {
+  @apply grid grid-cols-2 gap-2 border-b border-border bg-background px-4 py-3;
+}
+
+.tabActive,
+.tabDisabled {
+  @apply inline-flex h-10 min-w-0 items-center justify-center gap-1.5 rounded px-3 text-xs font-semibold;
+}
+
+.tabActive {
+  @apply bg-primary/12 text-primary ring-1 ring-primary/20;
+}
+
+.tabDisabled {
+  @apply cursor-not-allowed text-muted-foreground opacity-50;
+}
+
+.tabActive svg,
+.tabDisabled svg {
+  @apply size-3.5 shrink-0;
 }
 
 .subtitle {
@@ -26,19 +72,19 @@
 }
 
 .conversationList {
-  @apply min-h-0 flex-1 overflow-y-auto p-2;
+  @apply min-h-0 flex-1 overflow-y-auto;
 }
 
 .conversationButton {
-  @apply flex w-full items-center gap-2 rounded-sm px-2 py-2 text-left text-sm transition hover:bg-background;
+  @apply flex h-18 w-full items-center gap-3 border-b border-border/70 px-4 text-left text-sm transition hover:bg-muted/50;
 }
 
 .conversationButtonActive {
-  @apply bg-background shadow-sm;
+  @apply bg-muted/60;
 }
 
 .conversationIcon {
-  @apply flex size-8 shrink-0 items-center justify-center rounded-sm bg-primary/10 text-primary;
+  @apply flex size-11 shrink-0 items-center justify-center rounded bg-primary/10 text-primary;
 }
 
 .conversationText {
@@ -46,7 +92,7 @@
 }
 
 .conversationMeta {
-  @apply mt-0.5 flex items-center gap-1 text-xs text-muted-foreground;
+  @apply mt-1 line-clamp-1 text-xs leading-5 text-muted-foreground;
 }
 
 .unread {
@@ -54,7 +100,11 @@
 }
 
 .panel {
-  @apply flex min-w-0 flex-1 flex-col;
+  @apply absolute inset-0 flex min-w-0 translate-x-full flex-col bg-background transition-transform duration-300 ease-out;
+}
+
+.shellConversationOpen .panel {
+  @apply translate-x-0;
 }
 
 .messages {
@@ -107,4 +157,93 @@
 
 .hiddenMobileText {
   @apply hidden sm:inline;
+}
+
+@media (min-width: 992px) {
+  .launcher {
+    @apply flex bottom-5;
+  }
+
+  .shell {
+    @apply inset-x-auto bottom-5 right-4 top-auto z-40 h-[min(42rem,calc(100vh-7rem))] w-[calc(100vw-2rem)] max-w-[64rem] rounded-md border border-border bg-card shadow-2xl;
+  }
+
+  .rail {
+    @apply w-64 flex-none border-r border-border bg-muted/40;
+  }
+
+  .panel {
+    @apply flex-1;
+  }
+
+  .inboxHeader,
+  .chatHeader {
+    @apply h-12 px-3 pt-0;
+  }
+
+  .menuButton,
+  .backButton {
+    @apply hidden;
+  }
+
+  .inboxTitle {
+    @apply text-sm font-semibold;
+  }
+
+  .tabs {
+    @apply gap-1 bg-card p-2;
+  }
+
+  .tabActive,
+  .tabDisabled {
+    @apply h-auto px-2 py-1.5 text-[11px];
+  }
+
+  .conversationList {
+    @apply p-2;
+  }
+
+  .conversationButton {
+    @apply h-auto gap-2 rounded-sm border-b-0 px-2 py-2 hover:bg-background;
+  }
+
+  .conversationButtonActive {
+    @apply bg-background shadow-sm;
+  }
+
+  .conversationIcon {
+    @apply size-8 rounded-sm;
+  }
+
+  .conversationMeta {
+    @apply mt-0.5 flex items-center gap-1 leading-normal;
+  }
+
+  .panel {
+    @apply static flex translate-x-0 bg-transparent;
+  }
+}
+
+@keyframes inboxEnter {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes inboxExit {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
 }

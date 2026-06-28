@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
-import { Hash, MessageCircle, Send, X } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { ArrowLeft, Bell, Hash, Menu, MessageCircle, Send, X } from 'lucide-react';
 import classNames from 'classnames';
 import dayjs from 'dayjs';
 import { useQueryClient } from '@tanstack/react-query';
@@ -11,6 +11,7 @@ import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import type { ChatConversation } from '@/lib/types';
 import { chatConversationsQueryKey, chatMessagesQueryKey, useChatConversations, useChatMessages, useGetProfile, useMarkChatRead, useSendChatMessage } from '@/hooks/useQueries';
 import { OPEN_CHAT_EVENT, PENDING_DIRECT_CONVERSATION_PREFIX, type OpenChatEventDetail } from '@/lib/chat-events';
+import { OPEN_LEFT_SIDEBAR_EVENT } from '@/lib/layout-events';
 import styles from './chat-widget.module.scss';
 
 const supabase = createSupabaseBrowserClient();
@@ -39,9 +40,11 @@ export const ChatWidget = () => {
   const conversationsQuery = useChatConversations();
   const conversations = conversationsQuery.data?.data ?? EMPTY_CONVERSATIONS;
   const [isOpen, setIsOpen] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const [activeID, setActiveID] = useState<string | null>(null);
   const [draft, setDraft] = useState('');
-  const selectedID = activeID ?? conversations[0]?.id ?? null;
+  const closeTimerRef = useRef<number | null>(null);
+  const selectedID = activeID;
   const messagesQuery = useChatMessages(selectedID);
   const sendMessage = useSendChatMessage();
   const { mutate: markChatRead } = useMarkChatRead();
@@ -49,7 +52,14 @@ export const ChatWidget = () => {
   useEffect(() => {
     const openChat = (event: Event) => {
       const detail = (event as CustomEvent<OpenChatEventDetail>).detail;
-      if (!detail?.conversationID) return;
+      if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
+      setIsClosing(false);
+
+      if (!detail?.conversationID) {
+        setActiveID(null);
+        setIsOpen(true);
+        return;
+      }
 
       setActiveID(detail.conversationID);
       setIsOpen(true);
@@ -57,6 +67,10 @@ export const ChatWidget = () => {
 
     window.addEventListener(OPEN_CHAT_EVENT, openChat);
     return () => window.removeEventListener(OPEN_CHAT_EVENT, openChat);
+  }, []);
+
+  useEffect(() => () => {
+    if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
   }, []);
 
   useEffect(() => {
@@ -101,6 +115,22 @@ export const ChatWidget = () => {
 
   if (!profile) return null;
 
+  const openInbox = () => {
+    if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
+    setIsClosing(false);
+    setActiveID(null);
+    setIsOpen(true);
+  };
+
+  const closeInbox = () => {
+    setIsClosing(true);
+    closeTimerRef.current = window.setTimeout(() => {
+      setIsOpen(false);
+      setIsClosing(false);
+      setActiveID(null);
+    }, 220);
+  };
+
   const submit = (event: FormEvent) => {
     event.preventDefault();
     const body = draft.trim();
@@ -122,7 +152,7 @@ export const ChatWidget = () => {
 
   if (!isOpen) {
     return (
-      <Button className={styles.launcher} onClick={() => setIsOpen(true)}>
+      <Button className={styles.launcher} onClick={openInbox}>
         <MessageCircle />
         <span className={styles.hiddenMobileText}>Chat</span>
         {unreadTotal > 0 ? <span className={styles.unread}>{unreadTotal}</span> : null}
@@ -131,13 +161,38 @@ export const ChatWidget = () => {
   }
 
   return (
-    <section className={styles.shell} aria-label='Chat'>
+    <section
+      className={classNames(styles.shell, {
+        [styles.shellConversationOpen]: !!selectedID,
+        [styles.shellClosing]: isClosing,
+      })}
+      aria-label='Inbox'
+    >
       <aside className={styles.rail}>
-        <div className={styles.railHeader}>
-          <div className={styles.title}>Chat</div>
-          <Button variant='ghost' size='icon-sm' aria-label='Close chat' onClick={() => setIsOpen(false)}>
+        <div className={styles.inboxHeader}>
+          <button
+            type='button'
+            className={styles.menuButton}
+            aria-label='Open sidebar'
+            onClick={() => window.dispatchEvent(new Event(OPEN_LEFT_SIDEBAR_EVENT))}
+          >
+            <Menu aria-hidden />
+          </button>
+          <h2 className={styles.inboxTitle}>Inbox</h2>
+          <Button variant='ghost' size='icon-sm' aria-label='Close chat' onClick={closeInbox}>
             <X />
           </Button>
+        </div>
+
+        <div className={styles.tabs} role='tablist' aria-label='Inbox sections'>
+          <button type='button' className={styles.tabDisabled} disabled aria-disabled='true'>
+            <Bell aria-hidden />
+            Notifications
+          </button>
+          <button type='button' className={styles.tabActive}>
+            <MessageCircle aria-hidden />
+            Chat
+          </button>
         </div>
 
         <div className={styles.conversationList}>
@@ -169,6 +224,9 @@ export const ChatWidget = () => {
 
       <div className={styles.panel}>
         <header className={styles.chatHeader}>
+          <button type='button' className={styles.backButton} aria-label='Back to inbox' onClick={() => setActiveID(null)}>
+            <ArrowLeft aria-hidden />
+          </button>
           <div className={styles.conversationText}>
             <div className={styles.title}>{activeConversation?.label ?? 'Select a chat'}</div>
             <div className={styles.subtitle}>
