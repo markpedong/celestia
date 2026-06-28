@@ -28,13 +28,12 @@ export type TApiArgs = {
 };
 
 export const __api = async <TApiResponse = null>({ endpoint, params, init, includeCookies = true }: TApiArgs) => {
-  const parameters = generateParameters(params);
+  const parameters = await generateParameters(params);
   const requestInput = `${process.env.DOMAIN}/api${endpoint}${parameters}`;
   const requestInit = await generateRequestInit(init, includeCookies);
 
   const response = await fetch<TApiResponse>(requestInput, requestInit);
   const responseJSON = await response.json();
-  console.log("responseJSON", responseJSON);
 
   return responseJSON
 };

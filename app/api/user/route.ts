@@ -1,6 +1,6 @@
 import { USER_FIELDS } from '@/constants';
 import { getCurrentUserID } from '@/lib/auth';
-import { getAuthorByID } from '@/lib/db/user.queries';
+import { getUserByID } from '@/lib/db/user.queries';
 import { profileDetailsSchema } from '@/lib/form-schemas';
 import { prisma } from '@/lib/prisma';
 import { generateErrorResponse, generateSuccessResponse } from '@/services/request';
@@ -10,8 +10,8 @@ import { revalidatePath } from 'next/cache';
 export const GET = async () => {
   const userID = await getCurrentUserID();
   if (!userID) return generateErrorResponse('Unauthorized.', 401);
-
-  const profile = await getAuthorByID(userID);
+  
+  const profile = await getUserByID(userID);
   return profile ? generateSuccessResponse(profile) : generateErrorResponse('User not found', 404);
 };
 

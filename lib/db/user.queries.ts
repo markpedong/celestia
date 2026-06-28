@@ -53,7 +53,7 @@ export const batchUserStatsForIDs = async (userIDs: string[]): Promise<Map<strin
   return result;
 };
 
-export const getAuthorByID = async (authorID: string): Promise<User | null> => {
+export const getUserByID = async (authorID: string): Promise<User | null> => {
   return prisma.users.findUnique({ where: { id: authorID } });
 };
 

@@ -10,11 +10,11 @@ import { listComments, listVotedCommentsByUser } from '@/lib/db/comment.queries'
 import { listCommunity } from '@/lib/db/community.queries';
 import { listPostsByAuthor, listVotedPostsByUser } from '@/lib/db/post.queries';
 import {
-  batchUserStatsForIDs,
-  getAuthorByID,
-  getUserByUserName,
-  getUserStats,
-  listUserNames,
+    batchUserStatsForIDs,
+    getUserByID,
+    getUserByUserName,
+    getUserStats,
+    listUserNames,
 } from '@/lib/db/user.queries';
 import type { CommentsListProps, FeedPostRow, UserCommentActivity, UserPageProps } from '@/lib/types';
 import { formatCount, formatTimeAgo } from '@/lib/utils';
@@ -60,7 +60,7 @@ const UserPage = async ({ params }: UserPageProps) => {
   const allRows = [...posts, ...upvotedPosts, ...downvotedPosts];
   const authorIDs = uniq(allRows.map(({ post }) => post.authorID).concat(profile.id));
   const [authors, authorStatsByID] = await Promise.all([
-    Promise.all(authorIDs.map(getAuthorByID)),
+    Promise.all(authorIDs.map(getUserByID)),
     batchUserStatsForIDs(authorIDs),
   ]);
   const authorsByID = new Map(authors.flatMap(author => (author ? [[author.id, author] as const] : [])));
@@ -278,7 +278,7 @@ const OverviewActivityFeed = ({
   isSignedIn,
 }: {
   items: OverviewActivity[];
-  authorsByID: Map<string, NonNullable<Awaited<ReturnType<typeof getAuthorByID>>>>;
+  authorsByID: Map<string, NonNullable<Awaited<ReturnType<typeof getUserByID>>>>;
   authorStatsByID: Awaited<ReturnType<typeof batchUserStatsForIDs>>;
   tagsBySlug: Map<string, Awaited<ReturnType<typeof listCommunity>>[number]>;
   isSignedIn: boolean;

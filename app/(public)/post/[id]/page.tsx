@@ -10,7 +10,7 @@ import type { PostPageProps } from '@/lib/types';
 import { getCommentTree } from '@/lib/db/comment.queries';
 import { listCommunity } from '@/lib/db/community.queries';
 import { getPostByID, listPostIDs } from '@/lib/db/post.queries';
-import { getAuthorByID } from '@/lib/db/user.queries';
+import { getUserByID } from '@/lib/db/user.queries';
 import { getPostScore } from '@/lib/db/vote.queries';
 import { MessageSquare, Radio, Users } from 'lucide-react';
 import Link from 'next/link';
@@ -28,7 +28,7 @@ const Page = async ({ params }: PostPageProps) => {
   if (!post) return notFound();
 
   const [author, score, tags] = await Promise.all([
-    getAuthorByID(post.authorID),
+    getUserByID(post.authorID),
     getPostScore(post.id),
     listCommunity(),
   ]);

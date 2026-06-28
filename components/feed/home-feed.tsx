@@ -6,7 +6,7 @@ import { trendingToday } from '@/lib/trending';
 import type { FeedSort, SearchParams } from '@/lib/types';
 import { listCommunity, tagsPostCounts } from '@/lib/db/community.queries';
 import { listPostSorted } from '@/lib/db/post.queries';
-import { batchUserStatsForIDs, getAuthorByID } from '@/lib/db/user.queries';
+import { batchUserStatsForIDs, getUserByID } from '@/lib/db/user.queries';
 import { FileQuestion, Radio } from 'lucide-react';
 import uniq from 'lodash/uniq';
 
@@ -29,7 +29,7 @@ const HomeFeed = async ({ searchParams, sort, hotPath }: HomeFeedProps) => {
 
   const authorIDs = uniq(rows.map(({ post }) => post.authorID));
   const [authors, authorStatsByID] = await Promise.all([
-    Promise.all(authorIDs.map(getAuthorByID)),
+    Promise.all(authorIDs.map(getUserByID)),
     batchUserStatsForIDs(authorIDs),
   ]);
   const authorByID = new Map(authors.flatMap(author => author ? [[author.id, author] as const] : []));

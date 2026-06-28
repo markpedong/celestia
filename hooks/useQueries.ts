@@ -1,7 +1,7 @@
 'use client';
 
 import { STALE_TIME } from '@/constants';
-import { createComment, createCommunity, createPost, getCommunity, getCommunityFeed, getCommunityMember, getCommunityStats, getOwnedCommunities, getProfileByUserName, joinCommunity, updateCommunity, updatePost, updateProfile, uploadImages, vote } from '@/services';
+import { createComment, createCommunity, createPost, getCommunity, getCommunityFeed, getCommunityMember, getCommunityStats, getOwnedCommunities, getProfile, joinCommunity, updateCommunity, updatePost, updateProfile, uploadImages, vote } from '@/services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSession } from './useSession';
 import type { ApiResponse, CommentFormState, CommunityStats, FeedSort, ImageBucket, VoteActionValue, VoteTarget } from '@/lib/types';
@@ -16,7 +16,7 @@ export const useGetProfile = () => {
 
   return useQuery({
     queryKey: ['profile', authUser?.id],
-    queryFn: () => getProfileByUserName(authUser?.user_metadata.userName),
+    queryFn: getProfile,
     enabled: Boolean(authUser?.id),
     staleTime: STALE_TIME,
   });

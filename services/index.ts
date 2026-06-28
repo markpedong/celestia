@@ -17,17 +17,13 @@ import {
 import { __api } from "./request";
 import { API_ENDPOINT, REQUEST_METHOD } from "@/constants/enums";
 
-export const getProfileByUserName = async ({ username }: { username: string }) => {
+
+export const getProfile = async () => {
   const response = await __api<User>({
-    params: { username },
     init: { method: REQUEST_METHOD.GET },
     endpoint: API_ENDPOINT.USER,
-    includeCookies: false,
   });
 
-  console.log("response", response);
-
-  
   return response;
 };
 
