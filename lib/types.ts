@@ -370,12 +370,6 @@ export type CommentsListProps = {
   title: string;
 };
 
-export type PostImageGalleryProps = {
-  imageUrls: string[];
-  title: string;
-  variant: 'thumbnail' | 'feed' | 'gallery';
-};
-
 type SharedFormFieldProps = {
   name?: string;
   id?: string;

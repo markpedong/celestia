@@ -3,13 +3,11 @@
 import type { FC } from 'react';
 import Image from 'next/image';
 import { useRef, useState } from 'react';
-import { PostImageGalleryProps } from '@/lib/types';
 import { useKeenSlider } from 'keen-slider/react';
 
 import 'keen-slider/keen-slider.min.css';
 
-export const PostImageGallery: FC<PostImageGalleryProps> = ({ imageUrls }) => {
-  const images = imageUrls ?? [];
+const PostImageGallery: FC<{ images: string[] }> = ({ images }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const targetSlideRef = useRef(0);
 
@@ -120,3 +118,5 @@ export const PostImageGallery: FC<PostImageGalleryProps> = ({ imageUrls }) => {
     </div>
   );
 };
+
+export default PostImageGallery;

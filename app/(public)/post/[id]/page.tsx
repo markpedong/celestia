@@ -5,13 +5,13 @@ import { ClientPostControls } from '@/components/auth/client-post-controls';
 import { PostMeta } from '@/components/feed/post-meta';
 import { ContentWithSidebar } from '@/components/layout/content-with-sidebar';
 import CommentThread from '@/components/post/comment-thread';
-import { PostImageGallery } from '@/components/post/post-image-gallery';
 import { Separator } from '@/components/ui/separator';
 import { getAuthorByID, getCommentTree, getPostByID, getPostScore, listCommunity, listPostIDs } from '@/lib/db/queries';
 import type { PostPageProps } from '@/lib/types';
 import { MessageSquare, Radio, Users } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import PostImageGallery from '@/components/post/post-image-gallery';
 
 export const generateStaticParams = async () => {
   const ids = await listPostIDs();
@@ -78,10 +78,10 @@ const Page = async ({ params }: PostPageProps) => {
               afterTag={communitySlug ? <ClientCommunityJoinButton communitySlug={communitySlug} /> : null}
             />
             <h1 className='text-balance text-2xl font-bold leading-tight text-foreground md:text-3xl'>{post.title}</h1>
-            {post.imageUrls.length > 0 ? (
-              <PostImageGallery imageUrls={post.imageUrls} title={post.title} variant='gallery' />
-            ) : null}
-            <div className='mt-6 whitespace-pre-wrap text-base leading-8 text-muted-foreground'>{post.body}</div>
+            {post.imageUrls.length > 0 ? <PostImageGallery images={post.imageUrls} /> : null}
+            <div className='mt-6 whitespace-pre-wrap text-base leading-8 text-muted-foreground break-all'>
+              {post.body}
+            </div>
             <Separator className='my-6' />
             <div className='flex flex-wrap items-center justify-between gap-3'>
               <div className='flex flex-wrap items-center gap-3'>

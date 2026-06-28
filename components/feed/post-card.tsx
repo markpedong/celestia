@@ -4,7 +4,7 @@ import { MessageSquare, Share2, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import VoteButtons from './vote-buttons';
 import { PostMeta } from './post-meta';
-import { PostImageGallery } from '../post/post-image-gallery';
+import PostImageGallery from '../post/post-image-gallery';
 
 const snippet = (body: string, max = 160) => {
   const t = body.replace(/\s+/g, ' ').trim();
@@ -21,15 +21,24 @@ const PostCard: FC<PostCardProps> = ({ post, author, authorStats, tagsBySlug, sc
         <VoteButtons target='post' targetID={post.id} score={score} userVote={userVote} isSignedIn={isSignedIn} />
       </div>
       <div className='min-w-0 flex-1 p-4 md:p-5'>
-        <PostMeta author={author} authorStats={authorStats} post={post} tagsBySlug={tagsBySlug} compact className='mb-2' />
+        <PostMeta
+          author={author}
+          authorStats={authorStats}
+          post={post}
+          tagsBySlug={tagsBySlug}
+          compact
+          className='mb-2'
+        />
         <Link href={`/post/${post.id}`} className='group/post-link block'>
           <h2 className='text-[15px] font-bold leading-snug text-foreground transition-colors hover:text-primary md:text-base'>
             {post.title}
           </h2>
-          <p className='mt-2 line-clamp-3 text-sm leading-relaxed text-muted-foreground'>{snippet(post.body, hasImages ? 220 : 180)}</p>
+          <p className='mt-2 line-clamp-3 text-sm leading-relaxed text-muted-foreground'>
+            {snippet(post.body, hasImages ? 220 : 180)}
+          </p>
         </Link>
         {hasImages ? (
-          <PostImageGallery imageUrls={post.imageUrls} title={post.title} variant='feed' />
+          <PostImageGallery images={post.imageUrls} />
         ) : (
           <div className='mt-4 rounded border border-dashed border-border/70 bg-muted/25 px-3 py-2 text-xs text-muted-foreground'>
             <Sparkles className='mr-1.5 inline size-3.5 text-primary' />
@@ -44,7 +53,10 @@ const PostCard: FC<PostCardProps> = ({ post, author, authorStats, tagsBySlug, sc
             <MessageSquare className='size-3.5' />
             {post.commentCount} comments
           </Link>
-          <button type='button' className='inline-flex items-center gap-1.5 rounded px-2 py-1 transition-colors celestia-hover-surface'>
+          <button
+            type='button'
+            className='inline-flex items-center gap-1.5 rounded px-2 py-1 transition-colors celestia-hover-surface'
+          >
             <Share2 className='size-3.5' />
             Share
           </button>
