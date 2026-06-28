@@ -3,7 +3,7 @@
 import type { FC } from 'react';
 import type { CommentComposerProps } from '@/lib/types';
 import { useRouter } from 'next/navigation';
-import { useTransition } from 'react';
+import { useEffect, useRef, useTransition } from 'react';
 import { toast } from 'sonner';
 import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
@@ -24,7 +24,13 @@ const CommentComposer: FC<CommentComposerProps> = ({ postID, user, compact, pare
     schema: commentSchema,
     defaultValues: { body: '' },
   });
+  const bodyField = register('body');
+  const bodyRef = useRef<HTMLTextAreaElement | null>(null);
   const submitting = pending || createCommentMutation.isPending || Boolean(commentSubmission?.pending);
+
+  useEffect(() => {
+    if (parentID) bodyRef.current?.focus();
+  }, [parentID]);
 
   const onSubmit = async ({ body }: { body: string }) => {
     const pendingComment = { postID: postID, parentID: parentID ?? null, body: body.trim(), author: user };
@@ -57,7 +63,11 @@ const CommentComposer: FC<CommentComposerProps> = ({ postID, user, compact, pare
           maxLength={MAX_COMMENT_LENGTH}
           className='min-h-0 resize-y rounded border-border bg-secondary/80 text-sm leading-7 focus-visible:border-primary/40 focus-visible:ring-primary/20'
           aria-invalid={Boolean(errors.body && (touchedFields.body || isSubmitted))}
-          {...register('body')}
+          {...bodyField}
+          ref={element => {
+            bodyField.ref(element);
+            bodyRef.current = element;
+          }}
         />
         {errors.body && (touchedFields.body || isSubmitted) ? <p className='text-xs text-destructive'>{errors.body.message}</p> : null}
         <Button
