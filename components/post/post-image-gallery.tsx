@@ -69,7 +69,7 @@ const PostImageGallery = ({ images }: { images: string[] }) => {
       <div className='relative w-full overflow-hidden rounded'>
         <div
           ref={sliderRef}
-          className={`keen-slider aspect-[3/2] w-full bg-muted transition-opacity duration-150 ${ready ? 'opacity-100' : 'opacity-0'}`}
+          className={`keen-slider aspect-3/2 w-full bg-muted transition-opacity duration-150 ${ready ? 'opacity-100' : 'opacity-0'}`}
         >
           {images.map((url, index) => (
             <div key={`${url}-${index}`} className='keen-slider__slide relative'>

@@ -2,6 +2,7 @@
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 @import 'react-easy-crop/react-easy-crop.css';
+@import 'react-loading-skeleton/dist/skeleton.css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -173,4 +174,9 @@ html.dark {
   ::selection {
     @apply bg-primary/30 text-foreground;
   }
+}
+
+.react-loading-skeleton {
+  --base-color: color-mix(in srgb, var(--muted) 82%, var(--foreground) 18%);
+  --highlight-color: color-mix(in srgb, var(--muted) 64%, var(--foreground) 36%);
 }

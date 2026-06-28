@@ -9,6 +9,7 @@ import { PostList } from './post-list';
 import { EmptyState } from '../ui/empty-state';
 import { usePathname } from 'next/navigation';
 import { CelestiaSignalLoader } from '../ui/celestia-signal-loader';
+import Skeleton from 'react-loading-skeleton';
 
 const sortTabs = [
   { id: 'hot' as const, label: 'Hot', icon: Flame },
@@ -26,10 +27,10 @@ const CommunityFeedLoader = () => (
       </div>
     </div>
     {[0, 1, 2].map(index => (
-      <div key={index} className='celestia-card animate-pulse p-4'>
-        <div className='h-3 w-28 rounded bg-muted' />
-        <div className='mt-3 h-4 w-2/3 rounded bg-muted' />
-        <div className='mt-2 h-3 w-full rounded bg-muted' />
+      <div key={index} className='celestia-card p-4'>
+        <Skeleton width={112} height={12} />
+        <Skeleton width='66%' height={16} />
+        <Skeleton height={12} />
       </div>
     ))}
   </div>

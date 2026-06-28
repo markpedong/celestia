@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import Skeleton from 'react-loading-skeleton';
 
 const AccountMenuDynamic = dynamic(() => import('./auth/account-menu'));
 
@@ -10,8 +11,8 @@ const ActiveNowDynamic = dynamic(() => import('./presence/online-users').then(mo
   ssr: false,
   loading: () => (
     <section className='celestia-card p-4' aria-hidden>
-      <div className='mb-3 h-4 w-24 animate-pulse rounded bg-muted' />
-      <div className='h-8 w-32 animate-pulse rounded-full bg-muted' />
+      <Skeleton width={96} height={16} />
+      <Skeleton width={128} height={32} />
     </section>
   ),
 });
