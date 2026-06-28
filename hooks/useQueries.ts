@@ -1,15 +1,18 @@
 'use client';
 
 import { STALE_TIME } from '@/constants';
-import { createComment, createCommunity, createPost, getCommunity, getCommunityFeed, getCommunityMember, getCommunityStats, getOwnedCommunities, getProfile, joinCommunity, updateCommunity, updatePost, updateProfile, uploadImages, vote } from '@/services';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { createComment, createCommunity, createPost, getChatConversations, getChatMessages, getCommunity, getCommunityFeed, getCommunityMember, getCommunityStats, getOwnedCommunities, getProfile, joinCommunity, markChatRead, sendChatMessage, startDirectConversation, updateCommunity, updatePost, updateProfile, uploadImages, vote } from '@/services';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSession } from './useSession';
 import type { ApiResponse, CommentFormState, CommunityStats, FeedSort, ImageBucket, VoteActionValue, VoteTarget } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { OPEN_CHAT_EVENT, type OpenChatEventDetail } from '@/lib/chat-events';
 
 export const communityMemberQueryKey = (slug: string) => ['community-member', slug] as const;
 export const communityStatsQueryKey = (slug: string) => ['community-stats', slug] as const;
+export const chatConversationsQueryKey = ['chat-conversations'] as const;
+export const chatMessagesQueryKey = (conversationID: string) => ['chat-messages', conversationID] as const;
 
 export const useGetProfile = () => {
   const { user: authUser } = useSession();
@@ -189,6 +192,96 @@ export const useGetCommunityMember = (slug: string) => {
     staleTime: STALE_TIME,
   })
 }
+
+export const useChatConversations = () => {
+  const { user } = useSession();
+
+  return useQuery({
+    queryKey: chatConversationsQueryKey,
+    queryFn: getChatConversations,
+    enabled: Boolean(user?.id),
+    staleTime: STALE_TIME,
+  });
+};
+
+export const useChatMessages = (conversationID: string | null) => {
+  return useInfiniteQuery({
+    queryKey: chatMessagesQueryKey(conversationID ?? 'none'),
+    queryFn: ({ pageParam }) => getChatMessages(conversationID!, pageParam),
+    enabled: Boolean(conversationID),
+    initialPageParam: null as string | null,
+    getNextPageParam: lastPage => lastPage.data?.nextCursor ?? undefined,
+    staleTime: STALE_TIME,
+  });
+};
+
+export const useSendChatMessage = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: sendChatMessage,
+    onSuccess: response => {
+      if (!response.success || !response.data) {
+        toast.error(response.message || 'Unable to send message.');
+        return;
+      }
+
+      void queryClient.invalidateQueries({ queryKey: chatMessagesQueryKey(response.data.conversationID) });
+      void queryClient.invalidateQueries({ queryKey: chatConversationsQueryKey });
+    },
+    onError: error => {
+      toast.error(error instanceof Error ? error.message : 'Unable to send message.');
+    },
+  });
+};
+
+export const useStartDirectConversation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: startDirectConversation,
+    onSuccess: response => {
+      if (!response.success || !response.data) {
+        toast.error(response.message || 'Unable to start conversation.');
+        return;
+      }
+
+      const conversation = response.data;
+
+      queryClient.setQueryData<ApiResponse<typeof conversation[]>>(chatConversationsQueryKey, current => {
+        const existing = current?.data ?? [];
+        const conversations = existing.some(row => row.id === conversation.id)
+          ? existing.map(row => row.id === conversation.id ? conversation : row)
+          : [conversation, ...existing];
+
+        return {
+          message: current?.message ?? response.message,
+          success: current?.success ?? true,
+          data: conversations,
+        };
+      });
+      void queryClient.invalidateQueries({ queryKey: chatConversationsQueryKey });
+
+      window.dispatchEvent(new CustomEvent<OpenChatEventDetail>(OPEN_CHAT_EVENT, {
+        detail: { conversationID: conversation.id },
+      }));
+    },
+    onError: error => {
+      toast.error(error instanceof Error ? error.message : 'Unable to start conversation.');
+    },
+  });
+};
+
+export const useMarkChatRead = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: markChatRead,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: chatConversationsQueryKey });
+    },
+  });
+};
 
 export const useUploadImages = () => {
   return useMutation({

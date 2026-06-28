@@ -1,0 +1,110 @@
+@reference "../../app/globals.css";
+
+.launcher {
+  @apply fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom))] right-4 z-40 h-11 gap-2 rounded-sm px-3 shadow-lg lg:bottom-5;
+}
+
+.shell {
+  @apply fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom))] right-4 z-40 flex h-[min(38rem,calc(100vh-7rem))] w-[calc(100vw-2rem)] max-w-[48rem] overflow-hidden rounded-md border border-border bg-card shadow-2xl lg:bottom-5;
+}
+
+.rail {
+  @apply flex w-36 shrink-0 flex-col border-r border-border bg-muted/40 sm:w-56;
+}
+
+.railHeader,
+.chatHeader {
+  @apply flex h-12 shrink-0 items-center justify-between gap-2 border-b border-border px-3;
+}
+
+.title {
+  @apply truncate text-sm font-semibold;
+}
+
+.subtitle {
+  @apply truncate text-xs text-muted-foreground;
+}
+
+.conversationList {
+  @apply min-h-0 flex-1 overflow-y-auto p-2;
+}
+
+.conversationButton {
+  @apply flex w-full items-center gap-2 rounded-sm px-2 py-2 text-left text-sm transition hover:bg-background;
+}
+
+.conversationButtonActive {
+  @apply bg-background shadow-sm;
+}
+
+.conversationIcon {
+  @apply flex size-8 shrink-0 items-center justify-center rounded-sm bg-primary/10 text-primary;
+}
+
+.conversationText {
+  @apply min-w-0 flex-1;
+}
+
+.conversationMeta {
+  @apply mt-0.5 flex items-center gap-1 text-xs text-muted-foreground;
+}
+
+.unread {
+  @apply ml-auto flex min-w-5 items-center justify-center rounded-full bg-primary px-1.5 py-0.5 text-[0.65rem] font-semibold text-primary-foreground;
+}
+
+.panel {
+  @apply flex min-w-0 flex-1 flex-col;
+}
+
+.messages {
+  @apply flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto bg-background/60 p-3;
+}
+
+.loadOlder {
+  @apply mx-auto mb-1;
+}
+
+.empty {
+  @apply m-auto max-w-56 text-center text-sm text-muted-foreground;
+}
+
+.message {
+  @apply flex max-w-[82%] gap-2;
+}
+
+.messageOwn {
+  @apply ml-auto flex-row-reverse;
+}
+
+.bubble {
+  @apply rounded-md border border-border bg-card px-3 py-2 text-sm shadow-sm;
+}
+
+.messageOwn .bubble {
+  @apply border-primary/20 bg-primary text-primary-foreground;
+}
+
+.messageMeta {
+  @apply mb-1 flex items-center gap-2 text-xs text-muted-foreground;
+}
+
+.messageOwn .messageMeta {
+  @apply text-primary-foreground/75;
+}
+
+.body {
+  @apply whitespace-pre-wrap break-words leading-5;
+}
+
+.composer {
+  @apply flex shrink-0 items-end gap-2 border-t border-border p-3;
+}
+
+.input {
+  @apply min-h-10 flex-1 resize-none rounded-sm border border-input bg-background px-3 py-2 text-sm outline-none transition focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50;
+}
+
+.hiddenMobileText {
+  @apply hidden sm:inline;
+}

@@ -221,11 +221,19 @@ export const useAuthForm = (mode: AuthMode) => {
     setMessage(null);
 
     startTransition(async () => {
-      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
         provider,
-        options: { redirectTo: `${window.location.origin}/auth/callback` },
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          skipBrowserRedirect: true,
+        },
       });
-      if (oauthError) toast.error(oauthError.message);
+      if (oauthError) {
+        toast.error(oauthError.message);
+        return;
+      }
+
+      if (data.url) window.location.assign(data.url);
     });
   };
 

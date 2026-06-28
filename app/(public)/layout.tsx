@@ -1,6 +1,7 @@
 import LeftSidebar from '@/components/layout/left-sidebar';
 import MobileBottomNav from '@/components/layout/mobile-bottom-nav';
 import Navbar from '@/components/layout/navbar';
+import { ChatWidget } from '@/components/chat/chat-widget';
 import { getPublicShellData } from '@/lib/public-data';
 import type { MainLayoutProps } from '@/lib/types';
 import { Suspense } from 'react';
@@ -22,6 +23,7 @@ const PublicLayout = async ({ children }: MainLayoutProps) => {
       <Suspense fallback={null}>
         <MobileBottomNav />
       </Suspense>
+      <ChatWidget />
     </>
   );
 };

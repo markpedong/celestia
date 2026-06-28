@@ -2,6 +2,9 @@
 
 import {
   ApiResponse,
+  ChatConversation,
+  ChatMessage,
+  ChatMessagesPage,
   CommentFormState,
   Community,
   CommunityFeed,
@@ -197,6 +200,52 @@ export const getCommunityMember = async (slug: string) => {
     params: { slug },
     init: { method: REQUEST_METHOD.GET },
     endpoint: API_ENDPOINT.COMMUNITY_MEMBER,
+  });
+
+  return response;
+};
+
+export const getChatConversations = async () => {
+  const response = await __api<ChatConversation[]>({
+    init: { method: REQUEST_METHOD.GET },
+    endpoint: API_ENDPOINT.CHAT_CONVERSATIONS,
+  });
+
+  return response;
+};
+
+export const startDirectConversation = async (targetUserID: string) => {
+  const response = await __api<ChatConversation>({
+    endpoint: API_ENDPOINT.CHAT_CONVERSATIONS,
+    init: { body: { targetUserID }, method: REQUEST_METHOD.POST },
+  });
+
+  return response;
+};
+
+export const getChatMessages = async (conversationID: string, cursor?: string | null) => {
+  const response = await __api<ChatMessagesPage>({
+    params: { conversationID, ...(cursor ? { cursor } : {}) },
+    init: { method: REQUEST_METHOD.GET },
+    endpoint: API_ENDPOINT.CHAT_MESSAGES,
+  });
+
+  return response;
+};
+
+export const sendChatMessage = async (body: { conversationID: string; body: string }) => {
+  const response = await __api<ChatMessage>({
+    endpoint: API_ENDPOINT.CHAT_MESSAGES,
+    init: { body, method: REQUEST_METHOD.POST },
+  });
+
+  return response;
+};
+
+export const markChatRead = async (conversationID: string) => {
+  const response = await __api<{ ok: boolean }>({
+    endpoint: API_ENDPOINT.CHAT_READ,
+    init: { body: { conversationID }, method: REQUEST_METHOD.POST },
   });
 
   return response;

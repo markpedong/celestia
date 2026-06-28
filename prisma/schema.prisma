@@ -22,6 +22,9 @@ model Users {
   email       String   @map("email")
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
+  chatParticipations ChatParticipant[]
+  chatMessages       ChatMessage[]
+
   @@map("users")
 }
 
@@ -64,6 +67,7 @@ model Community {
 
   postTags    PostTag[]
   memberships CommunityMembers[]
+  chatRooms   ChatConversation[]
 
   @@map("community")
 }
@@ -116,4 +120,50 @@ model Vote {
   @@id([userID, targetType, targetID]) // basically just a unique ID for each vote
   @@index([targetType, targetID])
   @@map("votes")
+}
+
+model ChatConversation {
+  id            String   @id @default(uuid()) @db.Uuid
+  type          String
+  communitySlug String?  @unique @map("community_slug")
+  directKey     String?  @unique @map("direct_key")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  community    Community?        @relation(fields: [communitySlug], references: [slug], onDelete: Cascade)
+  participants ChatParticipant[]
+  messages     ChatMessage[]
+
+  @@index([type, updatedAt])
+  @@map("chat_conversations")
+}
+
+model ChatParticipant {
+  conversationID String    @map("conversation_id") @db.Uuid
+  userID         String    @map("user_id")
+  lastReadAt     DateTime? @map("last_read_at") @db.Timestamptz(6)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  conversation ChatConversation @relation(fields: [conversationID], references: [id], onDelete: Cascade)
+  user         Users            @relation(fields: [userID], references: [id], onDelete: Cascade)
+
+  @@id([conversationID, userID])
+  @@index([userID, createdAt])
+  @@map("chat_participants")
+}
+
+model ChatMessage {
+  id             String    @id @default(uuid()) @db.Uuid
+  conversationID String    @map("conversation_id") @db.Uuid
+  authorID       String    @map("author_id")
+  body           String
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  conversation ChatConversation @relation(fields: [conversationID], references: [id], onDelete: Cascade)
+  author       Users            @relation(fields: [authorID], references: [id], onDelete: Cascade)
+
+  @@index([conversationID, createdAt])
+  @@index([authorID, createdAt])
+  @@map("chat_messages")
 }

@@ -44,6 +44,42 @@ export type Comment = Omit<CommentModel, 'createdAt'> & {
   createdAt: string;
 };
 
+export type ChatConversationType = 'community' | 'direct';
+
+export type ChatParticipant = {
+  user: User;
+  lastReadAt: string | null;
+};
+
+export type ChatMessage = {
+  id: string;
+  conversationID: string;
+  authorID: string;
+  body: string;
+  createdAt: string;
+  deletedAt: string | null;
+  author: User;
+};
+
+export type ChatConversation = {
+  id: string;
+  type: ChatConversationType;
+  communitySlug: string | null;
+  directKey: string | null;
+  label: string;
+  createdAt: string;
+  updatedAt: string;
+  community: Tag | null;
+  participants: ChatParticipant[];
+  lastMessage: ChatMessage | null;
+  unreadCount: number;
+};
+
+export type ChatMessagesPage = {
+  messages: ChatMessage[];
+  nextCursor: string | null;
+};
+
 export type FeedSort = "hot" | "new" | "top";
 
 export type VoteTarget = "post" | "comment";

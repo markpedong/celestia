@@ -1,17 +1,19 @@
-import type { FC } from 'react';
-import * as React from "react"
+import * as React from 'react';
 
 import classNames from 'classnames';
 import styles from './textarea.module.scss';
 
-const Textarea: FC<React.ComponentProps<"textarea">> = ({ className, ...props }: React.ComponentProps<"textarea">) => {
-  return (
+const Textarea = React.forwardRef<HTMLTextAreaElement, React.ComponentProps<'textarea'>>(
+  ({ className, ...props }, ref) => (
     <textarea
-      data-slot="textarea"
+      ref={ref}
+      data-slot='textarea'
       className={classNames(styles.textarea, className)}
       {...props}
     />
-  )
-};
+  ),
+);
+
+Textarea.displayName = 'Textarea';
 
 export { Textarea }
