@@ -25,7 +25,7 @@
 }
 
 .name {
-  @apply hidden text-lg font-bold tracking-wide sm:inline;
+  @apply hidden text-lg font-bold tracking-wide lg:inline;
 }
 
 .actions {
@@ -37,7 +37,7 @@
 }
 
 .newPost {
-  @apply hidden sm:inline-flex;
+  @apply hidden lg:inline-flex;
 }
 
 @media (min-width: 992px) {

@@ -103,6 +103,9 @@ html.light {
   --sidebar-accent-foreground: #6d28d9;
   --sidebar-border: rgba(15, 23, 42, 0.08);
   --sidebar-ring: rgba(124, 58, 237, 0.45);
+  --scrollbar-track: rgba(226, 232, 240, 0.56);
+  --scrollbar-thumb: rgba(124, 58, 237, 0.5);
+  --scrollbar-thumb-hover: rgba(8, 145, 178, 0.72);
 }
 
 :root,
@@ -149,11 +152,16 @@ html.dark {
   --sidebar-accent-foreground: #c084fc;
   --sidebar-border: rgba(148, 163, 184, 0.08);
   --sidebar-ring: rgba(139, 92, 246, 0.5);
+  --scrollbar-track: rgba(15, 22, 40, 0.72);
+  --scrollbar-thumb: rgba(139, 92, 246, 0.54);
+  --scrollbar-thumb-hover: rgba(34, 211, 238, 0.72);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+    scrollbar-width: thin;
   }
   body {
     @apply bg-background text-foreground antialiased;
@@ -173,6 +181,36 @@ html.dark {
 
   ::selection {
     @apply bg-primary/30 text-foreground;
+  }
+
+  ::-webkit-scrollbar {
+    width: 0.75rem;
+    height: 0.75rem;
+  }
+
+  ::-webkit-scrollbar-track {
+    background:
+      linear-gradient(180deg, transparent, var(--scrollbar-track), transparent),
+      var(--background);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    min-height: 3rem;
+    border: 0.2rem solid transparent;
+    border-radius: 999px;
+    background:
+      linear-gradient(180deg, var(--scrollbar-thumb), color-mix(in srgb, var(--accent) 52%, var(--scrollbar-thumb))) border-box;
+    background-clip: padding-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background:
+      linear-gradient(180deg, var(--primary), var(--scrollbar-thumb-hover)) border-box;
+    background-clip: padding-box;
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: transparent;
   }
 }
 

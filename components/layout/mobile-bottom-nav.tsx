@@ -1,7 +1,7 @@
 'use client';
 
 import classNames from 'classnames';
-import { Compass, House, Inbox, PlusCircle, UserRound } from 'lucide-react';
+import { House, Inbox, PlusCircle, UserRound } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession } from '@/hooks/useSession';
@@ -14,7 +14,6 @@ const MobileBottomNav = () => {
   const pathname = usePathname();
   const items = [
     { href: '/', label: 'Home', icon: House, active: pathname === '/' },
-    { href: '/explore', label: 'Explore', icon: Compass, active: pathname === '/explore' },
     ...(isSignedIn
       ? [
           { action: 'inbox', label: 'Inbox', icon: Inbox, active: false },
