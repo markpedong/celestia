@@ -25,6 +25,7 @@ export const IMAGE_CACHE_CONTROL = '31536000';
 export const STALE_TIME = 1_000 * 60 * 60 // 1 hour;
 
 export const REDIRECT_FORGOT = '/auth/callback?next=/auth/update-password';
+export const PASSWORD_RECOVERY_SESSION_COOKIE = 'celestia-password-recovery';
 
 export const PASSWORD_RECOVERY = {
   email: '',
