@@ -23,12 +23,51 @@ import uniq from 'lodash/uniq';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
+import { defaultOgImage, truncateDescription } from '@/lib/seo';
 
 export const dynamicParams = true;
 
 export const generateStaticParams = async () => {
   const userNames = await listUserNames();
   return userNames.map(username => ({ username }));
+};
+
+export const generateMetadata = async ({ params }: UserPageProps): Promise<Metadata> => {
+  const { username: rawUserName } = await params;
+  const userName = decodeURIComponent(rawUserName);
+  const profile = await getUserByUserName(userName);
+
+  if (!profile) {
+    return {
+      title: 'Profile Not Found',
+    };
+  }
+
+  const displayName = profile.displayName || profile.userName;
+  const title = `${displayName} Profile`;
+  const description = truncateDescription(profile.bio || `See posts, comments, votes, and community activity from u/${profile.userName} on Celestia.`);
+  const image = profile.coverUrl || profile.avatarUrl || defaultOgImage;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `/u/${profile.userName}`,
+    },
+    openGraph: {
+      title,
+      description,
+      url: `/u/${profile.userName}`,
+      images: [{ url: image, alt: `${displayName} profile on Celestia` }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [image],
+    },
+  };
 };
 
 const excerpt = (body: string) => {

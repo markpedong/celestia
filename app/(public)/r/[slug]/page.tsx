@@ -7,10 +7,50 @@ import { notFound } from 'next/navigation';
 import CommunitySidebar from '@/components/community/community-sidebar';
 import CommunityStats from '@/components/community/community-stats';
 import Image from 'next/image';
+import type { Metadata } from 'next';
+import { defaultOgImage, truncateDescription } from '@/lib/seo';
 
 export const generateStaticParams = async () => {
   const communities = await listCommunity();
   return communities.map(({ slug }) => ({ slug }));
+};
+
+export const generateMetadata = async ({ params }: CommunityPageProps): Promise<Metadata> => {
+  const { slug: rawSlug } = await params;
+  const slug = decodeURIComponent(rawSlug).toLowerCase();
+  const community = await getCommunityBySlug(slug);
+
+  if (!community) {
+    return {
+      title: 'Community Not Found',
+    };
+  }
+
+  const title = `${community.label} Community`;
+  const description = truncateDescription(
+    community.description || `Join r/${community.slug} on Celestia for posts, votes, and threaded community discussions.`,
+  );
+  const image = community.coverUrl || community.avatarUrl || defaultOgImage;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `/r/${community.slug}`,
+    },
+    openGraph: {
+      title,
+      description,
+      url: `/r/${community.slug}`,
+      images: [{ url: image, alt: `${community.label} community on Celestia` }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [image],
+    },
+  };
 };
 
 const CommunityPage = async ({ params }: CommunityPageProps) => {

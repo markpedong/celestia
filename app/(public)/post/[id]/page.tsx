@@ -16,10 +16,48 @@ import { MessageSquare, Radio, Users } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import PostImageGallery from '@/components/post/post-image-gallery';
+import type { Metadata } from 'next';
+import { defaultOgImage, truncateDescription } from '@/lib/seo';
 
 export const generateStaticParams = async () => {
   const ids = await listPostIDs();
   return ids.map(id => ({ id }));
+};
+
+export const generateMetadata = async ({ params }: PostPageProps): Promise<Metadata> => {
+  const { id } = await params;
+  const post = await getPostByID(id);
+
+  if (!post) {
+    return {
+      title: 'Post Not Found',
+    };
+  }
+
+  const title = post.title;
+  const description = truncateDescription(post.body || `Join the discussion on Celestia: ${post.title}`);
+  const image = post.imageUrls[0] || defaultOgImage;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `/post/${post.id}`,
+    },
+    openGraph: {
+      type: 'article',
+      title,
+      description,
+      url: `/post/${post.id}`,
+      images: [{ url: image, alt: post.title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [image],
+    },
+  };
 };
 
 const Page = async ({ params }: PostPageProps) => {
