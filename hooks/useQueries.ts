@@ -1,10 +1,10 @@
 'use client';
 
 import { STALE_TIME } from '@/constants';
-import { createComment, createCommunity, createPost, getChatConversations, getChatMessages, getCommunity, getCommunityFeed, getCommunityMember, getCommunityStats, getOwnedCommunities, getProfile, joinCommunity, markChatRead, sendChatMessage, startDirectConversation, updateCommunity, updatePost, updateProfile, uploadImages, vote } from '@/services';
+import { createComment, createCommunity, createPost, getChatConversations, getChatMessages, getCommunity, getCommunityFeed, getCommunityMember, getCommunityStats, getOwnedCommunities, getProfile, joinCommunity, markChatRead, sendChatMessage, startDirectConversation, updateCommunity, updatePost, updateProfile, uploadImages } from '@/services';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient, type InfiniteData } from '@tanstack/react-query';
 import { useSession } from './useSession';
-import type { ApiResponse, ChatConversation, ChatMessagesPage, CommentFormState, CommunityStats, FeedSort, ImageBucket, User, VoteActionValue, VoteTarget } from '@/lib/types';
+import type { ApiResponse, ChatConversation, ChatMessagesPage, CommentFormState, CommunityStats, FeedSort, ImageBucket, User } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { OPEN_CHAT_EVENT, PENDING_DIRECT_CONVERSATION_PREFIX, type OpenChatEventDetail } from '@/lib/chat-events';
@@ -401,15 +401,6 @@ export const useUploadImages = () => {
       (await uploadImages(files, bucket)).data?.imageUrls ?? [],
     onError: error => {
       toast.error(error instanceof Error ? error.message : 'Unable to upload images.');
-    },
-  });
-};
-
-export const useVote = () => {
-  return useMutation({
-    mutationFn: (body: { target: VoteTarget; targetID: string; value: VoteActionValue }) => vote(body),
-    onError: error => {
-      toast.error(error instanceof Error ? error.message : 'Unable to vote.');
     },
   });
 };

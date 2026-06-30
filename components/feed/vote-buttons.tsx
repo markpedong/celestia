@@ -2,22 +2,17 @@
 
 import type { FC } from 'react';
 import { formatCount } from '@/lib/utils';
-import type { VoteActionValue, VoteButtonsProps, VoteValue } from '@/lib/types';
+import type { VoteActionValue, VoteButtonsProps } from '@/lib/types';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import classNames from 'classnames';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 import { toast } from 'sonner';
 import { useSession } from '@/hooks/useSession';
-import { useVote } from '@/hooks/useQueries';
+import { useVotePost } from '@/components/providers/vote-provider';
 import styles from './vote-buttons.module.scss';
 
 const VoteButtons: FC<VoteButtonsProps> = ({ target, targetID, score, userVote, isSignedIn = false }) => {
-  const router = useRouter();
   const session = useSession().session;
-  const voteMutation = useVote();
-
-  const [voteState, setVoteState] = useState({ score, userVote });
+  const { voteState, vote: votePost } = useVotePost(target, targetID, { score, userVote });
 
   const isPost = target === 'post';
   const hasSession = session === undefined ? isSignedIn : Boolean(session);
@@ -35,31 +30,8 @@ const VoteButtons: FC<VoteButtonsProps> = ({ target, targetID, score, userVote, 
       showSignInToVoteToast();
       return;
     }
-    if (voteMutation.isPending) return;
 
-    const previousVoteState = voteState;
-    const nextVoteState = {
-      userVote: voteState.userVote === value ? 0 : (value as VoteValue),
-      score: voteState.score + (voteState.userVote === value ? 0 : value) - voteState.userVote,
-    };
-
-    setVoteState(nextVoteState);
-    voteMutation.mutate({ target, targetID, value }, {
-      onSuccess: result => {
-        if (!result.success) {
-          setVoteState(previousVoteState);
-          if (result.message.toLowerCase().includes('sign in')) showSignInToVoteToast();
-          else toast.error(result.message, { position: 'bottom-right' });
-          return;
-        }
-
-        router.refresh();
-      },
-      onError: error => {
-        setVoteState(previousVoteState);
-        toast.error(error instanceof Error ? error.message : 'Unable to vote.', { position: 'bottom-right' });
-      },
-    });
+    votePost(value, showSignInToVoteToast);
   };
 
   return (
@@ -70,7 +42,7 @@ const VoteButtons: FC<VoteButtonsProps> = ({ target, targetID, score, userVote, 
     >
       <button
         onClick={() => vote(1)}
-        disabled={voteMutation.isPending}
+        data-allow-rapid-click='true'
         className={classNames(
           styles.button,
           styles.commentButton,
@@ -100,7 +72,7 @@ const VoteButtons: FC<VoteButtonsProps> = ({ target, targetID, score, userVote, 
       </span>
       <button
         onClick={() => vote(-1)}
-        disabled={voteMutation.isPending}
+        data-allow-rapid-click='true'
         className={classNames(
           styles.button,
           styles.commentButton,

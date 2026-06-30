@@ -2,9 +2,11 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
+import { VoteProvider } from './vote-provider';
 
 const activationCooldown = 900;
 const activationSelector = 'button, input[type="button"], input[type="submit"], input[type="reset"], [role="button"]';
+const rapidActivationSelector = '[data-allow-rapid-click="true"]';
 
 const lastElementActivation = new WeakMap<Element, number>();
 const lastFormSubmit = new WeakMap<HTMLFormElement, number>();
@@ -43,6 +45,7 @@ export const QueryProvider = ({ children }: React.PropsWithChildren) => {
       if (event.defaultPrevented || event.button !== 0) return;
 
       const target = event.target instanceof Element ? event.target.closest(activationSelector) : null;
+      if (target?.closest(rapidActivationSelector)) return;
       if (!target || !shouldBlockElementActivation(target)) return;
 
       event.preventDefault();
@@ -90,5 +93,9 @@ export const QueryProvider = ({ children }: React.PropsWithChildren) => {
     };
   }, []);
 
-  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <VoteProvider>{children}</VoteProvider>
+    </QueryClientProvider>
+  );
 };
