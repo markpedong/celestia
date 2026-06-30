@@ -6,6 +6,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import './globals.css';
 import './design.scss';
 import { QueryProvider } from '@/components/providers/query-provider';
+import { defaultOgImage, siteDescription, siteName, siteUrl } from '@/lib/seo';
 
 const inter = Inter({
   variable: '--font-inter',
@@ -17,16 +18,12 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
-const siteDescription =
-  'Celestia is a cosmic community forum for discovering signals, sharing posts, voting on ideas, and joining threaded conversations across technology, space, science, gaming, and more.';
-
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  applicationName: 'Celestia',
+  applicationName: siteName,
   title: {
-    default: 'Celestia',
-    template: '%s | Celestia',
+    default: siteName,
+    template: `%s | ${siteName}`,
   },
   description: siteDescription,
   keywords: [
@@ -37,9 +34,13 @@ export const metadata: Metadata = {
     'technology communities',
     'space communities',
   ],
-  authors: [{ name: 'Celestia' }],
-  creator: 'Celestia',
-  publisher: 'Celestia',
+  authors: [{ name: siteName }],
+  creator: siteName,
+  publisher: siteName,
+  category: 'community',
+  alternates: {
+    canonical: '/',
+  },
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },
@@ -50,23 +51,23 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     url: '/',
-    siteName: 'Celestia',
-    title: 'Celestia',
+    siteName,
+    title: siteName,
     description: siteDescription,
     images: [
       {
-        url: '/images/celestia-reference.png',
+        url: defaultOgImage,
         width: 1672,
         height: 941,
-        alt: 'Celestia community forum interface with the Celestia logo',
+        alt: 'Celestia community forum interface',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Celestia',
+    title: siteName,
     description: siteDescription,
-    images: ['/images/celestia-reference.png'],
+    images: [defaultOgImage],
   },
 };
 
