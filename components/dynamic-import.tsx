@@ -7,6 +7,8 @@ const AccountMenuDynamic = dynamic(() => import('./auth/account-menu'));
 
 const ToasterDynamic = dynamic(() => import('./ui/sonner').then(module => module.Toaster), { ssr: false });
 
+const MobileBottomNavDynamic = dynamic(() => import('./layout/mobile-bottom-nav'), { ssr: false });
+
 const ActiveNowDynamic = dynamic(() => import('./presence/online-users').then(module => module.ActiveNow), {
   ssr: false,
   loading: () => (
@@ -46,6 +48,7 @@ const DeleteAccountDialogDynamic = dynamic(() =>
 export {
   AccountMenuDynamic,
   ToasterDynamic,
+  MobileBottomNavDynamic,
   ActiveNowDynamic,
   VerifyPasswordDialogDynamic,
   SensitiveSettingDialogDynamic,
