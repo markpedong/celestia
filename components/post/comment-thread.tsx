@@ -35,22 +35,36 @@ const CommentThread: FC<CommentThreadProps> = ({ tree, postAuthorID, sessionUser
   return (
     <CommentSubmissionContext value={{ submitComment, pending: pending || createCommentMutation.isPending }}>
       {children}
-      <ul className={styles.list}>
-        {optimisticTree.map(node => (
-          <CommentNode
-            key={node.id}
-            node={node}
-            postAuthorID={postAuthorID}
-            sessionUser={sessionUser}
-            communitySlug={communitySlug}
-            activeReplyID={activeReplyID}
-            onReplyChangeAction={setActiveReplyID}
-          />
-        ))}
-      </ul>
+      <CommentTree
+        tree={optimisticTree}
+        postAuthorID={postAuthorID}
+        sessionUser={sessionUser}
+        communitySlug={communitySlug}
+        activeReplyID={activeReplyID}
+        onReplyChangeAction={setActiveReplyID}
+      />
     </CommentSubmissionContext>
   );
 };
+
+const CommentTree: FC<Omit<CommentThreadProps, 'children'> & {
+  activeReplyID: string | null;
+  onReplyChangeAction: (commentID: string | null) => void;
+}> = ({ tree, postAuthorID, sessionUser, communitySlug, activeReplyID, onReplyChangeAction }) => (
+  <ul className={styles.list}>
+    {tree.map(node => (
+      <CommentNode
+        key={node.id}
+        node={node}
+        postAuthorID={postAuthorID}
+        sessionUser={sessionUser}
+        communitySlug={communitySlug}
+        activeReplyID={activeReplyID}
+        onReplyChangeAction={onReplyChangeAction}
+      />
+    ))}
+  </ul>
+);
 
 const appendComment = (tree: EnrichedCommentNode[], comment: EnrichedCommentNode): EnrichedCommentNode[] => {
   if (!comment.parentID) return [comment, ...tree];

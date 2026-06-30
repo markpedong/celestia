@@ -1,23 +1,27 @@
 @reference "../../app/globals.css";
 
 .node {
-  @apply relative;
+  @apply min-w-0;
 }
 
 .row {
-  @apply relative flex gap-3;
+  @apply grid min-w-0 grid-cols-[2.25rem_minmax(0,1fr)] gap-x-3 rounded-lg;
 }
 
 .avatarRail {
-  @apply relative flex w-9 shrink-0 justify-center;
+  @apply flex justify-center;
 }
 
-.railLine {
-  @apply absolute top-10 bottom-[-0.75rem] w-px rounded-full bg-border/80 transition-colors hover:bg-primary/50;
+.avatarAnchor {
+  @apply block rounded-full;
+}
+
+.threadToggle {
+  @apply absolute left-1/2 top-1/2 z-10 flex size-7 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
 }
 
 .body {
-  @apply min-w-0 flex-1 pb-2;
+  @apply min-w-0 flex-1;
 }
 
 .meta {
@@ -29,7 +33,7 @@
 }
 
 .opBadge {
-  @apply border-primary/20 bg-primary/10 px-1.5 text-[10px] font-semibold uppercase text-primary;
+  @apply border-primary/20 bg-primary/10 text-[10px] font-semibold uppercase text-primary;
 }
 
 .separator {
@@ -44,14 +48,34 @@
   @apply mt-2 whitespace-pre-wrap text-sm leading-7 text-card-foreground;
 }
 
+.footer {
+  @apply flex min-h-8 flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground;
+}
+
+.toggleRail {
+  @apply relative min-h-8;
+}
+
 .actions {
-  @apply mt-2 flex flex-wrap items-center gap-1 text-xs font-medium text-muted-foreground;
+  @apply flex flex-wrap items-center gap-1;
+}
+
+.replies {
+  @apply col-start-2 min-w-0;
 }
 
 .replyForm {
-  @apply mt-3 border-t border-border/70 pt-3;
+  @apply mt-3 border-t border-border/70;
 }
 
 .children {
-  @apply relative mt-2 ml-4 space-y-3 border-l border-border/80 pl-5;
+  @apply mt-4 space-y-3 rounded-lg bg-muted/25;
+}
+
+.childrenHidden {
+  @apply hidden;
+}
+
+.showReplies {
+  @apply inline-flex h-7 items-center rounded-md text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground;
 }

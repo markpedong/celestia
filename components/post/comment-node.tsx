@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FC } from 'react';
+import { useState, type FC, type PointerEvent } from 'react';
 import type { CommentNodeProps } from '@/lib/types';
 import { Badge } from '../ui/badge';
 import VoteButtons from '../feed/vote-buttons';
@@ -28,13 +28,19 @@ export const CommentNode: FC<CommentNodeProps> = ({
 
   const hasChildren = node.children.length > 0;
   const Icon = hasChildren ? (hideComments ? PlusCircle : MinusCircle) : null;
+  const toggleReplies = () => setHideComments(prev => !prev);
+  const toggleRepliesOnPointerDown = (event: PointerEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    toggleReplies();
+  };
 
   return (
     <li className={styles.node}>
       <div className={styles.row}>
         <div className={styles.avatarRail}>
-          <UserAvatar user={node.author} />
-          <span className={styles.railLine} aria-hidden />
+          <span className={styles.avatarAnchor}>
+            <UserAvatar user={node.author} />
+          </span>
         </div>
         <div className={styles.body}>
           <div className={styles.meta}>
@@ -56,27 +62,33 @@ export const CommentNode: FC<CommentNodeProps> = ({
             </span>
           </div>
           <p className={styles.copy}>{node.body}</p>
+        </div>
+        <div className={styles.toggleRail}>
+          {Icon ? (
+            <button
+              type='button'
+              onClick={event => {
+                if (event.detail === 0) toggleReplies();
+              }}
+              onPointerDown={toggleRepliesOnPointerDown}
+              className={styles.threadToggle}
+              aria-label={hideComments ? 'Expand replies' : 'Collapse replies'}
+            >
+              <Icon className='size-4' />
+            </button>
+          ) : null}
+        </div>
+        <div className={styles.footer}>
+          {!node.isPending ? (
+            <VoteButtons
+              target='comment'
+              targetID={node.id}
+              score={node.score}
+              userVote={node.userVote}
+              isSignedIn={Boolean(viewer)}
+            />
+          ) : null}
           <div className={styles.actions}>
-            {Icon ? (
-              <button
-                type='button'
-                onClick={() => setHideComments(prev => !prev)}
-                className='celestia-inline-action'
-                aria-label={hideComments ? 'Expand replies' : 'Collapse replies'}
-              >
-                <Icon className='size-4' />
-                {node.children.length}
-              </button>
-            ) : null}
-            {!node.isPending ? (
-              <VoteButtons
-                target='comment'
-                targetID={node.id}
-                score={node.score}
-                userVote={node.userVote}
-                isSignedIn={Boolean(viewer)}
-              />
-            ) : null}
             {viewer && isMember && !node.isPending ? (
               <button
                 type='button'
@@ -92,30 +104,43 @@ export const CommentNode: FC<CommentNodeProps> = ({
               Share
             </button>
           </div>
-
+        </div>
+        <div className={styles.replies}>
           {viewer && isReplying && (
             <div className={styles.replyForm}>
               <CommentComposer postID={node.postID} user={viewer} parentID={node.id} placeholder='Write a reply...' compact />
             </div>
           )}
+
+          {hasChildren ? (
+            <>
+              {hideComments ? (
+              <button
+                type='button'
+                onClick={toggleReplies}
+                className={styles.showReplies}
+                aria-label='Expand replies'
+              >
+                Show {node.children.length} {node.children.length === 1 ? 'reply' : 'replies'}
+              </button>
+              ) : null}
+              <ul className={hideComments ? styles.childrenHidden : styles.children}>
+                {node.children.map(ch => (
+                  <CommentNode
+                    key={ch.id}
+                    node={ch}
+                    postAuthorID={postAuthorID}
+                    sessionUser={sessionUser}
+                    communitySlug={communitySlug}
+                    activeReplyID={activeReplyID}
+                    onReplyChangeAction={onReplyChangeAction}
+                  />
+                ))}
+              </ul>
+            </>
+          ) : null}
         </div>
       </div>
-
-      {node.children.length > 0 && !hideComments && (
-        <ul className={styles.children}>
-          {node.children.map(ch => (
-            <CommentNode
-              key={ch.id}
-              node={ch}
-              postAuthorID={postAuthorID}
-              sessionUser={sessionUser}
-              communitySlug={communitySlug}
-              activeReplyID={activeReplyID}
-              onReplyChangeAction={onReplyChangeAction}
-            />
-          ))}
-        </ul>
-      )}
     </li>
   );
 };
