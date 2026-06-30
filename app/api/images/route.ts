@@ -4,11 +4,11 @@ import { HTTP_MESSAGE } from '@/constants/enums';
 import { getCurrentUserID } from '@/lib/auth';
 import { getUploadErrorMessage } from '@/lib/error-messages';
 import { createSupabaseAdminClient } from '@/lib/supabase/admin';
+import { getPublicFileUrl, parsePublicFileUrl } from '@/lib/storage';
 import type { ImageBucket } from '@/lib/types';
 import { generateErrorResponse, generateSuccessResponse } from '@/services/request';
 
 const IMAGE_BUCKETS = new Set<ImageBucket>(['profile-avatars', 'profile-covers', 'community-avatars', 'community-covers', 'post-images']);
-const STORAGE_PATH_PREFIX = '/storage/v1/object/public/';
 
 const validateImage = (value: File) => {
   if (!ACCEPTED_IMAGE_TYPES.has(value.type)) throw new Error('Use a PNG, JPEG, WebP, or GIF image.');
@@ -41,24 +41,17 @@ const uploadImages = async (values: FormDataEntryValue[], bucket: ImageBucket, u
       upsert: false,
     });
     if (error) throw new Error(error.message);
-    return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
+    return getPublicFileUrl(bucket, path);
   }));
 };
 
 const removeImages = async (imageUrls: unknown, bucket: ImageBucket) => {
   if (!Array.isArray(imageUrls)) throw new Error('Choose images to remove.');
 
-  const pathPrefix = `${STORAGE_PATH_PREFIX}${bucket}/`;
   const paths = imageUrls.flatMap(imageUrl => {
     if (typeof imageUrl !== 'string') return [];
-
-    try {
-      const { pathname } = new URL(imageUrl);
-      const pathIndex = pathname.indexOf(pathPrefix);
-      return pathIndex >= 0 ? [decodeURIComponent(pathname.slice(pathIndex + pathPrefix.length))] : [];
-    } catch {
-      return [];
-    }
+    const file = parsePublicFileUrl(imageUrl);
+    return file?.bucket === bucket ? [file.path] : [];
   });
 
   if (paths.length === 0) return;

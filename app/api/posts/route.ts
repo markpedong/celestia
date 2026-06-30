@@ -3,17 +3,16 @@ import { getCurrentUserID } from '@/lib/auth';
 import { listPostSorted, getPostByID, listPostIDs, listPostsByAuthor, listVotedPostsByUser } from '@/lib/db/post.queries';
 import { getUploadErrorMessage } from '@/lib/error-messages';
 import { prisma } from '@/lib/prisma';
+import { parsePublicFileUrl } from '@/lib/storage';
 import type { FeedSort } from '@/lib/types';
 import { generateErrorResponse, generateSuccessResponse } from '@/services/request';
 import { removeImages as removeStoredImages } from '@/services';
 import { revalidatePath } from 'next/cache';
 
-const POST_IMAGE_PATH_PREFIX = '/storage/v1/object/public/post-images/';
-
 const parsePostImageUrls = (value: unknown): string[] => {
   if (value == null) return [];
   if (!Array.isArray(value) || value.length > MAX_POST_IMAGES) throw new Error(`Upload up to ${MAX_POST_IMAGES} images per post.`);
-  if (!value.every(imageUrl => typeof imageUrl === 'string' && new URL(imageUrl).pathname.includes(POST_IMAGE_PATH_PREFIX))) {
+  if (!value.every(imageUrl => typeof imageUrl === 'string' && parsePublicFileUrl(imageUrl)?.bucket === 'post-images')) {
     throw new Error('Invalid uploaded image.');
   }
 
