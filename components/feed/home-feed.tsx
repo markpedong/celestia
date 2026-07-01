@@ -45,16 +45,12 @@ const HomeFeed = async ({ searchParams, sort, hotPath }: HomeFeedProps) => {
     <div className='flex w-full min-w-0 gap-6'>
       <main className='w-full min-w-0 flex-1'>
         <section className='celestia-card mb-4 overflow-hidden p-4 md:p-5'>
-          <div className='flex flex-wrap items-center justify-between gap-3'>
-            <div>
-              <p className='celestia-panel-label mb-1'>
-                <Radio className='size-3' /> Home signal
-              </p>
-              <h1 className='text-xl font-black tracking-tight md:text-2xl'>
-                {tagFilter ? `r/${tagFilter}` : hasSearch ? 'Search results' : 'All communities'}
-              </h1>
-            </div>
-          </div>
+          <p className='celestia-panel-label mb-1'>
+            <Radio className='size-3' /> Home signal
+          </p>
+          <h1 className='text-xl font-black tracking-tight md:text-2xl'>
+            {tagFilter ? `r/${tagFilter}` : hasSearch ? 'Search results' : 'All communities'}
+          </h1>
           <div className='mt-4'>
             <FeedSortTabs current={sort} tag={tagFilter} query={cleanedSearchQuery} hotPath={hotPath} />
           </div>

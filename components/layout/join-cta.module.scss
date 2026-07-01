@@ -24,10 +24,6 @@
   @apply text-sm text-muted-foreground;
 }
 
-.actionWrap {
-  @apply px-4;
-}
-
 .action {
-  @apply w-full justify-center;
+  @apply mx-4 justify-center;
 }

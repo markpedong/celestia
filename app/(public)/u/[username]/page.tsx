@@ -218,18 +218,14 @@ const UserPage = async ({ params }: UserPageProps) => {
             />
           ) : null}
           <div className='absolute inset-0 bg-[linear-gradient(180deg,rgba(5,8,20,0.08)_0%,rgba(5,8,20,0.78)_100%)]' />
-          <div className='absolute inset-x-0 bottom-0 p-5 md:p-7'>
-            <div className='flex min-w-0 items-end justify-between gap-5'>
-              <div className='min-w-0 text-white'>
-                <p className='celestia-panel-label mb-2 text-white/70'>
-                  <Radio className='size-3' /> Profile signal
-                </p>
-                <h1 className='truncate text-3xl font-black tracking-tight md:text-5xl'>
-                  {profile.displayName || profile.userName}
-                </h1>
-                <p className='mt-1 font-mono text-sm text-white/75'>u/{profile.userName}</p>
-              </div>
-            </div>
+          <div className='absolute inset-x-0 bottom-0 min-w-0 p-5 text-white md:p-7'>
+            <p className='celestia-panel-label mb-2 text-white/70'>
+              <Radio className='size-3' /> Profile signal
+            </p>
+            <h1 className='truncate text-3xl font-black tracking-tight md:text-5xl'>
+              {profile.displayName || profile.userName}
+            </h1>
+            <p className='mt-1 font-mono text-sm text-white/75'>u/{profile.userName}</p>
           </div>
         </div>
         <div className='relative grid gap-5 border-t border-border/70 p-5 pt-16 md:p-6 md:pt-6'>

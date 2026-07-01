@@ -57,35 +57,33 @@ const CommunityFeed = () => {
 
   return (
     <section>
-      <div className='mb-4 border-b border-border/80'>
-        <div className='flex items-center'>
-          {sortTabs.map(({ id, label, icon: Icon }) => {
-            const active = sort === id;
-            return (
-              <button
-                key={id}
-                type='button'
-                onClick={() => setSort(id)}
-                aria-pressed={active}
-                className={cn(
-                  'relative inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold transition-colors',
-                  active ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
-                )}
-              >
-                <Icon className={cn('size-3.5', active ? 'text-primary' : 'text-muted-foreground')} />
-                {label}
-                {active ? (
-                  <span className='absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-primary shadow-[0_0_8px] shadow-primary/40' />
-                ) : null}
-              </button>
-            );
-          })}
-          {isFetching && !isLoading ? (
-            <div className='ml-auto flex items-center gap-1.5 text-xs font-medium text-muted-foreground' role='status' aria-live='polite'>
-              <span>Refreshing posts</span>
-            </div>
-          ) : null}
-        </div>
+      <div className='mb-4 flex items-center border-b border-border/80'>
+        {sortTabs.map(({ id, label, icon: Icon }) => {
+          const active = sort === id;
+          return (
+            <button
+              key={id}
+              type='button'
+              onClick={() => setSort(id)}
+              aria-pressed={active}
+              className={cn(
+                'relative inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold transition-colors',
+                active ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              <Icon className={cn('size-3.5', active ? 'text-primary' : 'text-muted-foreground')} />
+              {label}
+              {active ? (
+                <span className='absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-primary shadow-[0_0_8px] shadow-primary/40' />
+              ) : null}
+            </button>
+          );
+        })}
+        {isFetching && !isLoading ? (
+          <span className='ml-auto text-xs font-medium text-muted-foreground' role='status' aria-live='polite'>
+            Refreshing posts
+          </span>
+        ) : null}
       </div>
       {isLoading ? <CommunityFeedLoader /> : null}
       {!isLoading && error ? (

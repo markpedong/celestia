@@ -80,33 +80,31 @@ const CommunityPage = async ({ params }: CommunityPageProps) => {
             />
           )}
           <div className='absolute inset-0 bg-[linear-gradient(180deg,rgba(5,8,20,0.1)_0%,rgba(5,8,20,0.58)_70%,rgba(5,8,20,0.9)_100%)]' />
-          <div className='absolute inset-x-0 bottom-0 p-5 md:p-7'>
-            <div className='flex flex-col gap-5 md:flex-row md:items-end md:justify-between'>
-              <div className='flex min-w-0 items-end gap-4'>
-                <span
-                  className='relative grid size-20 shrink-0 place-items-center overflow-hidden rounded border border-white/20 text-3xl font-black text-primary-foreground shadow-2xl md:size-24'
-                  style={{ backgroundColor: community.hashColor }}
-                >
-                  {community.avatarUrl ? (
-                    <Image
-                      src={community.avatarUrl}
-                      alt={`${community.label} profile`}
-                      fill
-                      unoptimized
-                      className='object-cover'
-                    />
-                  ) : (
-                    community.label.slice(0, 1).toUpperCase()
-                  )}
-                </span>
-                <div className='min-w-0 pb-0.5 text-white'>
-                  <p className='font-mono text-xs font-semibold uppercase tracking-wider text-white/70'>r/{rawSlug}</p>
-                  <h1 className='mt-1 truncate text-3xl font-black tracking-tight md:text-5xl'>{community.label}</h1>
-                </div>
+          <div className='absolute inset-x-0 bottom-0 flex flex-col gap-5 p-5 md:flex-row md:items-end md:justify-between md:p-7'>
+            <div className='flex min-w-0 items-end gap-4'>
+              <span
+                className='relative grid size-20 shrink-0 place-items-center overflow-hidden rounded border border-white/20 text-3xl font-black text-primary-foreground shadow-2xl md:size-24'
+                style={{ backgroundColor: community.hashColor }}
+              >
+                {community.avatarUrl ? (
+                  <Image
+                    src={community.avatarUrl}
+                    alt={`${community.label} profile`}
+                    fill
+                    unoptimized
+                    className='object-cover'
+                  />
+                ) : (
+                  community.label.slice(0, 1).toUpperCase()
+                )}
+              </span>
+              <div className='min-w-0 pb-0.5 text-white'>
+                <p className='font-mono text-xs font-semibold uppercase tracking-wider text-white/70'>r/{rawSlug}</p>
+                <h1 className='mt-1 truncate text-3xl font-black tracking-tight md:text-5xl'>{community.label}</h1>
               </div>
-              <div className='flex flex-wrap items-center gap-2'>
-                <CommunityMembershipButton ownerID={community.createdByID ?? ''} />
-              </div>
+            </div>
+            <div className='flex flex-wrap items-center gap-2'>
+              <CommunityMembershipButton ownerID={community.createdByID ?? ''} />
             </div>
           </div>
         </div>

@@ -148,30 +148,28 @@ export const CreateCommunityForm = () => {
               )}
               <div className='absolute inset-0 bg-[linear-gradient(180deg,transparent_0%,rgba(5,8,20,0.68)_100%)]' />
             </div>
-            <div className='px-4 pb-4'>
-              <div className='-mt-8 flex items-end gap-3'>
-                <div className='relative size-20 overflow-hidden rounded border-4 border-card bg-secondary shadow-lg'>
-                  {mediaPreview.avatar ? (
-                    <Image
-                      src={mediaPreview.avatar}
-                      alt='Community profile preview'
-                      fill
-                      unoptimized
-                      className='object-cover'
-                    />
-                  ) : (
-                    <span
-                      className='grid size-full place-items-center text-2xl font-black text-primary-foreground'
-                      style={{ backgroundColor: previewColor }}
-                    >
-                      {previewInitial}
-                    </span>
-                  )}
-                </div>
-                <div className='min-w-0 pb-1'>
-                  <p className='font-mono text-xs uppercase tracking-wide text-muted-foreground'>r/community_url</p>
-                  <p className='truncate text-lg font-bold'>{label.trim() || 'Community name'}</p>
-                </div>
+            <div className='-mt-8 flex items-end gap-3 px-4 pb-4'>
+              <div className='relative size-20 overflow-hidden rounded border-4 border-card bg-secondary shadow-lg'>
+                {mediaPreview.avatar ? (
+                  <Image
+                    src={mediaPreview.avatar}
+                    alt='Community profile preview'
+                    fill
+                    unoptimized
+                    className='object-cover'
+                  />
+                ) : (
+                  <span
+                    className='grid size-full place-items-center text-2xl font-black text-primary-foreground'
+                    style={{ backgroundColor: previewColor }}
+                  >
+                    {previewInitial}
+                  </span>
+                )}
+              </div>
+              <div className='min-w-0 pb-1'>
+                <p className='font-mono text-xs uppercase tracking-wide text-muted-foreground'>r/community_url</p>
+                <p className='truncate text-lg font-bold'>{label.trim() || 'Community name'}</p>
               </div>
             </div>
           </div>

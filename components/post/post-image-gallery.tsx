@@ -68,57 +68,55 @@ const PostImageGallery = ({ images }: { images: string[] }) => {
   };
 
   return (
-    <div className={styles.root}>
-      <div className={styles.frame}>
-        <div
-          ref={sliderRef}
-          className={classNames('keen-slider', styles.slider, {
-            [styles.ready]: ready,
-          })}
-        >
-          {images.map((url, index) => (
-            <div key={`${url}-${index}`} className={classNames('keen-slider__slide', styles.slide)}>
-              <Image
-                src={url}
-                alt=''
-                fill
-                unoptimized
-                sizes='(max-width: 768px) calc(100vw - 5rem), 760px'
-                className={styles.image}
-                draggable={false}
-              />
-            </div>
-          ))}
-        </div>
-
-        {images.length > 1 && (
-          <>
-            <button
-              type='button'
-              aria-disabled={currentSlide === 0}
-              className={classNames(styles.nav, styles.previous)}
-              onPointerDown={handlePreviousPointerDown}
-              aria-label='Previous image'
-            >
-              <ChevronLeft className={styles.navIcon} />
-            </button>
-
-            <button
-              type='button'
-              aria-disabled={currentSlide === images.length - 1}
-              className={classNames(styles.nav, styles.next)}
-              onPointerDown={handleNextPointerDown}
-              aria-label='Next image'
-            >
-              <ChevronRight className={styles.navIcon} />
-            </button>
-
-            <div className={styles.counter}>
-              {currentSlide + 1} / {images.length}
-            </div>
-          </>
-        )}
+    <div className={styles.frame}>
+      <div
+        ref={sliderRef}
+        className={classNames('keen-slider', styles.slider, {
+          [styles.ready]: ready,
+        })}
+      >
+        {images.map((url, index) => (
+          <div key={`${url}-${index}`} className={classNames('keen-slider__slide', styles.slide)}>
+            <Image
+              src={url}
+              alt=''
+              fill
+              unoptimized
+              sizes='(max-width: 768px) calc(100vw - 5rem), 760px'
+              className={styles.image}
+              draggable={false}
+            />
+          </div>
+        ))}
       </div>
+
+      {images.length > 1 && (
+        <>
+          <button
+            type='button'
+            aria-disabled={currentSlide === 0}
+            className={classNames(styles.nav, styles.previous)}
+            onPointerDown={handlePreviousPointerDown}
+            aria-label='Previous image'
+          >
+            <ChevronLeft className={styles.navIcon} />
+          </button>
+
+          <button
+            type='button'
+            aria-disabled={currentSlide === images.length - 1}
+            className={classNames(styles.nav, styles.next)}
+            onPointerDown={handleNextPointerDown}
+            aria-label='Next image'
+          >
+            <ChevronRight className={styles.navIcon} />
+          </button>
+
+          <div className={styles.counter}>
+            {currentSlide + 1} / {images.length}
+          </div>
+        </>
+      )}
     </div>
   );
 };

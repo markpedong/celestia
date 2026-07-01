@@ -39,16 +39,14 @@ export const MfaDialog = ({
         }}
         className='space-y-5'
       >
-        <div className='flex justify-center'>
-          <div className='rounded-lg border border-border bg-background p-3 shadow-sm'>
-            <img
-              src={enrollment.qr.trimEnd()}
-              alt='Authenticator setup QR code'
-              width={192}
-              height={192}
-              className='size-48'
-            />
-          </div>
+        <div className='mx-auto w-fit rounded-lg border border-border bg-background p-3 shadow-sm'>
+          <img
+            src={enrollment.qr.trimEnd()}
+            alt='Authenticator setup QR code'
+            width={192}
+            height={192}
+            className='size-48'
+          />
         </div>
 
         <div className='rounded-md border border-border bg-muted/40 p-3'>

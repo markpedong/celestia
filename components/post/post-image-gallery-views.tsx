@@ -33,10 +33,8 @@ export const isImageUrl = (url: string) => {
 
 const ImagePlaceholder: FC<{ ratio: number }> = ({ ratio }) => (
   <div className={styles.placeholder} style={{ aspectRatio: ratio }}>
-    <div className={styles.placeholderInner}>
-      <ImageOff className='size-5' />
-      Image unavailable
-    </div>
+    <ImageOff className='size-5' />
+    Image unavailable
   </div>
 );
 
@@ -92,31 +90,29 @@ export const FeedImageGallery: FC<ImageGalleryViewProps> = props => {
   }
 
   return (
-    <div className={styles.feed}>
-      <button
-        type='button'
-        onClick={() => onOpen(activeIndex)}
-        disabled={isImageUnavailable(imageUrl)}
-        className={classNames('group', styles.feedButton)}
-        aria-label={`View image ${activeIndex + 1} of ${imageUrls.length} attached to ${title}`}
-      >
-        {isImageUnavailable(imageUrl) ? (
-          <ImagePlaceholder ratio={16 / 9} />
-        ) : (
-          <Image
-            src={imageUrl}
-            alt={`Image attached to ${title}`}
-            fill
-            unoptimized
-            sizes='(max-width: 768px) calc(100vw - 5rem), 760px'
-            className={styles.feedImage}
-            loading='eager'
-            onError={() => onImageError(imageUrl)}
-          />
-        )}
-        {!isImageUnavailable(imageUrl) ? <ZoomOverlay className={styles.zoomOverlaySubtle} /> : null}
-      </button>
-    </div>
+    <button
+      type='button'
+      onClick={() => onOpen(activeIndex)}
+      disabled={isImageUnavailable(imageUrl)}
+      className={classNames('group', styles.feedButton)}
+      aria-label={`View image ${activeIndex + 1} of ${imageUrls.length} attached to ${title}`}
+    >
+      {isImageUnavailable(imageUrl) ? (
+        <ImagePlaceholder ratio={16 / 9} />
+      ) : (
+        <Image
+          src={imageUrl}
+          alt={`Image attached to ${title}`}
+          fill
+          unoptimized
+          sizes='(max-width: 768px) calc(100vw - 5rem), 760px'
+          className={styles.feedImage}
+          loading='eager'
+          onError={() => onImageError(imageUrl)}
+        />
+      )}
+      {!isImageUnavailable(imageUrl) ? <ZoomOverlay className={styles.zoomOverlaySubtle} /> : null}
+    </button>
   );
 };
 
@@ -127,31 +123,29 @@ export const GalleryImageGallery: FC<ImageGalleryViewProps> = props => {
     const imageUrl = imageUrls[0];
 
     return (
-      <div className={styles.singleWrap}>
-        <button
-          type='button'
-          onClick={() => onOpen(0)}
-          disabled={isImageUnavailable(imageUrl)}
-          className={classNames('group', styles.singleButton)}
-          aria-label={`View image attached to ${title}`}
-        >
-          {isImageUnavailable(imageUrl) ? (
-            <ImagePlaceholder ratio={16 / 9} />
-          ) : (
-            <Image
-              src={imageUrl}
-              alt={`Image attached to ${title}`}
-              fill
-              unoptimized
-              sizes='(max-width: 768px) calc(100vw - 8rem), 672px'
-              className={styles.galleryImage}
-              loading='eager'
-              onError={() => onImageError(imageUrl)}
-            />
-          )}
-          {!isImageUnavailable(imageUrl) ? <ZoomOverlay /> : null}
-        </button>
-      </div>
+      <button
+        type='button'
+        onClick={() => onOpen(0)}
+        disabled={isImageUnavailable(imageUrl)}
+        className={classNames('group', styles.singleButton)}
+        aria-label={`View image attached to ${title}`}
+      >
+        {isImageUnavailable(imageUrl) ? (
+          <ImagePlaceholder ratio={16 / 9} />
+        ) : (
+          <Image
+            src={imageUrl}
+            alt={`Image attached to ${title}`}
+            fill
+            unoptimized
+            sizes='(max-width: 768px) calc(100vw - 8rem), 672px'
+            className={styles.galleryImage}
+            loading='eager'
+            onError={() => onImageError(imageUrl)}
+          />
+        )}
+        {!isImageUnavailable(imageUrl) ? <ZoomOverlay /> : null}
+      </button>
     );
   }
 

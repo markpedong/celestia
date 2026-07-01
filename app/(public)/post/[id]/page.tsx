@@ -126,12 +126,10 @@ const Page = async ({ params }: PostPageProps) => {
             </div>
             <Separator className='my-6' />
             <div className='flex flex-wrap items-center justify-between gap-3'>
-              <div className='flex flex-wrap items-center gap-3'>
-                <span className='inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground'>
-                  <MessageSquare className='size-4' />
-                  {post.commentCount}
-                </span>
-              </div>
+              <span className='inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground'>
+                <MessageSquare className='size-4' />
+                {post.commentCount}
+              </span>
               <ClientPostControls postID={post.id} authorID={post.authorID} />
             </div>
           </div>
@@ -139,9 +137,7 @@ const Page = async ({ params }: PostPageProps) => {
       </article>
 
       <section className='celestia-card mt-5 mb-5 p-4 md:p-6'>
-        <div className='mb-4 flex flex-wrap items-center justify-between gap-3'>
-          <h2 className='text-lg font-semibold'>{post.commentCount} Comments</h2>
-        </div>
+        <h2 className='mb-4 text-lg font-semibold'>{post.commentCount} Comments</h2>
         <CommentThread tree={commentTree} postAuthorID={post.authorID} sessionUser={null} communitySlug={communitySlug}>
           <ClientCommentComposerGate postID={post.id} communitySlug={communitySlug} />
         </CommentThread>

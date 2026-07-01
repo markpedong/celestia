@@ -31,9 +31,7 @@ const FeedSortTabs: FC<FeedSortTabsProps> = ({ current, tag, query, basePath = '
 
   return (
     <div className={styles.root}>
-      <div>
-        <h1 className={styles.heading}>{query ? 'Search results' : tag ? 'Filtered Posts' : 'Community Feed'}</h1>
-      </div>
+      <h1 className={styles.heading}>{query ? 'Search results' : tag ? 'Filtered Posts' : 'Community Feed'}</h1>
       <div className={styles.list}>
         {tabs.map(({ id, label, icon: Icon }) => {
           const active = activeSort === id;

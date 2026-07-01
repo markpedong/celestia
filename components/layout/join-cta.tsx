@@ -16,18 +16,16 @@ const JoinCtaCard = () => {
           Create posts, vote, and follow topics you care about.
         </div>
       </div>
-      <div className={styles.actionWrap}>
-        <Link
-          href='/auth/sign-up'
-          className={classNames(
-            buttonVariants({ variant: 'default', size: 'lg' }),
-            'celestia-primary-action',
-            styles.action
-          )}
-        >
-          Join Celestia
-        </Link>
-      </div>
+      <Link
+        href='/auth/sign-up'
+        className={classNames(
+          buttonVariants({ variant: 'default', size: 'lg' }),
+          'celestia-primary-action',
+          styles.action
+        )}
+      >
+        Join Celestia
+      </Link>
     </section>
   );
 };

@@ -1,6 +1,7 @@
 import { API_ENDPOINT, REQUEST_METHOD } from '@/constants/enums';
 import { ApiResponse } from '@/lib/types';
 import { generateParameters, generateRequestInit } from '@/services/utils';
+import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 
 declare function fetch<ResponseType = unknown>(
@@ -29,7 +30,11 @@ export type TApiArgs = {
 
 export const __api = async <TApiResponse = null>({ endpoint, params, init, includeCookies = true }: TApiArgs) => {
   const parameters = await generateParameters(params);
-  const requestInput = `${process.env.DOMAIN}/api${endpoint}${parameters}`;
+  const requestHeaders = await headers();
+  const host = requestHeaders.get('host');
+  const protocol = requestHeaders.get('x-forwarded-proto') ?? (process.env.NODE_ENV === 'production' ? 'https' : 'http');
+  const origin = host ? `${protocol}://${host}` : process.env.DOMAIN;
+  const requestInput = `${origin}/api${endpoint}${parameters}`;
   const requestInit = await generateRequestInit(init, includeCookies);
 
   const response = await fetch<TApiResponse>(requestInput, requestInit);
