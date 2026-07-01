@@ -4,6 +4,10 @@
   @apply flex gap-3;
 }
 
+.mainForm {
+  @apply block;
+}
+
 .avatar {
   @apply mt-1;
 }
@@ -12,12 +16,32 @@
   @apply min-w-0 flex-1 space-y-2;
 }
 
+.textareaShell {
+  @apply relative;
+}
+
 .textarea {
   @apply min-h-0 resize-y rounded border-border bg-secondary/80 text-sm leading-7 focus-visible:border-primary/40 focus-visible:ring-primary/20;
 }
 
+.mainForm .textarea {
+  @apply min-h-0 resize-none rounded-full px-4 py-3;
+}
+
+.mainForm.open .textarea {
+  @apply min-h-28 rounded-md pb-14;
+}
+
 .error {
   @apply text-xs text-destructive;
+}
+
+.actions {
+  @apply absolute right-2 bottom-2 flex items-center gap-2;
+}
+
+.cancel {
+  @apply inline-flex h-8 cursor-pointer items-center rounded px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
 }
 
 .submit {

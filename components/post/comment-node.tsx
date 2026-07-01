@@ -103,18 +103,6 @@ export const CommentNode: FC<CommentNodeProps> = ({
           </button>
         </div>
         <div className={styles.replies}>
-          {viewer && isReplying && (
-            <div className={styles.replyForm}>
-              <CommentComposer
-                postID={node.postID}
-                user={viewer}
-                parentID={node.id}
-                placeholder='Write a reply...'
-                compact
-              />
-            </div>
-          )}
-
           {hasChildren ? (
             <>
               {hideComments ? (
@@ -142,6 +130,18 @@ export const CommentNode: FC<CommentNodeProps> = ({
               </ul>
             </>
           ) : null}
+
+          {viewer && isReplying && (
+            <div className={styles.replyForm}>
+              <CommentComposer
+                postID={node.postID}
+                user={viewer}
+                parentID={node.id}
+                placeholder='Write a reply...'
+                compact
+              />
+            </div>
+          )}
         </div>
       </div>
     </li>

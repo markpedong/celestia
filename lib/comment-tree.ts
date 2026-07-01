@@ -33,7 +33,7 @@ export const nestCommentRows = (
   const sortCh = (nodes: EnrichedCommentNode[]) => {
     nodes.sort(
       (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
     );
 
     for (const n of nodes) sortCh(n.children);
