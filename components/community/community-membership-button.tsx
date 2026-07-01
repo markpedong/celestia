@@ -16,11 +16,14 @@ const CommunityMembershipButton: FC<CommunityMembershipButtonProps> = ({ ownerID
   const slug = usePathname().split('/').pop() ?? '';
   const user = useGetProfile().data?.data;
   const session = useSession().session;
-  const isMember = useGetCommunityMember(slug).data?.data?.isMember ?? false;
+  const memberQuery = useGetCommunityMember(slug);
+  const isMember = memberQuery.data?.data?.isMember;
   const { mutate, isPending } = useCommunityJoin();
 
   const resolvedIsOwner = Boolean(ownerID) && user?.id === ownerID;
   const resolvedIsSignedIn = session === undefined ? !!user : Boolean(session);
+
+  if (session === undefined) return null;
 
   if (!resolvedIsSignedIn) {
     return (
@@ -63,8 +66,8 @@ const CommunityMembershipButton: FC<CommunityMembershipButtonProps> = ({ ownerID
         variant={isMember ? 'outline' : 'default'}
         size='sm'
         onClick={toggleMembership}
-        isLoading={isPending}
-        loadingText='Saving…'
+        isLoading={isPending || isMember === undefined || memberQuery.isFetching}
+        loadingText={isMember === undefined ? 'Checking…' : 'Saving…'}
         className={isMember ? 'h-9 rounded px-3' : 'celestia-primary-action h-9 rounded px-3'}
       >
         {isMember ? <Check /> : <Plus />}

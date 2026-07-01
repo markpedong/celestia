@@ -14,6 +14,8 @@ export const ClientCommunityJoinButton = ({ communitySlug }: { communitySlug: st
   const isSignedIn = session === undefined ? Boolean(user) : Boolean(session);
   const isMember = memberQuery.data?.data?.isMember;
 
+  if (session === undefined || (isSignedIn && isMember === undefined)) return null;
+
   if (isMember) return null;
 
   if (!isSignedIn) {

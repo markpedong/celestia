@@ -10,10 +10,13 @@ import type { NavbarProps } from '@/lib/types';
 import { useGetProfile } from '@/hooks/useQueries';
 import { AccountMenuDynamic } from '@/components/dynamic-import';
 import { OPEN_LEFT_SIDEBAR_EVENT } from '@/lib/layout-events';
+import { useSession } from '@/hooks/useSession';
 import styles from './navbar.module.scss';
 
 const Navbar: FC<NavbarProps> = ({ trending, communities }) => {
+  const { session } = useSession();
   const user = useGetProfile().data?.data;
+  const isSessionLoading = session === undefined;
 
   return (
     <header className={classNames('celestia-nav-shadow', styles.header)}>
@@ -53,7 +56,7 @@ const Navbar: FC<NavbarProps> = ({ trending, communities }) => {
           </div>
         ) : null}
 
-        {!user ? (
+        {!isSessionLoading && !user ? (
           <div className={styles.guestActions}>
             <Link href={'/auth/sign-in'} className={classNames(buttonVariants({ variant: 'ghost', size: 'default' }))}>
               Sign in

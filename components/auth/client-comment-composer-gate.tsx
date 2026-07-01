@@ -5,13 +5,17 @@ import CommentComposer from '@/components/post/comment-composer';
 import { Button } from '@/components/ui/button';
 import { useCommunityJoin, useGetCommunityMember, useGetProfile } from '@/hooks/useQueries';
 import { Plus } from 'lucide-react';
+import { useSession } from '@/hooks/useSession';
 
 export const ClientCommentComposerGate = ({ postID, communitySlug }: { postID: string; communitySlug?: string }) => {
+  const { session } = useSession();
   const { data } = useGetProfile();
   const memberQuery = useGetCommunityMember(communitySlug ?? '');
   const { mutate, isPending } = useCommunityJoin();
   const user = data?.data;
   const isMember = memberQuery.data?.data?.isMember;
+
+  if (session === undefined || (user && communitySlug && isMember === undefined)) return null;
 
   if (user && isMember)
     return (

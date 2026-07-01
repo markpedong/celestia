@@ -16,6 +16,8 @@ export const ClientProfileControls = ({ profile, className }: { profile: User; c
   const isSignedIn = session === undefined ? Boolean(user) : Boolean(session);
   const isSelf = user?.id === profile.id;
 
+  if (session === undefined) return null;
+
   if (isSelf) return null;
 
   if (!isSignedIn) {
