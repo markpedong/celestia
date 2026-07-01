@@ -12,12 +12,8 @@
   @apply flex justify-center;
 }
 
-.avatarAnchor {
-  @apply block rounded-full;
-}
-
 .threadToggle {
-  @apply absolute left-1/2 top-1/2 z-10 flex size-7 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
+  @apply flex size-7 cursor-pointer items-center justify-center justify-self-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
 }
 
 .body {
@@ -49,15 +45,7 @@
 }
 
 .footer {
-  @apply flex min-h-8 flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground;
-}
-
-.toggleRail {
-  @apply relative min-h-8;
-}
-
-.actions {
-  @apply flex flex-wrap items-center gap-1;
+  @apply col-start-2 flex min-h-8 flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground;
 }
 
 .replies {
@@ -69,7 +57,7 @@
 }
 
 .children {
-  @apply mt-4 space-y-3 rounded-lg bg-muted/25;
+  @apply mt-4 space-y-3 rounded-lg;
 }
 
 .childrenHidden {
