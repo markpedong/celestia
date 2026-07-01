@@ -8,19 +8,33 @@ import type { ApiResponse, ChatConversation, ChatMessagesPage, CommentFormState,
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { OPEN_CHAT_EVENT, PENDING_DIRECT_CONVERSATION_PREFIX, type OpenChatEventDetail } from '@/lib/chat-events';
+import { createContext, createElement, useContext, type ReactNode } from 'react';
 
 export const communityMemberQueryKey = (slug: string) => ['community-member', slug] as const;
 export const communityStatsQueryKey = (slug: string) => ['community-stats', slug] as const;
 export const chatConversationsQueryKey = ['chat-conversations'] as const;
 export const chatMessagesQueryKey = (conversationID: string) => ['chat-messages', conversationID] as const;
 
+const CommunityMembershipContext = createContext<Record<string, boolean>>({});
+
+export const CommunityMembershipProvider = ({
+  memberships,
+  children,
+}: {
+  memberships: Record<string, boolean>;
+  children: ReactNode;
+}) => createElement(CommunityMembershipContext.Provider, { value: memberships }, children);
+
 export const useGetProfile = () => {
-  const { user: authUser } = useSession();
+  const { user: authUser, initialUser } = useSession();
 
   return useQuery({
     queryKey: ['profile', authUser?.id],
     queryFn: getProfile,
     enabled: Boolean(authUser?.id),
+    initialData: initialUser
+      ? { success: true, message: 'OK', data: initialUser as unknown as User }
+      : undefined,
     staleTime: STALE_TIME,
   });
 };
@@ -185,10 +199,16 @@ export const useCommunityJoin = () => {
 };
 
 export const useGetCommunityMember = (slug: string) => {
+  const { user } = useSession();
+  const initialMembership = useContext(CommunityMembershipContext)[slug.toLowerCase()];
+
   return useQuery({
     queryKey: communityMemberQueryKey(slug),
     queryFn: () => getCommunityMember(slug),
-    enabled: Boolean(slug),
+    enabled: Boolean(slug && user?.id),
+    initialData: initialMembership === undefined
+      ? undefined
+      : { success: true, message: 'OK', data: { isMember: initialMembership } },
     staleTime: STALE_TIME,
   })
 }
