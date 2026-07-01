@@ -30,7 +30,22 @@
 }
 
 .threadToggle {
-  @apply relative z-10 flex size-7 cursor-pointer items-center justify-center justify-self-center rounded-full bg-background text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
+  @apply relative z-10 flex cursor-pointer items-center justify-center justify-self-center rounded-full border-0 p-0 text-muted-foreground;
+
+  appearance: none;
+  background: linear-gradient(135deg, rgba(15, 22, 40, 0.97) 0%, rgba(11, 16, 32, 0.99) 100%);
+  height: 0.875rem;
+  line-height: 0;
+  width: 0.875rem;
+}
+
+.threadToggle > svg {
+  height: 0.875rem;
+  width: 0.875rem;
+}
+
+:global(.light) .threadToggle {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.94) 0%, rgba(248, 250, 252, 0.98) 100%);
 }
 
 .body {
