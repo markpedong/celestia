@@ -22,7 +22,7 @@
 }
 
 .isCollapsed > .row::before {
-  bottom: 0.85rem;
+  bottom: 1.88rem;
 }
 
 .avatarRail {
@@ -108,8 +108,12 @@
 
   content: '';
   left: calc(var(--comment-child-link-left) - 0.09375rem);
-  top: 1rem;
-  background: var(--background);
+  top: 0.875rem;
+  background: linear-gradient(135deg, rgba(15, 22, 40, 0.97) 0%, rgba(11, 16, 32, 0.99) 100%);
+}
+
+:global(.light) .children > .node:last-child::after {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.94) 0%, rgba(248, 250, 252, 0.98) 100%);
 }
 
 .childrenHidden {
@@ -117,5 +121,16 @@
 }
 
 .showReplies {
-  @apply inline-flex h-7 items-center rounded-md text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground;
+  @apply relative inline-flex h-7 items-center rounded-md text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground;
+}
+
+.isCollapsed .showReplies::before {
+  @apply pointer-events-none absolute h-4 border-b border-l;
+
+  content: '';
+  left: var(--comment-child-link-left);
+  top: calc(50% - 1rem);
+  width: calc(var(--comment-child-link-left) * -1);
+  border-color: var(--comment-line);
+  border-bottom-left-radius: 0.875rem;
 }
