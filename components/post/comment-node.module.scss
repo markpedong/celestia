@@ -13,16 +13,22 @@
 }
 
 .hasChildren > .row::before {
-  @apply pointer-events-none absolute bottom-0 w-px;
+  @apply pointer-events-none absolute w-px;
 
+  bottom: 0;
   content: '';
   left: var(--comment-rail-x);
   top: 2rem;
   background: var(--comment-line);
 }
 
+.hasChildren:not(.isCollapsed) > .row::before {
+  display: none;
+}
+
 .isCollapsed > .row::before {
   bottom: 1.88rem;
+  display: block;
 }
 
 .avatarRail {
@@ -89,7 +95,17 @@
 }
 
 .children {
-  @apply mt-4 space-y-3 overflow-visible rounded-lg;
+  @apply relative mt-4 space-y-3 overflow-visible rounded-lg;
+}
+
+.children::before {
+  @apply pointer-events-none absolute w-px;
+
+  content: '';
+  left: var(--comment-child-link-left);
+  top: -4.5rem;
+  height: 4.5rem;
+  background: var(--comment-line);
 }
 
 .children > .node::before {
@@ -103,17 +119,14 @@
   border-bottom-left-radius: 0.875rem;
 }
 
-.children > .node:last-child::after {
-  @apply pointer-events-none absolute bottom-0 w-1;
+.children > .node:not(:last-child)::after {
+  @apply pointer-events-none absolute w-px;
 
   content: '';
-  left: calc(var(--comment-child-link-left) - 0.09375rem);
-  top: 0.875rem;
-  background: linear-gradient(135deg, rgba(15, 22, 40, 0.97) 0%, rgba(11, 16, 32, 0.99) 100%);
-}
-
-:global(.light) .children > .node:last-child::after {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.94) 0%, rgba(248, 250, 252, 0.98) 100%);
+  left: var(--comment-child-link-left);
+  top: 1rem;
+  bottom: -0.75rem;
+  background: var(--comment-line);
 }
 
 .childrenHidden {
