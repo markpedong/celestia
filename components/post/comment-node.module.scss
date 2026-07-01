@@ -1,19 +1,36 @@
 @reference "../../app/globals.css";
 
 .node {
-  @apply min-w-0;
+  @apply relative min-w-0;
+
+  --comment-rail-x: 1.125rem;
+  --comment-child-link-left: -1.875rem;
+  --comment-line: color-mix(in srgb, var(--border) 72%, var(--muted-foreground) 28%);
 }
 
 .row {
-  @apply grid min-w-0 grid-cols-[2.25rem_minmax(0,1fr)] gap-x-3 rounded-lg;
+  @apply relative grid min-w-0 grid-cols-[2.25rem_minmax(0,1fr)] gap-x-3 rounded-lg;
+}
+
+.hasChildren > .row::before {
+  @apply pointer-events-none absolute bottom-0 w-px;
+
+  content: '';
+  left: var(--comment-rail-x);
+  top: 2rem;
+  background: var(--comment-line);
+}
+
+.isCollapsed > .row::before {
+  bottom: 0.85rem;
 }
 
 .avatarRail {
-  @apply flex justify-center;
+  @apply relative z-10 flex justify-center;
 }
 
 .threadToggle {
-  @apply flex size-7 cursor-pointer items-center justify-center justify-self-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
+  @apply relative z-10 flex size-7 cursor-pointer items-center justify-center justify-self-center rounded-full bg-background text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
 }
 
 .body {
@@ -49,7 +66,7 @@
 }
 
 .replies {
-  @apply col-start-2 min-w-0;
+  @apply col-start-2 min-w-0 overflow-visible;
 }
 
 .replyForm {
@@ -57,7 +74,27 @@
 }
 
 .children {
-  @apply mt-4 space-y-3 rounded-lg;
+  @apply mt-4 space-y-3 overflow-visible rounded-lg;
+}
+
+.children > .node::before {
+  @apply pointer-events-none absolute h-4 border-b border-l;
+
+  content: '';
+  left: var(--comment-child-link-left);
+  top: 0;
+  width: 3rem;
+  border-color: var(--comment-line);
+  border-bottom-left-radius: 0.875rem;
+}
+
+.children > .node:last-child::after {
+  @apply pointer-events-none absolute bottom-0 w-1;
+
+  content: '';
+  left: calc(var(--comment-child-link-left) - 0.09375rem);
+  top: 1rem;
+  background: var(--background);
 }
 
 .childrenHidden {

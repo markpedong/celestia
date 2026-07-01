@@ -6,6 +6,7 @@ import { Badge } from '../ui/badge';
 import VoteButtons from '../feed/vote-buttons';
 import CommentComposer from './comment-composer';
 import { Clock, CornerDownRight, MinusCircle, PlusCircle, Share2 } from 'lucide-react';
+import classNames from 'classnames';
 import Link from 'next/link';
 import { UserAvatar } from '../ui/user-avatar';
 import { useGetCommunityMember, useGetProfile } from '@/hooks/useQueries';
@@ -35,7 +36,12 @@ export const CommentNode: FC<CommentNodeProps> = ({
   };
 
   return (
-    <li className={styles.node}>
+    <li
+      className={classNames(styles.node, {
+        [styles.hasChildren]: hasChildren,
+        [styles.isCollapsed]: hideComments,
+      })}
+    >
       <div className={styles.row}>
         <div className={styles.avatarRail}>
           <UserAvatar user={node.author} />
