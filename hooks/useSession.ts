@@ -10,17 +10,26 @@ export const useSession = () => {
   const [session, setSession] = useState<Session | null>();
 
   useEffect(() => {
+    let cancelled = false;
+    let unsubscribe = () => {};
+
     supabase.auth.getSession().then(({ data }) => {
+      if (cancelled) return;
       setSession(data.session);
+
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange((_, session) => {
+        setSession(session);
+      });
+
+      unsubscribe = () => subscription.unsubscribe();
     });
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_, session) => {
-      setSession(session);
-    });
-
-    return () => subscription.unsubscribe();
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
   }, []);
 
   return { session, user: session?.user, supabase };

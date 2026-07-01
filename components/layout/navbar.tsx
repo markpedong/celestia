@@ -16,7 +16,6 @@ import styles from './navbar.module.scss';
 const Navbar: FC<NavbarProps> = ({ trending, communities }) => {
   const { session } = useSession();
   const user = useGetProfile().data?.data;
-  const isSessionLoading = session === undefined;
 
   return (
     <header className={classNames('celestia-nav-shadow', styles.header)}>
@@ -56,7 +55,7 @@ const Navbar: FC<NavbarProps> = ({ trending, communities }) => {
           </div>
         ) : null}
 
-        {!isSessionLoading && !user ? (
+        {session === null ? (
           <div className={styles.guestActions}>
             <Link href={'/auth/sign-in'} className={classNames(buttonVariants({ variant: 'ghost', size: 'default' }))}>
               Sign in
