@@ -3,11 +3,13 @@ import { getCurrentUserID } from '@/lib/auth';
 import { listPostSorted, getPostByID, listPostIDs, listPostsByAuthor, listVotedPostsByUser } from '@/lib/db/post.queries';
 import { getUploadErrorMessage } from '@/lib/error-messages';
 import { prisma } from '@/lib/prisma';
+import { feedCacheKey, feedCacheTTL, feedCacheVersion, getFeedCache, invalidateFeedCache, setFeedCache } from '@/lib/server/feed-cache';
 import { parsePublicFileUrl } from '@/lib/storage';
-import type { FeedSort } from '@/lib/types';
+import type { ApiResponse, FeedPostRow, FeedSort } from '@/lib/types';
 import { generateErrorResponse, generateSuccessResponse } from '@/services/request';
 import { removeImages as removeStoredImages } from '@/services';
 import { revalidatePath } from 'next/cache';
+import { NextResponse } from 'next/server';
 
 const parsePostImageUrls = (value: unknown): string[] => {
   if (value == null) return [];
@@ -56,7 +58,15 @@ export const GET = async (request: Request) => {
     return generateSuccessResponse(await listVotedPostsByUser(votedBy, Number(value) as -1 | 1, viewerID));
   }
 
-  return generateSuccessResponse(await listPostSorted(sort, tag, viewerID, query));
+  const version = await feedCacheVersion();
+  const cacheKey = feedCacheKey('posts', { sort, tag, q: query, viewer: viewerID ?? 'anon', limit: 50, v: version });
+  const cached = await getFeedCache<FeedPostRow[]>(cacheKey);
+  if (cached) return NextResponse.json(cached);
+
+  const data = await listPostSorted(sort, tag, viewerID, query);
+  const payload: ApiResponse<FeedPostRow[]> = { success: true, data, message: 'Data fetched successfully' };
+  await setFeedCache(cacheKey, payload, feedCacheTTL(sort));
+  return NextResponse.json(payload);
 };
 
 export const POST = async (request: Request) => {
@@ -89,6 +99,7 @@ export const POST = async (request: Request) => {
   });
 
   revalidatePostPaths(post.id, [community.slug]);
+  await invalidateFeedCache();
   return generateSuccessResponse({ postID: post.id });
 };
 
@@ -129,6 +140,7 @@ export const PATCH = async (request: Request) => {
   }
 
   revalidatePostPaths(id, existing.postTags.map(tag => tag.tagSlug));
+  await invalidateFeedCache();
   return generateSuccessResponse({ postID: id });
 };
 
@@ -157,5 +169,6 @@ export const DELETE = async (request: Request) => {
   }
 
   revalidatePostPaths(id, existing.postTags.map(tag => tag.tagSlug));
+  await invalidateFeedCache();
   return generateSuccessResponse(null, 200, 'Post deleted.');
 };

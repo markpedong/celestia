@@ -1,6 +1,7 @@
 import { getCurrentUserID } from '@/lib/auth';
 import { getCommentTree, listComments, listVotedCommentsByUser } from '@/lib/db/comment.queries';
 import { prisma } from '@/lib/prisma';
+import { invalidateFeedCache } from '@/lib/server/feed-cache';
 import type { Comment } from '@/lib/types';
 import { generateErrorResponse, generateSuccessResponse } from '@/services/request';
 import { revalidatePath } from 'next/cache';
@@ -79,5 +80,6 @@ export const POST = async (request: Request) => {
   const comment = await addComment({ postID, authorID: userID, parentID, body });
   revalidatePath('/');
   revalidatePath(`/post/${postID}`);
+  await invalidateFeedCache();
   return generateSuccessResponse({ ok: true, comment }, 201, 'Comment posted.');
 };

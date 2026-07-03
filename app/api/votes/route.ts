@@ -1,6 +1,7 @@
 import { getCurrentUserID } from '@/lib/auth';
 import { getUserVote, toggleVote, voteSumsForTargets } from '@/lib/db/vote.queries';
 import { prisma } from '@/lib/prisma';
+import { invalidateFeedCache } from '@/lib/server/feed-cache';
 import type { VoteActionValue, VoteTarget } from '@/lib/types';
 import { generateErrorResponse, generateSuccessResponse } from '@/services/request';
 import { revalidatePath } from 'next/cache';
@@ -42,5 +43,6 @@ export const POST = async (request: Request) => {
 
   revalidatePath('/');
   revalidatePath(`/post/${postID}`);
+  if (target === 'post') await invalidateFeedCache();
   return generateSuccessResponse({ userVote });
 };

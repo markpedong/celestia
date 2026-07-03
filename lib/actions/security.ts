@@ -5,6 +5,7 @@ import { createClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
 import { getSessionUser } from '../auth';
 import { prisma } from '../prisma';
+import { invalidateFeedCache } from '../server/feed-cache';
 import { createSupabaseAdminClient, createSupabaseServerClient } from '../supabase/server';
 import type { ChangePasswordValues, ErrorFormState } from '../types';
 import { deleteAccountSchema, setPasswordSchema } from '../form-schemas';
@@ -236,5 +237,6 @@ export const deleteAccountAction = async (_prev: SecurityActionState, { confirma
     prisma.users.deleteMany({ where: { id: user.id } }),
   ]);
   revalidatePath('/', 'layout');
+  await invalidateFeedCache();
   return { success: 'Account deleted.' };
 };
