@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import type { VoteActionValue, VoteTarget, VoteValue } from '@/lib/types';
+import type { VoteTarget, VoteValue } from '@/lib/types';
 
 export const listVotedTargetIDs = async (userID: string, targetType: VoteTarget, value: -1 | 1): Promise<string[]> => {
   const votes = await prisma.vote.findMany({
@@ -56,29 +56,28 @@ export const getPostScore = async (postID: string): Promise<number> => {
   return (await voteSumsForTargets('post', [postID])).get(postID) ?? 0;
 };
 
-export const toggleVote = async (
+export const setVote = async (
   userID: string,
   targetType: VoteTarget,
   targetID: string,
-  value: VoteActionValue,
-): Promise<VoteValue> => {
+  value: VoteValue,
+): Promise<{ userVote: VoteValue; score: number }> => {
   return prisma.$transaction(async tx => {
-    const current = await tx.vote.findUnique({
-      where: { userID_targetType_targetID: { userID, targetType, targetID } },
-      select: { value: true },
-    });
-    const next = current?.value === value ? 0 : value;
-
-    if (next === 0) {
-      await tx.vote.delete({ where: { userID_targetType_targetID: { userID, targetType, targetID } } });
+    if (value === 0) {
+      await tx.vote.deleteMany({ where: { userID, targetType, targetID } });
     } else {
       await tx.vote.upsert({
         where: { userID_targetType_targetID: { userID, targetType, targetID } },
-        create: { userID, targetType, targetID, value: next },
-        update: { value: next },
+        create: { userID, targetType, targetID, value },
+        update: { value },
       });
     }
 
-    return next;
+    const aggregate = await tx.vote.aggregate({
+      where: { targetType, targetID },
+      _sum: { value: true },
+    });
+
+    return { userVote: value, score: Number(aggregate._sum.value ?? 0) };
   });
 };

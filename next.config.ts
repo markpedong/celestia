@@ -8,10 +8,10 @@ const nextConfig: NextConfig = {
   },
   images: {
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '**',
-      },
+      { protocol: 'https', hostname: 'files.ivory.atlascelestia.site' },
+      { protocol: 'https', hostname: 'vmqvrslwbsdsfcyvocfm.supabase.co' },
+      { protocol: 'https', hostname: 'api.dicebear.com' },
+      { protocol: 'https', hostname: '**.googleusercontent.com' },
     ],
   },
 };

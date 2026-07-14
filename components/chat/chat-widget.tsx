@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
-import { ArrowLeft, Bell, Hash, Menu, MessageCircle, Send, X } from 'lucide-react';
+import { ArrowLeft, Bell, CheckCheck, Hash, Menu, MessageCircle, Send, X } from 'lucide-react';
 import classNames from 'classnames';
 import dayjs from 'dayjs';
 import { useQueryClient } from '@tanstack/react-query';
@@ -9,10 +9,11 @@ import { Button } from '@/components/ui/button';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import type { ChatConversation } from '@/lib/types';
-import { chatConversationsQueryKey, chatMessagesQueryKey, useChatConversations, useChatMessages, useGetProfile, useMarkChatRead, useSendChatMessage } from '@/hooks/useQueries';
+import { chatConversationsQueryKey, chatMessagesQueryKey, useChatConversations, useChatMessages, useGetProfile, useMarkChatRead, useMarkNotificationRead, useNotifications, useSendChatMessage } from '@/hooks/useQueries';
 import { OPEN_CHAT_EVENT, PENDING_DIRECT_CONVERSATION_PREFIX, type OpenChatEventDetail } from '@/lib/chat-events';
 import { OPEN_LEFT_SIDEBAR_EVENT } from '@/lib/layout-events';
 import styles from './chat-widget.module.scss';
+import { formatTimeAgo } from '@/lib/utils';
 
 const supabase = createSupabaseBrowserClient();
 const EMPTY_CONVERSATIONS: ChatConversation[] = [];
@@ -42,12 +43,16 @@ export const ChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [activeID, setActiveID] = useState<string | null>(null);
+  const [inboxSection, setInboxSection] = useState<'notifications' | 'chat'>('chat');
   const [draft, setDraft] = useState('');
   const closeTimerRef = useRef<number | null>(null);
-  const selectedID = activeID;
+  const selectedID = inboxSection === 'chat' ? activeID : null;
   const messagesQuery = useChatMessages(selectedID);
   const sendMessage = useSendChatMessage();
   const { mutate: markChatRead } = useMarkChatRead();
+  const notificationsQuery = useNotifications();
+  const markNotificationRead = useMarkNotificationRead();
+  const notifications = notificationsQuery.data?.data ?? [];
 
   useEffect(() => {
     const openChat = (event: Event) => {
@@ -111,7 +116,8 @@ export const ChatWidget = () => {
       .flatMap(page => page.data?.messages ?? []),
     [messagesQuery.data?.pages],
   );
-  const unreadTotal = conversations.reduce((total, conversation) => total + conversation.unreadCount, 0);
+  const notificationUnread = notifications.filter(notification => !notification.readAt).length;
+  const unreadTotal = conversations.reduce((total, conversation) => total + conversation.unreadCount, notificationUnread);
 
   if (!profile) return null;
 
@@ -119,6 +125,7 @@ export const ChatWidget = () => {
     if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
     setIsClosing(false);
     setActiveID(null);
+    setInboxSection('chat');
     setIsOpen(true);
   };
 
@@ -163,7 +170,7 @@ export const ChatWidget = () => {
   return (
     <section
       className={classNames(styles.shell, {
-        [styles.shellConversationOpen]: !!selectedID,
+        [styles.shellConversationOpen]: !!selectedID || inboxSection === 'notifications',
         [styles.shellClosing]: isClosing,
       })}
       aria-label='Inbox'
@@ -185,18 +192,58 @@ export const ChatWidget = () => {
         </div>
 
         <div className={styles.tabs} role='tablist' aria-label='Inbox sections'>
-          <button type='button' className={styles.tabDisabled} disabled aria-disabled='true'>
-            <Bell aria-hidden />
-            Notifications
+          <button
+            type='button'
+            className={inboxSection === 'notifications' ? styles.tabActive : styles.tabDisabled}
+            onClick={() => {
+              setActiveID(null);
+              setInboxSection('notifications');
+            }}
+          >
+            <Bell aria-hidden /> Notifications
+            {notificationUnread ? <span className={styles.unread}>{notificationUnread}</span> : null}
           </button>
-          <button type='button' className={styles.tabActive}>
+          <button
+            type='button'
+            className={inboxSection === 'chat' ? styles.tabActive : styles.tabDisabled}
+            onClick={() => setInboxSection('chat')}
+          >
             <MessageCircle aria-hidden />
             Chat
           </button>
         </div>
 
         <div className={styles.conversationList}>
-          {conversations.map(conversation => (
+          {inboxSection === 'notifications' ? (
+            <>
+              {notificationUnread ? (
+                <Button variant='ghost' size='sm' className={styles.loadOlder} onClick={() => markNotificationRead.mutate(undefined)}>
+                  <CheckCheck /> Mark all read
+                </Button>
+              ) : null}
+              {notifications.map(notification => (
+                <button
+                  key={notification.id}
+                  type='button'
+                  className={styles.conversationButton}
+                  onClick={() => {
+                    if (!notification.readAt) markNotificationRead.mutate(notification.id);
+                    window.location.assign(notification.href);
+                  }}
+                >
+                  <span className={styles.conversationIcon}><Bell aria-hidden /></span>
+                  <span className={styles.conversationText}>
+                    <span className={styles.title}>{notification.message}</span>
+                    <span className={styles.conversationMeta}>{formatTimeAgo(notification.createdAt)}</span>
+                  </span>
+                  {!notification.readAt ? <span className={styles.unread}>1</span> : null}
+                </button>
+              ))}
+              {!notificationsQuery.isLoading && notifications.length === 0 ? (
+                <p className={styles.empty}>No notifications yet.</p>
+              ) : null}
+            </>
+          ) : conversations.map(conversation => (
             <button
               key={conversation.id}
               type='button'
@@ -216,13 +263,25 @@ export const ChatWidget = () => {
             </button>
           ))}
 
-          {!conversationsQuery.isLoading && conversations.length === 0 ? (
+          {inboxSection === 'chat' && !conversationsQuery.isLoading && conversations.length === 0 ? (
             <p className={styles.empty}>Join a community to open its chat room.</p>
           ) : null}
         </div>
       </aside>
 
-      <div className={styles.panel}>
+      {inboxSection === 'notifications' ? (
+        <div className={styles.panel}>
+          <header className={styles.chatHeader}>
+            <div className={styles.conversationText}>
+              <div className={styles.title}>Notifications</div>
+              <div className={styles.subtitle}>Replies, comments, follows, and community updates</div>
+            </div>
+          </header>
+          <div className={styles.messages}>
+            <p className={styles.empty}>Choose a notification to open the related conversation.</p>
+          </div>
+        </div>
+      ) : <div className={styles.panel}>
         <header className={styles.chatHeader}>
           <button type='button' className={styles.backButton} aria-label='Back to inbox' onClick={() => setActiveID(null)}>
             <ArrowLeft aria-hidden />
@@ -293,7 +352,7 @@ export const ChatWidget = () => {
             <Send />
           </Button>
         </form>
-      </div>
+      </div>}
     </section>
   );
 };

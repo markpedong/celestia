@@ -11,6 +11,8 @@ export const nestCommentRows = (
       parentID: c.parentID,
       body: c.body,
       createdAt: c.createdAt,
+      editedAt: c.editedAt,
+      deletedAt: c.deletedAt,
       authorID: c.authorID,
       author: c.author,
       score: c.score,

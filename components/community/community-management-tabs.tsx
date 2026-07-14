@@ -1,12 +1,12 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import { BarChart3, FileText, ImageIcon, Info, UsersRound } from 'lucide-react';
+import { BarChart3, FileText, Flag, ImageIcon, Info, UsersRound } from 'lucide-react';
 import classNames from 'classnames';
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import styles from './community-management-tabs.module.scss';
 
-type CommunityManagementTab = 'overview' | 'details' | 'visuals' | 'members' | 'posts';
+type CommunityManagementTab = 'overview' | 'details' | 'visuals' | 'members' | 'posts' | 'reports';
 
 type CommunityManagementTabsProps = {
   overview: ReactNode;
@@ -14,21 +14,24 @@ type CommunityManagementTabsProps = {
   visuals: ReactNode;
   members: ReactNode;
   posts: ReactNode;
+  reports: ReactNode;
   memberCount: number;
   postCount: number;
+  reportCount: number;
 };
 
 const tabs: {
   id: CommunityManagementTab;
   label: string;
   icon: typeof BarChart3;
-  count?: keyof Pick<CommunityManagementTabsProps, 'memberCount' | 'postCount'>;
+  count?: keyof Pick<CommunityManagementTabsProps, 'memberCount' | 'postCount' | 'reportCount'>;
 }[] = [
   { id: 'overview', label: 'Overview', icon: BarChart3 },
   { id: 'details', label: 'Details', icon: Info },
   { id: 'visuals', label: 'Visuals', icon: ImageIcon },
   { id: 'members', label: 'Members', icon: UsersRound, count: 'memberCount' },
   { id: 'posts', label: 'Posts', icon: FileText, count: 'postCount' },
+  { id: 'reports', label: 'Reports', icon: Flag, count: 'reportCount' },
 ];
 
 export const CommunityManagementTabs = ({
@@ -37,11 +40,13 @@ export const CommunityManagementTabs = ({
   visuals,
   members,
   posts,
+  reports,
   memberCount,
   postCount,
+  reportCount,
 }: CommunityManagementTabsProps) => {
-  const panels = { overview, details, visuals, members, posts };
-  const counts = { memberCount, postCount };
+  const panels = { overview, details, visuals, members, posts, reports };
+  const counts = { memberCount, postCount, reportCount };
   const [activeTab, setActiveTab] = useState<CommunityManagementTab>('overview');
   const [direction, setDirection] = useState(1);
   const tabRefs = useRef<Partial<Record<CommunityManagementTab, HTMLButtonElement>>>({});

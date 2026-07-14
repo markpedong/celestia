@@ -1,13 +1,14 @@
 import { getCurrentUserID } from '@/lib/auth';
-import { getUserVote, toggleVote, voteSumsForTargets } from '@/lib/db/vote.queries';
+import { getUserVote, setVote, voteSumsForTargets } from '@/lib/db/vote.queries';
 import { prisma } from '@/lib/prisma';
 import { invalidateFeedCache } from '@/lib/server/feed-cache';
-import type { VoteActionValue, VoteTarget } from '@/lib/types';
+import { checkRateLimit } from '@/lib/server/rate-limit';
+import type { VoteTarget, VoteValue } from '@/lib/types';
 import { generateErrorResponse, generateSuccessResponse } from '@/services/request';
 import { revalidatePath } from 'next/cache';
 
 const isVoteTarget = (value: unknown): value is VoteTarget => value === 'post' || value === 'comment';
-const isVoteValue = (value: unknown): value is VoteActionValue => value === 1 || value === -1;
+const isVoteValue = (value: unknown): value is VoteValue => value === -1 || value === 0 || value === 1;
 
 export const GET = async (request: Request) => {
   const { searchParams } = new URL(request.url);
@@ -27,6 +28,9 @@ export const GET = async (request: Request) => {
 export const POST = async (request: Request) => {
   const userID = await getCurrentUserID();
   if (!userID) return generateErrorResponse('Sign in to vote.', 401);
+  if (!await checkRateLimit(`vote:${userID}`, 180, 60)) {
+    return generateErrorResponse('You are voting too quickly. Try again in a moment.', 429);
+  }
 
   const { target, targetID, value } = await request.json();
   if (!isVoteTarget(target) || typeof targetID !== 'string' || !isVoteValue(value)) {
@@ -38,11 +42,11 @@ export const POST = async (request: Request) => {
     : await prisma.comment.findUnique({ where: { id: targetID }, select: { postID: true } });
   if (!row) return generateErrorResponse(target === 'post' ? 'Post not found.' : 'Comment not found.', 404);
 
-  const userVote = await toggleVote(userID, target, targetID, value);
+  const result = await setVote(userID, target, targetID, value);
   const postID = target === 'comment' && 'postID' in row ? row.postID : targetID;
 
   revalidatePath('/');
   revalidatePath(`/post/${postID}`);
   if (target === 'post') await invalidateFeedCache();
-  return generateSuccessResponse({ userVote });
+  return generateSuccessResponse(result);
 };

@@ -10,16 +10,17 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { ImageUploadField } from './image-upload-field';
-import { Save } from 'lucide-react';
+import { Save, Trash2 } from 'lucide-react';
 import { MAX_POST_BODY_LENGTH, MAX_POST_TITLE_LENGTH } from '@/constants';
 import { useState } from 'react';
-import { useUpdatePost } from '@/hooks/useQueries';
+import { useDeletePost, useUpdatePost } from '@/hooks/useQueries';
 
 export const EditPostForm: FC<EditPostFormProps> = ({ post }) => {
   const [uploadingImages, setUploadingImages] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
   const { editPostSchema } = useFormSchema();
   const updatePost = useUpdatePost();
+  const deletePost = useDeletePost();
   const {
     handleSubmit,
     register,
@@ -83,15 +84,29 @@ export const EditPostForm: FC<EditPostFormProps> = ({ post }) => {
         </Label>
         <ImageUploadField initialImageUrls={post.imageUrls} name='images' multiple onUploadingChange={setUploadingImages} />
       </div>
-      <Button
-        type='submit'
-        disabled={!isValid || uploadingImages}
-        isLoading={pending || uploadingImages}
-        loadingText={uploadingImages ? 'Optimizing images...' : 'Saving…'}
-        className='celestia-primary-action w-full rounded'
-      >
-        <Save /> Save changes
-      </Button>
+      <div className='flex flex-col-reverse gap-2 sm:flex-row sm:justify-end'>
+        <Button
+          type='button'
+          variant='destructive'
+          disabled={pending || uploadingImages}
+          isLoading={deletePost.isPending}
+          loadingText='Deleting…'
+          onClick={() => {
+            if (window.confirm('Delete this post permanently? This cannot be undone.')) deletePost.mutate(post.id);
+          }}
+        >
+          <Trash2 /> Delete post
+        </Button>
+        <Button
+          type='submit'
+          disabled={!isValid || uploadingImages || deletePost.isPending}
+          isLoading={pending || uploadingImages}
+          loadingText={uploadingImages ? 'Optimizing images...' : 'Saving…'}
+          className='celestia-primary-action rounded'
+        >
+          <Save /> Save changes
+        </Button>
+      </div>
     </form>
   );
 };

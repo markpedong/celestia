@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession } from '@/hooks/useSession';
 import { useCommunityJoin, useGetCommunityMember, useGetProfile } from '@/hooks/useQueries';
+import { ContentActionButton } from '@/components/ui/content-action-button';
 
 type CommunityMembershipButtonProps = {
   ownerID: string;
@@ -76,6 +77,12 @@ const CommunityMembershipButton: FC<CommunityMembershipButtonProps> = ({ ownerID
       </Button>
 
       {isMember && renderCreatePost()}
+      <ContentActionButton
+        kind='muted'
+        targetType='community'
+        targetID={slug}
+        className='inline-flex h-9 items-center gap-2 rounded border border-border px-3 text-sm text-muted-foreground hover:bg-muted'
+      />
     </div>
   );
 };

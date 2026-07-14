@@ -118,9 +118,11 @@ const SearchBox: FC<SearchBoxProps> = ({ trending, communities }) => {
     saveRecentSearch(nextQuery);
     setQuery(nextQuery);
     setIsOpen(false);
-    const searchPath = pathname.startsWith('/r/') ? pathname : '/';
+    const community = pathname.match(/^\/r\/([^/]+)/)?.[1];
+    const params = new URLSearchParams({ q: nextQuery });
+    if (community) params.set('community', decodeURIComponent(community));
     startNavigation(() => {
-      router.push(`${searchPath}?q=${encodeURIComponent(nextQuery)}`);
+      router.push(`/search?${params.toString()}`);
     });
   };
 

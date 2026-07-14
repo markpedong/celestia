@@ -1,12 +1,13 @@
 import type { FC } from 'react';
 import type { PostCardProps } from '@/lib/types';
-import { MessageSquare, Share2, Sparkles } from 'lucide-react';
+import { MessageSquare, Sparkles } from 'lucide-react';
 import classNames from 'classnames';
 import Link from 'next/link';
 import VoteButtons from './vote-buttons';
 import { PostMeta } from './post-meta';
 import PostImageGallery from '../post/post-image-gallery';
 import styles from './post-card.module.scss';
+import { ShareButton } from '@/components/ui/share-button';
 
 const snippet = (body: string, max = 160) => {
   const t = body.replace(/\s+/g, ' ').trim();
@@ -55,13 +56,11 @@ const PostCard: FC<PostCardProps> = ({ post, author, authorStats, tagsBySlug, sc
             <MessageSquare className='size-3.5' />
             {post.commentCount} comments
           </Link>
-          <button
-            type='button'
+          <ShareButton
+            path={`/post/${post.id}`}
+            title={post.title}
             className={classNames('celestia-hover-surface', styles.action)}
-          >
-            <Share2 className='size-3.5' />
-            Share
-          </button>
+          />
         </div>
       </div>
     </article>

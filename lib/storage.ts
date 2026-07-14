@@ -30,3 +30,12 @@ export const parsePublicFileUrl = (imageUrl: string) => {
 
   return null;
 };
+
+export const isOwnedPublicFileUrl = (
+  imageUrl: string,
+  bucket: ImageBucket,
+  userID: string,
+) => {
+  const file = parsePublicFileUrl(imageUrl);
+  return file?.bucket === bucket && file.path.startsWith(`${userID}/`);
+};

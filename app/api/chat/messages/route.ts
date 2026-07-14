@@ -1,6 +1,7 @@
 import { getCurrentUserID } from '@/lib/auth';
 import { createChatMessage, listChatMessages } from '@/lib/db/chat.queries';
 import { generateErrorResponse, generateSuccessResponse } from '@/services/request';
+import { checkRateLimit } from '@/lib/server/rate-limit';
 
 export const GET = async (request: Request) => {
   const userID = await getCurrentUserID();
@@ -21,6 +22,9 @@ export const GET = async (request: Request) => {
 export const POST = async (request: Request) => {
   const userID = await getCurrentUserID();
   if (!userID) return generateErrorResponse('You must be signed in to send messages.', 401);
+  if (!await checkRateLimit(`chat-message:${userID}`, 90, 60)) {
+    return generateErrorResponse('You are sending messages too quickly. Try again in a moment.', 429);
+  }
 
   const { conversationID, body } = await request.json();
   if (typeof conversationID !== 'string' || typeof body !== 'string') {

@@ -3,12 +3,14 @@ import { PostList } from '@/components/feed/post-list';
 import { RightTrending } from '@/components/layout/right-trending';
 import { EmptyState } from '@/components/ui/empty-state';
 import { trendingToday } from '@/lib/trending';
-import type { FeedSort, SearchParams } from '@/lib/types';
+import type { FeedSort, FeedTimeRange, SearchParams } from '@/lib/types';
 import { listCommunity, tagsPostCounts } from '@/lib/db/community.queries';
 import { listPostSorted } from '@/lib/db/post.queries';
 import { batchUserStatsForIDs, getUserByID } from '@/lib/db/user.queries';
 import { FileQuestion, Radio } from 'lucide-react';
 import uniq from 'lodash/uniq';
+import { getCurrentUserID } from '@/lib/auth';
+import { FeedTimeFilter } from './feed-time-filter';
 
 type HomeFeedProps = {
   searchParams: Promise<SearchParams>;
@@ -20,9 +22,13 @@ const HomeFeed = async ({ searchParams, sort, hotPath }: HomeFeedProps) => {
   const query = await searchParams;
   const tagFilter = (Array.isArray(query.tag) ? query.tag[0] : query.tag)?.toLowerCase() ?? '';
   const cleanedSearchQuery = ((Array.isArray(query.q) ? query.q[0] : query.q) ?? '').trim();
+  const rawTimeRange = Array.isArray(query.t) ? query.t[0] : query.t;
+  const timeRange: FeedTimeRange = rawTimeRange === 'hour' || rawTimeRange === 'day' || rawTimeRange === 'week' ||
+    rawTimeRange === 'month' || rawTimeRange === 'year' ? rawTimeRange : 'all';
+  const viewerID = await getCurrentUserID();
 
   const [rows, tags, tagCounts] = await Promise.all([
-    listPostSorted(sort, tagFilter, undefined, cleanedSearchQuery),
+    listPostSorted(sort, tagFilter, viewerID, cleanedSearchQuery, timeRange),
     listCommunity(),
     tagsPostCounts(),
   ]);
@@ -52,7 +58,10 @@ const HomeFeed = async ({ searchParams, sort, hotPath }: HomeFeedProps) => {
             {tagFilter ? `r/${tagFilter}` : hasSearch ? 'Search results' : 'All communities'}
           </h1>
           <div className='mt-4'>
-            <FeedSortTabs current={sort} tag={tagFilter} query={cleanedSearchQuery} hotPath={hotPath} />
+            <FeedSortTabs current={sort} tag={tagFilter} query={cleanedSearchQuery} hotPath={hotPath} timeRange={timeRange} />
+            {sort === 'top' || sort === 'controversial' ? (
+              <FeedTimeFilter sort={sort} current={timeRange} tag={tagFilter} query={cleanedSearchQuery} />
+            ) : null}
           </div>
         </section>
 
@@ -63,7 +72,7 @@ const HomeFeed = async ({ searchParams, sort, hotPath }: HomeFeedProps) => {
         )}
 
         <div className='w-full space-y-3'>
-          <PostList rows={rows} authorsByID={authorByID} authorStatsByID={authorStatsByID} tagsBySlug={tagsMap} isSignedIn={false} />
+          <PostList rows={rows} authorsByID={authorByID} authorStatsByID={authorStatsByID} tagsBySlug={tagsMap} isSignedIn={Boolean(viewerID)} />
 
           {rows.length === 0 && (
             <EmptyState

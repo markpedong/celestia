@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, type FC } from 'react';
-import { BarChart2, Compass, Hash, Home, Radio, X } from 'lucide-react';
+import { BarChart2, Bookmark, Compass, Hash, Home, Radio, X } from 'lucide-react';
 import classNames from 'classnames';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -18,6 +18,7 @@ const nav = [
   { href: '/explore', label: 'Explore', icon: Compass },
   { href: '/posts', label: 'Posts', icon: Radio },
   { href: '/top', label: 'Top', icon: BarChart2 },
+  { href: '/saved', label: 'Saved', icon: Bookmark, authOnly: true },
   { href: '/communities/new', label: 'Start a community', icon: Hash },
 ];
 
@@ -74,7 +75,7 @@ const LeftSidebar: FC<{
           </button>
         </div>
         <nav className={styles.nav}>
-          {nav.map(item => {
+          {nav.filter(item => !item.authOnly || session).map(item => {
             const active = pathname === item.href;
 
             return (

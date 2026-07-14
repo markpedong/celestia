@@ -3,6 +3,7 @@ import { ACCEPTED_IMAGE_TYPES, IMAGE_CACHE_CONTROL, MAX_IMAGE_BYTES, MAX_POST_IM
 import { HTTP_MESSAGE } from '@/constants/enums';
 import { getCurrentUserID } from '@/lib/auth';
 import { getUploadErrorMessage } from '@/lib/error-messages';
+import { checkRateLimit } from '@/lib/server/rate-limit';
 import { createSupabaseAdminClient } from '@/lib/supabase/admin';
 import { getPublicFileUrl, parsePublicFileUrl } from '@/lib/storage';
 import type { ImageBucket } from '@/lib/types';
@@ -45,13 +46,13 @@ const uploadImages = async (values: FormDataEntryValue[], bucket: ImageBucket, u
   }));
 };
 
-const removeImages = async (imageUrls: unknown, bucket: ImageBucket) => {
+const removeImages = async (imageUrls: unknown, bucket: ImageBucket, userID: string) => {
   if (!Array.isArray(imageUrls)) throw new Error('Choose images to remove.');
 
   const paths = imageUrls.flatMap(imageUrl => {
     if (typeof imageUrl !== 'string') return [];
     const file = parsePublicFileUrl(imageUrl);
-    return file?.bucket === bucket ? [file.path] : [];
+    return file?.bucket === bucket && file.path.startsWith(`${userID}/`) ? [file.path] : [];
   });
 
   if (paths.length === 0) return;
@@ -64,6 +65,9 @@ const removeImages = async (imageUrls: unknown, bucket: ImageBucket) => {
 export const POST = async (request: Request) => {
   const userID = await getCurrentUserID();
   if (!userID) return generateErrorResponse(HTTP_MESSAGE.UNAUTHORIZED, 401);
+  if (!await checkRateLimit(`upload:${userID}`, 30, 600)) {
+    return generateErrorResponse('Upload limit reached. Try again later.', 429);
+  }
 
   try {
     const formData = await request.formData();
@@ -78,11 +82,14 @@ export const POST = async (request: Request) => {
 export const DELETE = async (request: Request) => {
   const userID = await getCurrentUserID();
   if (!userID) return generateErrorResponse(HTTP_MESSAGE.UNAUTHORIZED, 401);
+  if (!await checkRateLimit(`upload-delete:${userID}`, 60, 600)) {
+    return generateErrorResponse('Image removal limit reached. Try again later.', 429);
+  }
 
   try {
     const { bucket = 'post-images', imageUrls } = await request.json();
     if (!IMAGE_BUCKETS.has(bucket)) throw new Error('Invalid image bucket.');
-    await removeImages(imageUrls, bucket);
+    await removeImages(imageUrls, bucket, userID);
     return generateSuccessResponse(null, 200, 'Images removed.');
   } catch (error) {
     return generateErrorResponse(getUploadErrorMessage(error, 'We could not remove your images. Please try again.'));

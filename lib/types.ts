@@ -40,8 +40,10 @@ export type Post = Omit<PostModel, 'createdAt'> & {
   commentCount: number;
 };
 
-export type Comment = Omit<CommentModel, 'createdAt'> & {
+export type Comment = Omit<CommentModel, 'createdAt' | 'editedAt' | 'deletedAt'> & {
   createdAt: string;
+  editedAt: string | null;
+  deletedAt: string | null;
 };
 
 export type ChatConversationType = 'community' | 'direct';
@@ -80,7 +82,8 @@ export type ChatMessagesPage = {
   nextCursor: string | null;
 };
 
-export type FeedSort = "hot" | "new" | "top";
+export type FeedSort = 'hot' | 'new' | 'top' | 'rising' | 'controversial';
+export type FeedTimeRange = 'hour' | 'day' | 'week' | 'month' | 'year' | 'all';
 
 export type VoteTarget = "post" | "comment";
 
@@ -93,6 +96,45 @@ export type SearchPostSuggestion = {
 
 export type SearchTagSuggestion = Tag & {
   postCount: number;
+};
+
+export type SearchResultUser = Pick<User, 'id' | 'userName' | 'displayName' | 'bio' | 'avatarUrl'>;
+
+export type SearchResultPost = {
+  id: string;
+  title: string;
+  body: string;
+  createdAt: string;
+  commentCount: number;
+  tagSlugs: string[];
+  author: SearchResultUser | null;
+};
+
+export type SearchResultComment = {
+  id: string;
+  postID: string;
+  postTitle: string;
+  body: string;
+  createdAt: string;
+  author: SearchResultUser | null;
+};
+
+export type SearchResultCommunity = Community & {
+  postCount: number;
+  memberCount: number;
+};
+
+export type SearchResultType = 'posts' | 'comments' | 'communities' | 'people';
+
+export type SearchResults = {
+  type: SearchResultType;
+  total: number;
+  page: number;
+  pageSize: number;
+  posts: SearchResultPost[];
+  comments: SearchResultComment[];
+  communities: SearchResultCommunity[];
+  people: SearchResultUser[];
 };
 
 export type CommunityStats = {
@@ -124,6 +166,38 @@ export type VoteValue = -1 | 0 | 1;
 
 export type VoteActionValue = -1 | 1;
 
+export type ContentActionKind = 'saved' | 'hidden' | 'followed' | 'muted';
+export type ContentActionTarget = 'post' | 'comment' | 'user' | 'community';
+
+export type ContentActionState = {
+  active: boolean;
+};
+
+export type Notification = {
+  id: string;
+  userID: string;
+  actorID: string | null;
+  type: 'comment' | 'reply' | 'follow' | 'moderator' | 'community_invite';
+  message: string;
+  href: string;
+  readAt: string | null;
+  createdAt: string;
+};
+
+export type ModerationReport = {
+  id: string;
+  reporterID: string;
+  targetType: 'post' | 'comment' | 'user';
+  targetID: string;
+  communitySlug: string | null;
+  reason: string;
+  status: 'pending' | 'approved' | 'dismissed';
+  reviewedByID: string | null;
+  reviewedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type TrendingItem = {
   rank: number;
   title: string;
@@ -154,6 +228,8 @@ export type EnrichedCommentNode = {
   parentID: string | null;
   body: string;
   createdAt: string;
+  editedAt: string | null;
+  deletedAt: string | null;
   authorID: string;
   author: User;
   score: number;
@@ -192,6 +268,7 @@ export type FeedSortTabsProps = {
   query: string;
   basePath?: string;
   hotPath?: string;
+  timeRange?: FeedTimeRange;
 };
 
 export type PostCardProps = {

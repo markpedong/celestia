@@ -6,11 +6,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { desiredVoteAfterClick, reconcileVote, type ReconciledVoteState } from '@/lib/vote-reconciliation';
 
-type VoteState = {
-  score: number;
-  userVote: VoteValue;
-};
+type VoteState = ReconciledVoteState;
 
 type PendingVote = {
   target: VoteTarget;
@@ -114,26 +112,21 @@ export const VoteProvider = ({ children }: WithChildren) => {
     pending.inFlight = true;
 
     try {
-      while (pending.confirmed.userVote !== pending.desiredVote) {
-        const action = pending.desiredVote === 0 ? pending.confirmed.userVote : pending.desiredVote;
-        if (action === 0) break;
-
-        const response = await submitVote({
-          target: pending.target,
-          targetID: pending.targetID,
-          value: action,
-        });
-
-        if (!response.success || !response.data) {
-          throw new Error(response.message || 'Unable to vote.');
-        }
-
-        const previousVote = pending.confirmed.userVote;
-        pending.confirmed = {
-          userVote: response.data.userVote,
-          score: pending.confirmed.score + response.data.userVote - previousVote,
-        };
-      }
+      pending.confirmed = await reconcileVote(
+        pending.confirmed,
+        () => pending.desiredVote,
+        async desiredVote => {
+          const response = await submitVote({
+            target: pending.target,
+            targetID: pending.targetID,
+            value: desiredVote,
+          });
+          if (!response.success || !response.data) {
+            throw new Error(response.message || 'Unable to vote.');
+          }
+          return response.data;
+        },
+      );
 
       applyVoteState(pending.target, pending.targetID, pending.confirmed);
       refetchVoteData();
@@ -154,7 +147,7 @@ export const VoteProvider = ({ children }: WithChildren) => {
       const key = voteKey(target, targetID);
       const existing = pendingVotes.current.get(key);
       const visible = optimisticVotesRef.current[key] ?? current;
-      const desiredVote: VoteValue = visible.userVote === value ? 0 : value;
+      const desiredVote = desiredVoteAfterClick(visible.userVote, value);
       const next = {
         userVote: desiredVote,
         score: visible.score + desiredVote - visible.userVote,

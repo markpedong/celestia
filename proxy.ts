@@ -4,6 +4,18 @@ import { NextResponse, type NextRequest } from 'next/server';
 
 export const proxy = async (request: NextRequest) => {
   const pathname = request.nextUrl.pathname;
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)) {
+    const fetchSite = request.headers.get('sec-fetch-site');
+    if (fetchSite === 'cross-site') {
+      return NextResponse.json({ success: false, data: null, message: 'Cross-site request blocked.' }, { status: 403 });
+    }
+
+    const origin = request.headers.get('origin');
+    const expectedHost = request.headers.get('x-forwarded-host')?.split(',')[0]?.trim() ?? request.headers.get('host');
+    if (origin && expectedHost && (!URL.canParse(origin) || new URL(origin).host !== expectedHost)) {
+      return NextResponse.json({ success: false, data: null, message: 'Invalid request origin.' }, { status: 403 });
+    }
+  }
   const isAuthEntryPage = pathname === '/auth/sign-in' || pathname === '/auth/sign-up';
   const isPasswordRecoverySession = request.cookies.has(PASSWORD_RECOVERY_SESSION_COOKIE);
   let response = NextResponse.next({ request });

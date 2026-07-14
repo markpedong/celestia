@@ -4,7 +4,7 @@ import { listPostIDs } from '@/lib/db/post.queries';
 import { listUserNames } from '@/lib/db/user.queries';
 import { siteUrl } from '@/lib/seo';
 
-const staticRoutes = ['', '/explore', '/posts', '/top'];
+const staticRoutes = ['', '/explore', '/posts', '/top', '/rising', '/controversial'];
 
 const sitemap = async (): Promise<MetadataRoute.Sitemap> => {
   const [communities, postIDs, usernames] = await Promise.all([listCommunity(), listPostIDs(), listUserNames()]);

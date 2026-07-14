@@ -1,4 +1,5 @@
 import { CommunityManagementTabs } from '@/components/community/community-management-tabs';
+import { CommunityReportsPanel } from '@/components/community/community-reports-panel';
 import { CommunityDetailsSettingsForm, CommunityVisualSettingsForm } from '@/components/community/community-settings-panels';
 import { PostList } from '@/components/feed/post-list';
 import { RightTrending } from '@/components/layout/right-trending';
@@ -15,6 +16,8 @@ import { ArrowLeft, ExternalLink, FileText, Settings, UsersRound } from 'lucide-
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
+import { prisma } from '@/lib/prisma';
+import type { ModerationReport } from '@/lib/types';
 
 const validCommunitySlug = /^[a-z0-9_-]{3,32}$/;
 
@@ -34,11 +37,20 @@ const CommunitySettingsPage = async ({ params }: CommunitySettingsPageProps) => 
   if (!user) redirect('/auth/sign-in');
   if (community.createdByID !== user.id) redirect(`/r/${community.slug}`);
 
-  const [stats, members, feed] = await Promise.all([
+  const [stats, members, feed, reportRows] = await Promise.all([
     getCommunityStatsData(community.slug),
     listCommunityMembers(community.slug),
     getCommunityFeedData(community.slug, 'new', user.id),
+    prisma.report.findMany({ where: { communitySlug: community.slug }, orderBy: { createdAt: 'desc' }, take: 100 }),
   ]);
+  const reports: ModerationReport[] = reportRows.map(report => ({
+    ...report,
+    targetType: report.targetType as ModerationReport['targetType'],
+    status: report.status as ModerationReport['status'],
+    reviewedAt: report.reviewedAt?.toISOString() ?? null,
+    createdAt: report.createdAt.toISOString(),
+    updatedAt: report.updatedAt.toISOString(),
+  }));
   const authorsByID = new Map(feed.authors.map(author => [author.id, author]));
   const authorStatsByID = new Map(feed.authorStats);
   const tagsBySlug = new Map(feed.tags.map(tag => [tag.slug, tag]));
@@ -92,10 +104,12 @@ const CommunitySettingsPage = async ({ params }: CommunitySettingsPageProps) => 
           <CommunityManagementTabs
             memberCount={stats.memberCount}
             postCount={stats.postCount}
+            reportCount={reports.filter(report => report.status === 'pending').length}
             overview={<CommunityOverview community={community} stats={stats} members={members} feed={feed} />}
             details={<CommunityDetailsSettingsForm community={community} />}
             visuals={<CommunityVisualSettingsForm community={community} />}
             members={<CommunityMembersPanel members={members} />}
+            reports={<CommunityReportsPanel reports={reports} />}
             posts={
               feed.rows.length ? (
                 <div className='space-y-3'>

@@ -18,7 +18,7 @@ export const listComments = async (where: Prisma.CommentWhereInput): Promise<Use
     id: row.id,
     postID: row.postID,
     postTitle: row.post.title,
-    body: row.body,
+    body: row.deletedAt ? '[deleted]' : row.body,
     createdAt: row.createdAt.toISOString(),
   }));
 };
@@ -42,6 +42,8 @@ export const getCommentTree = async (
     parentID: row.parentID,
     body: row.body,
     createdAt: row.createdAt.toISOString(),
+    editedAt: row.editedAt?.toISOString() ?? null,
+    deletedAt: row.deletedAt?.toISOString() ?? null,
   }));
   if (flat.length === 0) return [];
 

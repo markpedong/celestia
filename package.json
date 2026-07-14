@@ -4,9 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "prisma generate && next dev",
-    "build": "npm run db:push && next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts",
+    "db:deploy": "prisma migrate deploy && prisma generate && tsx scripts/apply-supabase-rls.ts && tsx scripts/setup-supabase-storage.ts",
     "db:push": "prisma db push && prisma generate && tsx scripts/apply-supabase-rls.ts",
     "db:reset": "tsx scripts/confirm-db-reset.ts && prisma migrate reset --force && tsx scripts/apply-supabase-rls.ts && tsx scripts/reset-supabase-auth.ts && tsx scripts/empty-supabase-storage.ts && tsx scripts/setup-supabase-storage.ts"
   },

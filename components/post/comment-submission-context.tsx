@@ -17,6 +17,8 @@ export const createPendingComment = ({ postID, parentID, body, author }: Pending
   parentID,
   body,
   createdAt: new Date().toISOString(),
+  editedAt: null,
+  deletedAt: null,
   authorID: author.id,
   author,
   score: 0,

@@ -1,12 +1,14 @@
 'use client';
 
-import { CirclePlus, MessageCircleMore } from 'lucide-react';
+import { MessageCircleMore } from 'lucide-react';
 import Link from 'next/link';
 import classNames from 'classnames';
 import { Button } from '@/components/ui/button';
 import { useGetProfile, useStartDirectConversation } from '@/hooks/useQueries';
 import { useSession } from '@/hooks/useSession';
 import type { User } from '@/lib/types';
+import { ContentActionButton } from '@/components/ui/content-action-button';
+import { ReportButton } from '@/components/ui/report-button';
 
 export const ClientProfileControls = ({ profile, className }: { profile: User; className?: string }) => {
   const { session } = useSession();
@@ -23,13 +25,12 @@ export const ClientProfileControls = ({ profile, className }: { profile: User; c
   if (!isSignedIn) {
     return (
       <div className={classNames('grid grid-cols-2 gap-2', className)}>
-        <Button
-          className='h-9 rounded-full border-0 bg-primary px-3 text-sm font-semibold text-primary-foreground shadow-[0_8px_22px_color-mix(in_srgb,var(--primary)_28%,transparent)] disabled:opacity-100'
-          disabled
-        >
-          <CirclePlus />
-          Follow
-        </Button>
+        <ContentActionButton
+          kind='followed'
+          targetType='user'
+          targetID={profile.id}
+          className='inline-flex h-9 items-center justify-center gap-2 rounded-full bg-primary px-3 text-sm font-semibold text-primary-foreground'
+        />
         <Button
           asChild
           className='h-9 rounded-full border-0 bg-secondary px-3 text-sm font-semibold text-secondary-foreground hover:bg-muted'
@@ -45,13 +46,12 @@ export const ClientProfileControls = ({ profile, className }: { profile: User; c
 
   return (
     <div className={classNames('grid grid-cols-2 gap-2', className)}>
-      <Button
-        className='h-9 rounded-full border-0 bg-primary px-3 text-sm font-semibold text-primary-foreground shadow-[0_8px_22px_color-mix(in_srgb,var(--primary)_28%,transparent)] disabled:opacity-100'
-        disabled
-      >
-        <CirclePlus />
-        Follow
-      </Button>
+      <ContentActionButton
+        kind='followed'
+        targetType='user'
+        targetID={profile.id}
+        className='inline-flex h-9 items-center justify-center gap-2 rounded-full bg-primary px-3 text-sm font-semibold text-primary-foreground'
+      />
       <Button
         className='h-9 rounded-full border-0 bg-secondary px-3 text-sm font-semibold text-secondary-foreground hover:bg-muted'
         onClick={() => startDirectConversation.mutate(profile)}
@@ -59,6 +59,11 @@ export const ClientProfileControls = ({ profile, className }: { profile: User; c
         <MessageCircleMore />
         Chat
       </Button>
+      <ReportButton
+        targetType='user'
+        targetID={profile.id}
+        className='col-span-2 inline-flex h-8 items-center justify-center gap-2 rounded-full text-xs text-muted-foreground hover:bg-muted'
+      />
     </div>
   );
 };

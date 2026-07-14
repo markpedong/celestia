@@ -59,7 +59,7 @@
 }
 
 .tabDisabled {
-  @apply cursor-not-allowed text-muted-foreground opacity-50;
+  @apply cursor-pointer text-muted-foreground opacity-70 transition hover:bg-muted hover:opacity-100;
 }
 
 .tabActive svg,

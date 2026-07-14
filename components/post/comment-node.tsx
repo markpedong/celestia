@@ -5,13 +5,19 @@ import type { CommentNodeProps } from '@/lib/types';
 import { Badge } from '../ui/badge';
 import VoteButtons from '../feed/vote-buttons';
 import CommentComposer from './comment-composer';
-import { Clock, CornerDownRight, MinusCircle, PlusCircle, Share2 } from 'lucide-react';
+import { Clock, CornerDownRight, MinusCircle, Pencil, PlusCircle, Trash2 } from 'lucide-react';
 import classNames from 'classnames';
 import Link from 'next/link';
 import { UserAvatar } from '../ui/user-avatar';
-import { useGetCommunityMember, useGetProfile } from '@/hooks/useQueries';
+import { useDeleteComment, useGetCommunityMember, useGetProfile, useUpdateComment } from '@/hooks/useQueries';
 import { formatTimeAgo } from '@/lib/utils';
 import styles from './comment-node.module.scss';
+import { ShareButton } from '@/components/ui/share-button';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { MAX_COMMENT_LENGTH } from '@/constants';
+import { ContentActionButton } from '@/components/ui/content-action-button';
+import { ReportButton } from '@/components/ui/report-button';
 
 export const CommentNode: FC<CommentNodeProps> = ({
   node,
@@ -26,6 +32,11 @@ export const CommentNode: FC<CommentNodeProps> = ({
   const isOp = node.authorID === postAuthorID;
   const isReplying = activeReplyID === node.id;
   const [hideComments, setHideComments] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(node.body);
+  const updateComment = useUpdateComment();
+  const deleteComment = useDeleteComment();
+  const isAuthor = viewer?.id === node.authorID;
 
   const hasChildren = node.children.length > 0;
   const Icon = hasChildren ? (hideComments ? PlusCircle : MinusCircle) : null;
@@ -37,6 +48,7 @@ export const CommentNode: FC<CommentNodeProps> = ({
 
   return (
     <li
+      id={`comment-${node.id}`}
       className={classNames(styles.node, {
         [styles.hasChildren]: hasChildren,
         [styles.isCollapsed]: hideComments,
@@ -62,7 +74,43 @@ export const CommentNode: FC<CommentNodeProps> = ({
               {formatTimeAgo(node.createdAt)}
             </span>
           </div>
-          <p className={styles.copy}>{node.body}</p>
+          {editing ? (
+            <form
+              className='mt-2 space-y-2'
+              onSubmit={event => {
+                event.preventDefault();
+                const body = draft.trim();
+                if (!body) return;
+                updateComment.mutate({ commentID: node.id, body }, {
+                  onSuccess: response => {
+                    if (response.success) setEditing(false);
+                  },
+                });
+              }}
+            >
+              <Textarea
+                value={draft}
+                maxLength={MAX_COMMENT_LENGTH}
+                rows={3}
+                onChange={event => setDraft(event.target.value)}
+                aria-label='Edit comment'
+              />
+              <div className='flex justify-end gap-2'>
+                <Button type='button' size='sm' variant='outline' onClick={() => {
+                  setDraft(node.body);
+                  setEditing(false);
+                }}>
+                  Cancel
+                </Button>
+                <Button type='submit' size='sm' disabled={!draft.trim()} isLoading={updateComment.isPending}>
+                  Save
+                </Button>
+              </div>
+            </form>
+          ) : (
+            <p className={styles.copy}>{node.deletedAt ? '[deleted]' : node.body}</p>
+          )}
+          {node.editedAt && !node.deletedAt ? <span className='text-[11px] text-muted-foreground'>(edited)</span> : null}
         </div>
         {Icon ? (
           <button
@@ -78,7 +126,7 @@ export const CommentNode: FC<CommentNodeProps> = ({
           </button>
         ) : null}
         <div className={styles.footer}>
-          {!node.isPending ? (
+          {!node.isPending && !node.deletedAt ? (
             <VoteButtons
               target='comment'
               targetID={node.id}
@@ -97,10 +145,35 @@ export const CommentNode: FC<CommentNodeProps> = ({
               Reply
             </button>
           ) : null}
-          <button type='button' className='celestia-inline-action'>
-            <Share2 className='size-3.5' />
-            Share
-          </button>
+          {isAuthor && !node.isPending && !node.deletedAt ? (
+            <>
+              <button type='button' className='celestia-inline-action' onClick={() => setEditing(true)}>
+                <Pencil className='size-3.5' /> Edit
+              </button>
+              <button
+                type='button'
+                className='celestia-inline-action text-destructive'
+                disabled={deleteComment.isPending}
+                onClick={() => {
+                  if (window.confirm('Delete this comment? Its replies will remain visible.')) deleteComment.mutate(node.id);
+                }}
+              >
+                <Trash2 className='size-3.5' /> Delete
+              </button>
+            </>
+          ) : null}
+          {!node.isPending && !node.deletedAt ? (
+            <ContentActionButton
+              kind='saved'
+              targetType='comment'
+              targetID={node.id}
+              className='celestia-inline-action'
+            />
+          ) : null}
+          {!isAuthor && !node.isPending && !node.deletedAt ? (
+            <ReportButton targetType='comment' targetID={node.id} className='celestia-inline-action' />
+          ) : null}
+          <ShareButton path={`/post/${node.postID}#comment-${node.id}`} className='celestia-inline-action' />
         </div>
         <div className={styles.replies}>
           {hasChildren ? (

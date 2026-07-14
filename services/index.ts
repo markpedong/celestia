@@ -5,15 +5,19 @@ import {
   ChatConversation,
   ChatMessage,
   ChatMessagesPage,
+  ContentActionKind,
+  ContentActionState,
+  ContentActionTarget,
   CommentFormState,
   Community,
   CommunityFeed,
   CommunityStats,
   FeedSort,
   ImageBucket,
+  Notification,
+  ModerationReport,
   Tag,
   User,
-  VoteActionValue,
   VoteTarget,
   VoteValue,
 } from "@/lib/types";
@@ -49,8 +53,12 @@ export const listJoinedCommunities = async () => {
   return response.data ?? [];
 };
 
-export const getInitialDisplayName = async (): Promise<string> =>
-  ((await (await fetch('https://random-word-api.herokuapp.com/word?number=2')).json()) as string[]).join('-');
+export const getInitialDisplayName = async (): Promise<string> => {
+  const adjectives = ['Bright', 'Cosmic', 'Lunar', 'Nova', 'Solar', 'Stellar'];
+  const nouns = ['Comet', 'Explorer', 'Orbit', 'Pioneer', 'Signal', 'Voyager'];
+  const seed = crypto.getRandomValues(new Uint32Array(2));
+  return `${adjectives[seed[0] % adjectives.length]} ${nouns[seed[1] % nouns.length]}`;
+};
 
 
 export const getEmailByUserName = async (userName: string) => {
@@ -123,8 +131,8 @@ export const removeImages = async (imageUrls: string[], bucket: ImageBucket = 'p
   });
 };
 
-export const vote = async (body: { target: VoteTarget; targetID: string; value: VoteActionValue }) => {
-  return await __api<{ userVote: VoteValue }>({
+export const vote = async (body: { target: VoteTarget; targetID: string; value: VoteValue }) => {
+  return await __api<{ userVote: VoteValue; score: number }>({
     endpoint: API_ENDPOINT.VOTES,
     init: { body, method: REQUEST_METHOD.POST },
   });
@@ -137,6 +145,20 @@ export const createComment = async (body: { postID: string; parentID: string | n
   });
 
   return response.success ? response.data : { error: response.message };
+};
+
+export const updateComment = async (body: { commentID: string; body: string }) => {
+  return __api<{ comment: NonNullable<CommentFormState>['comment'] }>({
+    endpoint: API_ENDPOINT.COMMENTS,
+    init: { body, method: REQUEST_METHOD.PATCH },
+  });
+};
+
+export const deleteComment = async (commentID: string) => {
+  return __api<{ ok: boolean }>({
+    endpoint: API_ENDPOINT.COMMENTS,
+    init: { body: { commentID }, method: REQUEST_METHOD.DELETE },
+  });
 };
 
 type PostMutationResult = { postID: string } | { error: string };
@@ -250,3 +272,56 @@ export const markChatRead = async (conversationID: string) => {
 
   return response;
 };
+
+export const getContentAction = async (
+  kind: ContentActionKind,
+  targetType: ContentActionTarget,
+  targetID: string,
+) => __api<ContentActionState>({
+  endpoint: API_ENDPOINT.CONTENT_ACTIONS,
+  params: { kind, targetType, targetID },
+  init: { method: REQUEST_METHOD.GET },
+});
+
+export const setContentAction = async (body: {
+  kind: ContentActionKind;
+  targetType: ContentActionTarget;
+  targetID: string;
+  enabled: boolean;
+}) => __api<ContentActionState>({
+  endpoint: API_ENDPOINT.CONTENT_ACTIONS,
+  init: { body, method: REQUEST_METHOD.POST },
+});
+
+export const submitReport = async (body: {
+  targetType: 'post' | 'comment' | 'user';
+  targetID: string;
+  reason: string;
+}) => __api<{ ok: boolean }>({
+  endpoint: API_ENDPOINT.REPORTS,
+  init: { body, method: REQUEST_METHOD.POST },
+});
+
+export const getNotifications = async () => __api<Notification[]>({
+  endpoint: API_ENDPOINT.NOTIFICATIONS,
+  init: { method: REQUEST_METHOD.GET },
+});
+
+export const markNotificationRead = async (notificationID?: string) => __api<{ ok: boolean }>({
+  endpoint: API_ENDPOINT.NOTIFICATIONS,
+  init: {
+    body: notificationID ? { notificationID } : { all: true },
+    method: REQUEST_METHOD.PATCH,
+  },
+});
+
+export const getCommunityReports = async (communitySlug: string) => __api<ModerationReport[]>({
+  endpoint: API_ENDPOINT.REPORTS,
+  params: { communitySlug },
+  init: { method: REQUEST_METHOD.GET },
+});
+
+export const reviewReport = async (reportID: string, status: 'approved' | 'dismissed') => __api<ModerationReport>({
+  endpoint: API_ENDPOINT.REPORTS,
+  init: { body: { reportID, status }, method: REQUEST_METHOD.PATCH },
+});

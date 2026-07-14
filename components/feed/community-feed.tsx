@@ -3,17 +3,20 @@
 import { useCommunityFeed } from '@/hooks/useQueries';
 import { FeedSort } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { BarChart2, Clock, Flame, Hash } from 'lucide-react';
+import { Activity, BarChart2, Clock, Flame, Hash, TrendingUp } from 'lucide-react';
 import { useState } from 'react';
 import { PostList } from './post-list';
 import { EmptyState } from '../ui/empty-state';
 import { usePathname } from 'next/navigation';
 import Skeleton from 'react-loading-skeleton';
+import { useSession } from '@/hooks/useSession';
 
 const sortTabs = [
   { id: 'hot' as const, label: 'Hot', icon: Flame },
   { id: 'new' as const, label: 'New', icon: Clock },
   { id: 'top' as const, label: 'Top', icon: BarChart2 },
+  { id: 'rising' as const, label: 'Rising', icon: TrendingUp },
+  { id: 'controversial' as const, label: 'Controversial', icon: Activity },
 ];
 
 const CommunityFeedLoader = () => (
@@ -49,6 +52,7 @@ const CommunityFeedLoader = () => (
 const CommunityFeed = () => {
   const slug = usePathname().split('/').pop();
   const [sort, setSort] = useState<FeedSort>('hot');
+  const session = useSession().session;
   const { data, error, isFetching, isLoading, refetch } = useCommunityFeed(slug, sort);
   const authorsByID = new Map(data?.authors.map(author => [author.id, author]));
   const authorStatsByID = new Map(data?.authorStats);
@@ -105,7 +109,7 @@ const CommunityFeed = () => {
             authorsByID={authorsByID}
             authorStatsByID={authorStatsByID}
             tagsBySlug={tagsBySlug}
-            isSignedIn={true}
+            isSignedIn={Boolean(session)}
           />
           {feed.length === 0 ? (
             <EmptyState

@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@/lib/generated/prisma/client';
 import type { ChatConversation, ChatMessage, ChatMessagesPage } from '@/lib/types';
 
 const MESSAGE_LIMIT = 50;
@@ -113,24 +114,25 @@ export const listChatConversations = async (userID: string): Promise<ChatConvers
     },
   });
 
-  const participantReads = await prisma.chatParticipant.findMany({
-    where: { userID, conversationID: { in: conversations.map(conversation => conversation.id) } },
-    select: { conversationID: true, lastReadAt: true },
-  });
-  const readByConversationID = new Map(participantReads.map(row => [row.conversationID, row.lastReadAt]));
+  const unreadRows = conversations.length
+    ? await prisma.$queryRaw<{ conversationID: string; unreadCount: bigint }[]>(Prisma.sql`
+      SELECT messages.conversation_id AS "conversationID", COUNT(*) AS "unreadCount"
+      FROM chat_messages AS messages
+      JOIN chat_participants AS participant
+        ON participant.conversation_id = messages.conversation_id
+      WHERE participant.user_id = ${userID}
+        AND messages.author_id <> ${userID}
+        AND messages.deleted_at IS NULL
+        AND messages.created_at > COALESCE(participant.last_read_at, to_timestamp(0))
+      GROUP BY messages.conversation_id
+    `)
+    : [];
+  const unreadByConversationID = new Map(unreadRows.map(row => [row.conversationID, Number(row.unreadCount)]));
 
-  return Promise.all(conversations.map(async conversation => {
-    const unreadCount = await prisma.chatMessage.count({
-      where: {
-        conversationID: conversation.id,
-        deletedAt: null,
-        authorID: { not: userID },
-        createdAt: { gt: readByConversationID.get(conversation.id) ?? new Date(0) },
-      },
-    });
-
-    return serializeConversation({ ...conversation, _count: { messages: unreadCount } }, userID);
-  }));
+  return conversations.map(conversation => serializeConversation({
+    ...conversation,
+    _count: { messages: unreadByConversationID.get(conversation.id) ?? 0 },
+  }, userID));
 };
 
 export const createOrGetDirectConversation = async (userID: string, targetUserID: string): Promise<ChatConversation> => {

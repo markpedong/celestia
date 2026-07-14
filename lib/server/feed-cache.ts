@@ -3,7 +3,7 @@ import { getRedis } from './redis';
 
 const FEED_VERSION_KEY = 'feed:version';
 
-export const feedCacheTTL = (sort: FeedSort) => sort === 'new' ? 20 : sort === 'hot' || sort === 'top' ? 60 : 30;
+export const feedCacheTTL = (sort: FeedSort) => sort === 'new' || sort === 'rising' ? 20 : 60;
 
 export const feedCacheVersion = async () => {
   const redis = getRedis();

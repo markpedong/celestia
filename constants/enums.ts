@@ -20,6 +20,9 @@ export enum API_ENDPOINT {
   POSTS = '/posts',
   SEARCH_SUGGESTIONS = '/search/suggestions',
   VOTES = '/votes',
+  CONTENT_ACTIONS = '/content-actions',
+  REPORTS = '/reports',
+  NOTIFICATIONS = '/notifications',
 }
 
 export enum REQUEST_METHOD {

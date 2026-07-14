@@ -3,6 +3,7 @@ import { getCurrentUserID } from '@/lib/auth';
 import { getUserByID } from '@/lib/db/user.queries';
 import { profileDetailsSchema } from '@/lib/form-schemas';
 import { prisma } from '@/lib/prisma';
+import { isOwnedPublicFileUrl } from '@/lib/storage';
 import { generateErrorResponse, generateSuccessResponse } from '@/services/request';
 import pick from 'lodash/pick';
 import { revalidatePath } from 'next/cache';
@@ -40,6 +41,16 @@ export const POST = async (request: Request) => {
     if (!parsed.success) return generateErrorResponse(parsed.error.issues[0]?.message ?? 'Check your profile details.');
     data.displayName = parsed.data.displayName || null;
     data.bio = parsed.data.bio || null;
+  }
+
+  for (const [field, bucket] of [
+    ['avatarUrl', 'profile-avatars'],
+    ['coverUrl', 'profile-covers'],
+  ] as const) {
+    const imageUrl = data[field];
+    if (imageUrl != null && (typeof imageUrl !== 'string' || !isOwnedPublicFileUrl(imageUrl, bucket, userID))) {
+      return generateErrorResponse('Invalid profile image.');
+    }
   }
 
   await prisma.users.update({ where: { id: userID }, data });

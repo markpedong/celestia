@@ -11,7 +11,8 @@ import { getCommentTree } from '@/lib/db/comment.queries';
 import { listCommunity } from '@/lib/db/community.queries';
 import { getPostByID, listPostIDs } from '@/lib/db/post.queries';
 import { getUserByID } from '@/lib/db/user.queries';
-import { getPostScore } from '@/lib/db/vote.queries';
+import { getPostScore, getUserVote } from '@/lib/db/vote.queries';
+import { getSessionUser } from '@/lib/auth';
 import { MessageSquare, Radio, Users } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -65,14 +66,18 @@ const Page = async ({ params }: PostPageProps) => {
   const post = await getPostByID(id);
   if (!post) return notFound();
 
-  const [author, score, tags] = await Promise.all([
+  const [author, score, tags, sessionUser] = await Promise.all([
     getUserByID(post.authorID),
     getPostScore(post.id),
     listCommunity(),
+    getSessionUser(),
   ]);
 
   const communitySlug = post.tagSlugs[0];
-  const [commentTree] = await Promise.all([getCommentTree(post.id, undefined)]);
+  const [commentTree, userVote] = await Promise.all([
+    getCommentTree(post.id, sessionUser?.id),
+    getUserVote(sessionUser?.id, 'post', post.id),
+  ]);
   const tagsBySlug = new Map(tags.map(tag => [tag.slug, tag]));
 
   return (
@@ -109,7 +114,7 @@ const Page = async ({ params }: PostPageProps) => {
       <article className='celestia-card overflow-hidden'>
         <div className='flex'>
           <div className='celestia-vote-rail flex min-w-14.5 flex-col items-center justify-start border-r border-border/70 px-3 py-6'>
-            <VoteButtons target='post' targetID={post.id} score={score} userVote={0} isSignedIn={false} />
+            <VoteButtons target='post' targetID={post.id} score={score} userVote={userVote} isSignedIn={Boolean(sessionUser)} />
           </div>
           <div className='min-w-0 flex-1 p-5 md:p-6'>
             <PostMeta
@@ -138,7 +143,7 @@ const Page = async ({ params }: PostPageProps) => {
 
       <section className='celestia-card mt-5 mb-5 p-4 md:p-6'>
         <h2 className='mb-4 text-lg font-semibold'>{post.commentCount} Comments</h2>
-        <CommentThread tree={commentTree} postAuthorID={post.authorID} sessionUser={null} communitySlug={communitySlug}>
+        <CommentThread tree={commentTree} postAuthorID={post.authorID} sessionUser={sessionUser} communitySlug={communitySlug}>
           <ClientCommentComposerGate postID={post.id} communitySlug={communitySlug} />
         </CommentThread>
       </section>

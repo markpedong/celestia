@@ -18,13 +18,14 @@ import {
 } from '@/lib/db/user.queries';
 import type { CommentsListProps, FeedPostRow, UserCommentActivity, UserPageProps } from '@/lib/types';
 import { formatCount, formatTimeAgo } from '@/lib/utils';
-import { ArrowBigDown, ArrowBigUp, AtSign, Ellipsis, FileText, MessageSquare, Radio } from 'lucide-react';
+import { ArrowBigDown, ArrowBigUp, AtSign, FileText, MessageSquare, Radio } from 'lucide-react';
 import uniq from 'lodash/uniq';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { defaultOgImage, truncateDescription } from '@/lib/seo';
+import { getCurrentUserID } from '@/lib/auth';
 
 export const dynamicParams = true;
 
@@ -84,16 +85,17 @@ const UserPage = async ({ params }: UserPageProps) => {
   const userName = decodeURIComponent(rawUserName);
   const profile = await getUserByUserName(userName);
   if (!profile) notFound();
+  const viewerID = await getCurrentUserID();
 
   const [tags, stats, posts, comments, upvotedPosts, upvotedComments, downvotedPosts, downvotedComments] =
     await Promise.all([
       listCommunity(),
       getUserStats(profile.id),
-      listPostsByAuthor(profile.id, 'new', undefined),
+      listPostsByAuthor(profile.id, 'new', viewerID),
       listComments({ authorID: profile.id }),
-      listVotedPostsByUser(profile.id, 1, undefined),
+      listVotedPostsByUser(profile.id, 1, viewerID),
       listVotedCommentsByUser(profile.id, 1),
-      listVotedPostsByUser(profile.id, -1, undefined),
+      listVotedPostsByUser(profile.id, -1, viewerID),
       listVotedCommentsByUser(profile.id, -1),
     ]);
   const allRows = [...posts, ...upvotedPosts, ...downvotedPosts];
@@ -134,7 +136,7 @@ const UserPage = async ({ params }: UserPageProps) => {
           authorsByID={authorsByID}
           authorStatsByID={authorStatsByID}
           tagsBySlug={tagsBySlug}
-          isSignedIn={false}
+          isSignedIn={Boolean(viewerID)}
         />
       </section>
     ) : null;
@@ -147,7 +149,7 @@ const UserPage = async ({ params }: UserPageProps) => {
         authorsByID={authorsByID}
         authorStatsByID={authorStatsByID}
         tagsBySlug={tagsBySlug}
-        isSignedIn={false}
+        isSignedIn={Boolean(viewerID)}
       />
     ) : (
       <ProfileEmpty
@@ -285,20 +287,13 @@ const ProfileSidebar = ({
     <section className='celestia-card overflow-hidden'>
       <div className='h-1.5 bg-[linear-gradient(90deg,var(--primary),var(--accent))]' />
       <div className='p-4'>
-        <div className='mb-4 flex items-start justify-between gap-3'>
+        <div className='mb-4'>
           <div className='min-w-0'>
             <h2 className='truncate text-lg font-bold leading-6 tracking-tight text-card-foreground'>
               {profile.displayName || profile.userName}
             </h2>
             <p className='truncate font-mono text-xs text-muted-foreground'>u/{profile.userName}</p>
           </div>
-          <button
-            type='button'
-            className='grid size-9 shrink-0 place-items-center rounded-full border border-border bg-secondary/80 text-muted-foreground transition hover:bg-muted hover:text-foreground'
-            aria-label='More profile actions'
-          >
-            <Ellipsis className='size-4' />
-          </button>
         </div>
 
         <div className='space-y-4'>

@@ -16,7 +16,7 @@ import { ENTER_VALID_EMAIL } from '@/constants/messages';
 const supabase = createSupabaseBrowserClient();
 
 const usernameSchema = z.string().trim()
-  .min(6, 'Username must be at least 3 characters.')
+  .min(3, 'Username must be at least 3 characters.')
   .max(20, 'Username must be 20 characters or fewer.')
   .regex(/^[a-z0-9_]+$/, 'Use lowercase letters, numbers, or underscores.');
 
@@ -87,7 +87,7 @@ export const useAuthForm = (mode: AuthMode) => {
           email,
           password: values.password,
           options: {
-            emailRedirectTo: `${window.location.origin}/auth/sign-in`,
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
             data: { display_name: await getInitialDisplayName(), userName: values.userName },
           },
         })

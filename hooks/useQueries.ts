@@ -1,10 +1,10 @@
 'use client';
 
 import { STALE_TIME } from '@/constants';
-import { createComment, createCommunity, createPost, getChatConversations, getChatMessages, getCommunity, getCommunityFeed, getCommunityMember, getCommunityStats, getOwnedCommunities, getProfile, joinCommunity, markChatRead, sendChatMessage, startDirectConversation, updateCommunity, updatePost, updateProfile, uploadImages } from '@/services';
+import { createComment, createCommunity, createPost, deleteComment, deletePost, getChatConversations, getChatMessages, getCommunity, getCommunityFeed, getCommunityMember, getCommunityStats, getContentAction, getNotifications, getOwnedCommunities, getProfile, joinCommunity, markChatRead, markNotificationRead, sendChatMessage, setContentAction, startDirectConversation, submitReport, updateComment, updateCommunity, updatePost, updateProfile, uploadImages } from '@/services';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient, type InfiniteData } from '@tanstack/react-query';
 import { useSession } from './useSession';
-import type { ApiResponse, ChatConversation, ChatMessagesPage, CommentFormState, CommunityStats, FeedSort, ImageBucket, User } from '@/lib/types';
+import type { ApiResponse, ChatConversation, ChatMessagesPage, CommentFormState, CommunityStats, ContentActionKind, ContentActionState, ContentActionTarget, FeedSort, ImageBucket, User } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { OPEN_CHAT_EVENT, PENDING_DIRECT_CONVERSATION_PREFIX, type OpenChatEventDetail } from '@/lib/chat-events';
@@ -12,7 +12,10 @@ import { OPEN_CHAT_EVENT, PENDING_DIRECT_CONVERSATION_PREFIX, type OpenChatEvent
 export const communityMemberQueryKey = (slug: string) => ['community-member', slug] as const;
 export const communityStatsQueryKey = (slug: string) => ['community-stats', slug] as const;
 export const chatConversationsQueryKey = ['chat-conversations'] as const;
+export const notificationsQueryKey = ['notifications'] as const;
 export const chatMessagesQueryKey = (conversationID: string) => ['chat-messages', conversationID] as const;
+export const contentActionQueryKey = (kind: ContentActionKind, targetType: ContentActionTarget, targetID: string) =>
+  ['content-action', kind, targetType, targetID] as const;
 
 export const useGetProfile = () => {
   const { user: authUser } = useSession();
@@ -397,6 +400,24 @@ export const useMarkChatRead = () => {
   });
 };
 
+export const useNotifications = () => {
+  const { user } = useSession();
+  return useQuery({
+    queryKey: notificationsQueryKey,
+    queryFn: getNotifications,
+    enabled: Boolean(user?.id),
+    staleTime: 30_000,
+  });
+};
+
+export const useMarkNotificationRead = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: markNotificationRead,
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: notificationsQueryKey }),
+  });
+};
+
 export const useUploadImages = () => {
   return useMutation({
     mutationFn: async ({ files, bucket = 'post-images' }: { files: File[]; bucket?: ImageBucket }) =>
@@ -407,12 +428,96 @@ export const useUploadImages = () => {
   });
 };
 
+export const useContentAction = (
+  kind: ContentActionKind,
+  targetType: ContentActionTarget,
+  targetID: string,
+) => {
+  const { user } = useSession();
+  const queryClient = useQueryClient();
+  const queryKey = contentActionQueryKey(kind, targetType, targetID);
+  const query = useQuery({
+    queryKey,
+    queryFn: () => getContentAction(kind, targetType, targetID),
+    enabled: Boolean(user?.id && targetID),
+    staleTime: STALE_TIME,
+  });
+  const mutation = useMutation({
+    mutationFn: (enabled: boolean) => setContentAction({ kind, targetType, targetID, enabled }),
+    onMutate: async enabled => {
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueryData<ApiResponse<ContentActionState>>(queryKey);
+      queryClient.setQueryData<ApiResponse<ContentActionState>>(queryKey, current => ({
+        success: true,
+        message: current?.message ?? 'Preference updated.',
+        data: { active: enabled },
+      }));
+      return { previous };
+    },
+    onSuccess: response => {
+      if (!response.success || !response.data) {
+        toast.error(response.message || 'Unable to update preference.');
+        return;
+      }
+      queryClient.setQueryData(queryKey, response);
+      void queryClient.invalidateQueries({ queryKey: ['community-feed'] });
+    },
+    onError: (error, _enabled, context) => {
+      if (context?.previous) queryClient.setQueryData(queryKey, context.previous);
+      toast.error(error instanceof Error ? error.message : 'Unable to update preference.');
+    },
+    onSettled: () => void queryClient.invalidateQueries({ queryKey }),
+  });
+
+  return { query, mutation };
+};
+
+export const useSubmitReport = () => useMutation({
+  mutationFn: submitReport,
+  onSuccess: response => response.success
+    ? toast.success('Report submitted.')
+    : toast.error(response.message || 'Unable to submit report.'),
+  onError: error => toast.error(error instanceof Error ? error.message : 'Unable to submit report.'),
+});
+
 export const useCreateComment = () => {
   return useMutation<CommentFormState, Error, { postID: string; parentID: string | null; body: string }>({
     mutationFn: createComment,
     onError: error => {
       toast.error(error.message || 'Unable to post comment.');
     },
+  });
+};
+
+export const useUpdateComment = () => {
+  const router = useRouter();
+  return useMutation({
+    mutationFn: updateComment,
+    onSuccess: response => {
+      if (!response.success) {
+        toast.error(response.message || 'Unable to update comment.');
+        return;
+      }
+      toast.success('Comment updated.');
+      router.refresh();
+    },
+    onError: error => toast.error(error instanceof Error ? error.message : 'Unable to update comment.'),
+  });
+};
+
+export const useDeleteComment = () => {
+  const router = useRouter();
+  return useMutation({
+    mutationFn: deleteComment,
+    onSuccess: response => {
+      if (!response.success) {
+        toast.error(response.message || 'Unable to delete comment.');
+        return;
+      }
+      toast.success('Comment deleted.');
+      router.refresh();
+    },
+    onError: error => toast.error(error instanceof Error ? error.message : 'Unable to delete comment.'),
   });
 };
 
@@ -452,6 +557,27 @@ export const useUpdatePost = () => {
     },
     onError: error => {
       toast.error(error instanceof Error ? error.message : 'Unable to update post.');
+    },
+  });
+};
+
+export const useDeletePost = () => {
+  const router = useRouter();
+
+  return useMutation({
+    mutationFn: deletePost,
+    onSuccess: response => {
+      if (!response.success) {
+        toast.error(response.message || 'Unable to delete post.');
+        return;
+      }
+
+      toast.success('Post deleted.');
+      router.push('/');
+      router.refresh();
+    },
+    onError: error => {
+      toast.error(error instanceof Error ? error.message : 'Unable to delete post.');
     },
   });
 };

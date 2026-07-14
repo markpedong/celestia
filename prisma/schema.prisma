@@ -103,11 +103,16 @@ model Comment {
   parentID  String?  @map("parent_id") @db.Uuid
   body      String
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  editedAt  DateTime? @map("edited_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
 
-  post Post @relation(fields: [postID], references: [id], onDelete: Cascade)
+  post    Post      @relation(fields: [postID], references: [id], onDelete: Cascade)
+  parent  Comment?  @relation("CommentReplies", fields: [parentID], references: [id], onDelete: SetNull)
+  replies Comment[] @relation("CommentReplies")
 
   @@index([postID, createdAt])
   @@index([authorID, createdAt])
+  @@index([parentID, createdAt])
   @@map("comments")
 }
 
@@ -120,6 +125,52 @@ model Vote {
   @@id([userID, targetType, targetID]) // basically just a unique ID for each vote
   @@index([targetType, targetID])
   @@map("votes")
+}
+
+model ContentAction {
+  userID     String   @map("user_id")
+  kind       String
+  targetType String   @map("target_type")
+  targetID   String   @map("target_id")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@id([userID, kind, targetType, targetID])
+  @@index([userID, kind, createdAt])
+  @@index([kind, targetType, targetID])
+  @@map("content_actions")
+}
+
+model Report {
+  id            String    @id @default(uuid()) @db.Uuid
+  reporterID    String    @map("reporter_id")
+  targetType    String    @map("target_type")
+  targetID      String    @map("target_id")
+  communitySlug String?   @map("community_slug")
+  reason        String
+  status        String    @default("pending")
+  reviewedByID  String?   @map("reviewed_by_id")
+  reviewedAt    DateTime? @map("reviewed_at") @db.Timestamptz(6)
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([reporterID, targetType, targetID])
+  @@index([communitySlug, status, createdAt])
+  @@index([reporterID, createdAt])
+  @@map("reports")
+}
+
+model Notification {
+  id         String    @id @default(uuid()) @db.Uuid
+  userID     String    @map("user_id")
+  actorID    String?   @map("actor_id")
+  type       String
+  message    String
+  href       String
+  readAt     DateTime? @map("read_at") @db.Timestamptz(6)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([userID, readAt, createdAt])
+  @@map("notifications")
 }
 
 model ChatConversation {

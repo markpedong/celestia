@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import SettingsDialog from '@/components/ui/settings-dialog';
+import Image from 'next/image';
 
 const formatVerificationCode = (value: string) => value.replace(/\D/g, '').slice(0, 6);
 
@@ -40,11 +41,12 @@ export const MfaDialog = ({
         className='space-y-5'
       >
         <div className='mx-auto w-fit rounded-lg border border-border bg-background p-3 shadow-sm'>
-          <img
+          <Image
             src={enrollment.qr.trimEnd()}
             alt='Authenticator setup QR code'
             width={192}
             height={192}
+            unoptimized
             className='size-48'
           />
         </div>
