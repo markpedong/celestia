@@ -36,7 +36,7 @@ model AccountDeletion {
   leaseToken     String?   @map("lease_token")
   leaseExpiresAt DateTime? @map("lease_expires_at") @db.Timestamptz(6)
   requestedAt  DateTime @default(now()) @map("requested_at") @db.Timestamptz(6)
-  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   @@index([status, requestedAt])
   @@index([leaseExpiresAt])
