@@ -7,10 +7,12 @@ import { getSessionUser } from '../auth';
 import { prisma } from '../prisma';
 import { createSupabaseAdminClient, createSupabaseServerClient } from '../supabase/server';
 import { beginAccountDeletion, getAccountDeletionStatus, processAccountDeletion } from '../server/account-deletion';
+import { resetFactorsWithBackupCode } from '../backup-code-recovery';
+import { checkRateLimit } from '../server/rate-limit';
 import type { ChangePasswordValues, ErrorFormState } from '../types';
 import { deleteAccountSchema, setPasswordSchema } from '../form-schemas';
 
-type SecurityActionState = ErrorFormState<{ success?: string; codes?: string[]; remainingCodes?: number }>;
+type SecurityActionState = ErrorFormState<{ success?: string; codes?: string[]; remainingCodes?: number; recoveryRequired?: boolean }>;
 type BackupCodeStatusState = ErrorFormState<{ hasBackupCodes?: boolean }>;
 type SensitiveSetting = 'email' | 'phone' | 'gender' | 'location';
 type PasswordVerificationSetting = SensitiveSetting | 'passkey' | 'mfa' | 'backupCodes';
@@ -151,6 +153,11 @@ export const updateRecoveredPasswordAction = async (values: { newPassword: strin
 export const generateBackupCodesAction = async (): Promise<SecurityActionState> => {
   const user = await getSessionUser();
   if (!user) return { error: 'You must be signed in to generate backup codes.' };
+  const client = await createSupabaseServerClient();
+  const assurance = await client.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (assurance.error || assurance.data.currentLevel !== 'aal2') {
+    return { error: 'Verify your authenticator and enable MFA before generating backup codes.' };
+  }
   const codes = Array.from({ length: 10 }, makeCode);
   await prisma.$transaction([
     prisma.backupCode.deleteMany({ where: { userID: user.id } }),
@@ -182,41 +189,71 @@ export const verifyBackupCodeAction = async (code: string): Promise<SecurityActi
   const supabase = await createSupabaseServerClient();
   const { data: { user }, error } = await supabase.auth.getUser();
   if (error || !user) return { error: 'Sign in before using a backup code.' };
-
-  const assurance = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-  if (assurance.error) return { error: assurance.error.message };
-  if (assurance.data.currentLevel === assurance.data.nextLevel) {
-    return { error: 'A backup code is not needed for this session.' };
+  if (!await checkRateLimit(`backup-recovery:${user.id}`, 8, 600, { failOpen: false })) {
+    return { error: 'Too many recovery attempts. Please try again later.' };
   }
 
+  const assurance = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (assurance.error) return { error: 'Unable to check your authenticator. Try again later.' };
+  if (assurance.data.nextLevel !== 'aal2' || assurance.data.currentLevel === 'aal2') {
+    return { error: 'Recovery is not needed for this session.' };
+  }
+
+  const factors = await supabase.auth.mfa.listFactors();
+  if (factors.error) return { error: 'Unable to list your authenticators. Try again later.' };
+  const verifiedFactorIDs = factors.data.all
+    .filter(factor => factor.status === 'verified' && (factor.factor_type === 'totp' || factor.factor_type === 'phone'))
+    .map(factor => factor.id);
+  if (verifiedFactorIDs.length === 0) return { error: 'There is no verified authenticator to recover.' };
+
   const backupCode = await prisma.backupCode.findFirst({
-    where: {
-      userID: user.id,
-      codeHash: hashCode(normalizedCode),
-      usedAt: null,
-    },
+    where: { userID: user.id, codeHash: hashCode(normalizedCode), usedAt: null },
     select: { id: true },
   });
-
   if (!backupCode) return { error: 'That backup code is invalid or has already been used.' };
 
-  const update = await prisma.backupCode.updateMany({
-    where: {
-      id: backupCode.id,
-      userID: user.id,
-      usedAt: null,
-    },
-    data: { usedAt: new Date() },
-  });
+  const usedAt = new Date();
+  const admin = createSupabaseAdminClient();
+  try {
+    const result = await resetFactorsWithBackupCode(verifiedFactorIDs, {
+      claimCode: async () => {
+        const claimed = await prisma.backupCode.updateMany({
+          where: { id: backupCode.id, userID: user.id, usedAt: null },
+          data: { usedAt },
+        });
+        return claimed.count === 1;
+      },
+      restoreCode: async () => {
+        await prisma.backupCode.updateMany({
+          where: { id: backupCode.id, userID: user.id, usedAt },
+          data: { usedAt: null },
+        });
+      },
+      removeVerifiedFactor: async id => {
+        const { error: removalError } = await admin.auth.admin.mfa.deleteFactor({ id, userId: user.id });
+        if (removalError) throw removalError;
+      },
+      invalidateRemainingCodes: async () => {
+        await prisma.backupCode.deleteMany({ where: { userID: user.id } });
+      },
+    });
 
-  if (update.count !== 1) return { error: 'That backup code was already used. Try another code.' };
-
-  const remainingCodes = await prisma.backupCode.count({
-    where: { userID: user.id, usedAt: null },
-  });
-
-  revalidatePath('/settings');
-  return { success: 'Backup code accepted.', remainingCodes };
+    if (result === 'invalid') return { error: 'That backup code was already used. Try another code.' };
+    if (result === 'recovered_with_stale_codes') {
+      console.error('MFA factors reset, but legacy backup codes need manual cleanup.');
+    }
+    revalidatePath('/settings');
+    return {
+      success: result === 'recovered_with_stale_codes'
+        ? 'Authenticator reset. Sign in again, enroll a new authenticator, and replace your old recovery codes immediately.'
+        : 'Authenticator reset. Sign in again and set up a new authenticator and backup codes.',
+      remainingCodes: 0,
+      recoveryRequired: true,
+    };
+  } catch {
+    console.error('Legacy backup-code factor recovery failed.');
+    return { error: 'Recovery could not finish. If you were signed out, sign in again and retry with the same code or contact support.' };
+  }
 };
 
 export const deleteAccountAction = async (_prev: SecurityActionState, { confirmation }: { confirmation: string }): Promise<SecurityActionState> => {
@@ -230,7 +267,10 @@ export const deleteAccountAction = async (_prev: SecurityActionState, { confirma
     // Save the request and storage manifest first; no app data is deleted until
     // Supabase confirms Auth deletion. A protected reconciler retries crashes.
     await beginAccountDeletion(user.id);
-    await processAccountDeletion(user.id);
+    const outcome = await processAccountDeletion(user.id);
+    if (outcome === 'busy') {
+      return { error: 'Your account deletion is already processing. Please wait for it to complete or retry later.' };
+    }
     revalidatePath('/', 'layout');
     return { success: 'Account deleted.' };
   } catch {
