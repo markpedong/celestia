@@ -37,10 +37,19 @@ export const POST = async (request: Request) => {
     return generateErrorResponse('Invalid vote.');
   }
 
-  const row = target === 'post'
-    ? await prisma.post.findUnique({ where: { id: targetID }, select: { id: true } })
-    : await prisma.comment.findUnique({ where: { id: targetID }, select: { postID: true } });
+  let row: { id: string; postID?: string } | null;
+  if (target === 'post') {
+    row = await prisma.post.findUnique({ where: { id: targetID }, select: { id: true } });
+  } else {
+    row = await prisma.comment.findUnique({ where: { id: targetID }, select: { id: true, postID: true } });
+  }
   if (!row) return generateErrorResponse(target === 'post' ? 'Post not found.' : 'Comment not found.', 404);
+  if (target === 'comment' && row.postID) {
+    const postID = new URL(request.url).searchParams.get('postID');
+    if (postID && postID !== row.postID) {
+      return generateErrorResponse('Comment does not belong to the specified post.', 400);
+    }
+  }
 
   const result = await setVote(userID, target, targetID, value);
   const postID = target === 'comment' && 'postID' in row ? row.postID : targetID;
