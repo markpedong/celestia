@@ -4,7 +4,7 @@
 
 ## Release decisions and statuses
 
-**P0 is a release gate, not proof of deployment acceptance.** The owner confirmed the current Supabase main project is test-only. All 15 Prisma migrations are now reconciled/applied there, 14 previously absent legacy CHECK constraints were restored, and the real PostgreSQL lease/rollback fixture test passed. Typecheck/lint/43 unit tests/build also pass. Supabase Auth/Storage, browser acceptance, operational alerts and deployed cron remain open; the username credential-exchange flow is implemented and still needs live endpoint/provider acceptance. A read-only main-test provider probe currently returns Auth **401** and Storage **403**, so verify that the configured service-role secret belongs to this project before attempting any provider-backed deletion or MFA test; see `docs/p0-staging-runbook.md`.
+**P0 is a release gate, not proof of deployment acceptance.** The owner confirmed the current Supabase main project is test-only. All 15 Prisma migrations are now reconciled/applied there, 14 previously absent legacy CHECK constraints were restored, and the real PostgreSQL lease/rollback fixture test passed. Typecheck/lint/43 unit tests/build also pass. Read-only Supabase Admin Auth/Storage access is now verified for the configured test project, while Auth/Storage deletion and recovery, browser acceptance, operational alerts and deployed cron remain open; the username credential-exchange flow is implemented and still needs live endpoint/provider acceptance. The read-only main-test provider probe returns Auth **200** and Storage **200**, clearing the previous credential blocker; see `docs/p0-staging-runbook.md`.
 
 ### P0 — Data loss, critical trust and deployment blockers
 
