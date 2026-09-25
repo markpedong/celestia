@@ -7,7 +7,8 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { getBackupCodeStatusAction, verifyBackupCodeAction } from '@/lib/actions/security';
-import { getEmailByUserName, getInitialDisplayName } from '@/services';
+import { getInitialDisplayName } from '@/services';
+import { signInWithUserName } from '@/services/username-session';
 import type { AuthMode } from '@/lib/types';
 import { MAX_EMAIL_LENGTH, MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '@/constants';
 import useFormValidate from './useFormValidate';
@@ -84,21 +85,12 @@ export const useAuthForm = (mode: AuthMode) => {
     setMessage(null);
 
     startTransition(async () => {
-      let email = values.email.trim().toLowerCase();
-      if (isSignIn && !email.includes('@')) {
-        const userNameEmail = await getEmailByUserName(email);
+      const email = values.email.trim().toLowerCase();
 
-        if (!userNameEmail) {
-          toast.error('That email, userName, or password is incorrect. Check your details and try again.');
-          return;
-        }
-
-        email = userNameEmail;
-      }
-
-
-      const result = isSignUp
-        ? await supabase.auth.signUp({
+      let result;
+      try {
+        result = isSignUp
+          ? await supabase.auth.signUp({
           email,
           password: values.password,
           options: {
@@ -106,7 +98,13 @@ export const useAuthForm = (mode: AuthMode) => {
             data: { display_name: await getInitialDisplayName(), userName: values.userName },
           },
         })
-        : await supabase.auth.signInWithPassword({ email, password: values.password });
+          : !email.includes('@')
+            ? await signInWithUserName(supabase, email, values.password)
+            : await supabase.auth.signInWithPassword({ email, password: values.password });
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : 'Sign-in failed. Please retry.');
+        return;
+      }
 
       if (result.error) {
         toast.error(result.error.message);

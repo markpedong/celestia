@@ -61,16 +61,6 @@ export const getInitialDisplayName = async (): Promise<string> => {
 };
 
 
-export const getEmailByUserName = async (userName: string) => {
-  const response = await __api<{ email: string }>({
-    init: { body: { userName } },
-    endpoint: API_ENDPOINT.USERNAME_LOGIN,
-  });
-
-  return response.data?.email ?? null;
-};
-
-
 export const getCommunity = async (slug: string) => {
   const response = await __api<Community>({
     params: { slug },
