@@ -7,8 +7,8 @@ export const getRedis = () => {
 
   try {
     redis ??= Redis.fromEnv();
-  } catch (error) {
-    console.error('Redis client setup failed:', error);
+  } catch {
+    console.error('Redis client setup failed.');
     return null;
   }
 

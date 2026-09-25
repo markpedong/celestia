@@ -4,9 +4,11 @@ export const checkRateLimit = async (
   key: string,
   limit: number,
   windowSeconds: number,
+  options: { failOpen?: boolean } = {},
 ) => {
+  const { failOpen = true } = options;
   const redis = getRedis();
-  if (!redis) return true;
+  if (!redis) return failOpen;
 
   try {
     const count = await redis.incr(`rate:${key}`);
@@ -14,6 +16,6 @@ export const checkRateLimit = async (
     return count <= limit;
   } catch (error) {
     console.error('Redis rate limit failed:', error);
-    return true;
+    return failOpen;
   }
 };
