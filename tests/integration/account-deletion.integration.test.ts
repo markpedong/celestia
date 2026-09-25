@@ -1,16 +1,33 @@
+import 'dotenv/config'
 import assert from 'node:assert/strict'
 import {randomUUID} from 'node:crypto'
 import test from 'node:test'
 import {PrismaPg} from '@prisma/adapter-pg'
 import {PrismaClient} from '@/lib/generated/prisma/client'
 
-// NEVER use DATABASE_URL or a default .env value for a deletion test.
-// The operator must supply a separate disposable DB and an explicit opt-in.
-const url = process.env.CELESTIA_TEST_DATABASE_URL
-const acknowledged = process.env.CELESTIA_TEST_DB_ACK === 'DISPOSABLE_STAGING_ONLY'
-const conflicts = Boolean(url && [process.env.DATABASE_URL, process.env.DIRECT_URL].includes(url))
-const enabled = Boolean(url && acknowledged && !conflicts && /^postgres(?:ql)?:\/\//.test(url))
-const skipReason = enabled ? false : 'Requires an explicit disposable CELESTIA_TEST_DATABASE_URL and CELESTIA_TEST_DB_ACK; never run against application DATABASE_URL'
+// Default: refuse application URLs; use an explicitly acknowledged disposable DB.
+// An explicitly confirmed, test-only Celestia main project may run this isolated
+// fixture test without a second database. This never calls Supabase Auth deletion.
+const dedicatedUrl = process.env.CELESTIA_TEST_DATABASE_URL
+const mainUrl = process.env.DIRECT_URL
+const expectedRef = process.env.CELESTIA_MAIN_TEST_PROJECT_REF
+const configuredRef = (() => {
+  try {return new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').hostname.split('.')[0]} catch {return null}
+})()
+const mainUrlMatchesProject = (() => {
+  if (!mainUrl || !expectedRef) return false
+  try {
+    const parsed = new URL(mainUrl)
+    return parsed.username.includes(expectedRef) || parsed.hostname.includes(expectedRef)
+  } catch {return false}
+})()
+const mainTestOptIn = !dedicatedUrl && process.env.CELESTIA_TEST_DB_ACK === 'DISPOSABLE_MAIN_TEST_ONLY' &&
+  Boolean(expectedRef && expectedRef === configuredRef && mainUrlMatchesProject)
+const url = mainTestOptIn ? mainUrl : dedicatedUrl
+const dedicatedOptIn = Boolean(dedicatedUrl && process.env.CELESTIA_TEST_DB_ACK === 'DISPOSABLE_STAGING_ONLY' &&
+  ![process.env.DATABASE_URL, process.env.DIRECT_URL].includes(dedicatedUrl) && /^postgres(?:ql)?:\/\//.test(dedicatedUrl))
+const enabled = Boolean((mainTestOptIn || dedicatedOptIn) && url)
+const skipReason = enabled ? false : 'Requires an acknowledged disposable staging database or explicitly confirmed disposable Celestia main test project'
 
 test('real PostgreSQL account-deletion claim is atomic and cleanup rolls back', {skip: skipReason}, async () => {
   const db = new PrismaClient({adapter: new PrismaPg({connectionString: url!, ssl: {rejectUnauthorized: false}, max: 2})})
