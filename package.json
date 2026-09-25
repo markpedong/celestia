@@ -9,6 +9,10 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/*.test.ts",
+    "watch:commits": "node scripts/auto-commit.mjs run",
+    "watch:commits:start": "node scripts/auto-commit.mjs start",
+    "watch:commits:stop": "node scripts/auto-commit.mjs stop",
+    "watch:commits:status": "node scripts/auto-commit.mjs status",
     "db:deploy": "prisma migrate deploy && prisma generate && tsx scripts/apply-supabase-rls.ts && tsx scripts/setup-supabase-storage.ts",
     "db:push": "prisma db push && prisma generate && tsx scripts/apply-supabase-rls.ts",
     "db:reset": "tsx scripts/confirm-db-reset.ts && prisma migrate reset --force && tsx scripts/apply-supabase-rls.ts && tsx scripts/reset-supabase-auth.ts && tsx scripts/empty-supabase-storage.ts && tsx scripts/setup-supabase-storage.ts"
