@@ -1,6 +1,7 @@
 import 'server-only';
 
-import { reconcileAccountDeletion, type DeletionOperations } from '@/lib/account-deletion';
+import { randomUUID } from 'node:crypto';
+import { isConfirmedMissingAuthUser, reconcileAccountDeletion, runLeasedDeletion, type DeletionOperations } from '@/lib/account-deletion';
 import { prisma } from '@/lib/prisma';
 import { invalidateFeedCache } from '@/lib/server/feed-cache';
 import { createSupabaseAdminClient } from '@/lib/supabase/admin';
@@ -53,7 +54,7 @@ export const beginAccountDeletion = async (userID: string) => {
 const authUserExists = async (userID: string) => {
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin.auth.admin.getUserById(userID);
-  if (error?.status === 404) return false;
+  if (isConfirmedMissingAuthUser(error)) return false;
   if (error) throw error;
   if (!data.user) throw new Error('Unable to verify Auth deletion.');
   return true;
@@ -66,8 +67,11 @@ const deleteAuthUser = async (userID: string) => {
 };
 
 /** Commit the application cleanup and transition together, or roll back both. */
-const cleanupApplicationData = async (userID: string) => {
+const cleanupApplicationData = async (userID: string, leaseToken: string) => {
   await prisma.$transaction(async tx => {
+    // A previous worker whose claim has expired must never delete application rows.
+    const owned = await tx.accountDeletion.findFirst({ where: { userID, leaseToken }, select: { userID: true } });
+    if (!owned) throw new Error('Deletion claim is no longer held.');
     const posts = await tx.post.findMany({ where: { authorID: userID }, select: { id: true, imageUrls: true } });
     const postIDs = posts.map(post => post.id);
     const [comments, profile, pending] = await Promise.all([
@@ -110,10 +114,11 @@ const cleanupApplicationData = async (userID: string) => {
     await tx.comment.deleteMany({ where: { authorID: userID } });
     await tx.post.deleteMany({ where: { authorID: userID } });
     await tx.users.deleteMany({ where: { id: userID } });
-    await tx.accountDeletion.update({
-      where: { userID },
+    const advance = await tx.accountDeletion.updateMany({
+      where: { userID, leaseToken },
       data: { status: 'pending_storage', storagePaths: paths as Prisma.InputJsonValue },
     });
+    if (advance.count !== 1) throw new Error('Deletion claim was lost during cleanup.');
   });
 
   // Cache invalidation is not part of the cross-service transaction.
@@ -144,44 +149,74 @@ const cleanupStorage = async (userID: string) => {
   }
 };
 
-const operations: DeletionOperations = {
-  load: userID => prisma.accountDeletion.findUnique({ where: { userID }, select: { userID: true, status: true } })
+const leaseLifetimeMs = 15 * 60 * 1000;
+
+const operationsForLease = (leaseToken: string): DeletionOperations => ({
+  load: userID => prisma.accountDeletion.findFirst({ where: { userID, leaseToken }, select: { userID: true, status: true } })
     .then(record => record ? { userID: record.userID, status: record.status as 'pending_auth' | 'pending_cleanup' | 'pending_storage' } : null),
   authUserExists,
   deleteAuthUser,
   markAuthDeleted: async userID => {
-    await prisma.accountDeletion.update({ where: { userID }, data: { status: 'pending_cleanup' } });
+    const updated = await prisma.accountDeletion.updateMany({ where: { userID, leaseToken }, data: { status: 'pending_cleanup' } });
+    if (updated.count !== 1) throw new Error('Deletion claim was lost after Auth deletion.');
   },
-  cleanupApplicationData,
+  cleanupApplicationData: userID => cleanupApplicationData(userID, leaseToken),
   cleanupStorage,
   finish: async userID => {
-    await prisma.accountDeletion.deleteMany({ where: { userID } });
+    const deleted = await prisma.accountDeletion.deleteMany({ where: { userID, leaseToken } });
+    if (deleted.count !== 1) throw new Error('Deletion claim was lost after storage cleanup.');
   },
-};
+});
 
-export const processAccountDeletion = (userID: string) => reconcileAccountDeletion(userID, operations);
+export const processAccountDeletion = async (userID: string) => {
+  const leaseToken = randomUUID();
+  return runLeasedDeletion(userID, {
+    acquire: async () => {
+      const claimed = await prisma.accountDeletion.updateMany({
+        where: {
+          userID,
+          status: { in: ['pending_auth', 'pending_cleanup', 'pending_storage'] },
+          OR: [{ leaseExpiresAt: null }, { leaseExpiresAt: { lt: new Date() } }],
+        },
+        data: { leaseToken, leaseExpiresAt: new Date(Date.now() + leaseLifetimeMs) },
+      });
+      return claimed.count === 1;
+    },
+    release: async () => {
+      await prisma.accountDeletion.updateMany({
+        where: { userID, leaseToken },
+        data: { leaseToken: null, leaseExpiresAt: null },
+      });
+    },
+  }, () => reconcileAccountDeletion(userID, operationsForLease(leaseToken)));
+};
 
 export const getAccountDeletionStatus = async (userID: string) =>
   prisma.accountDeletion.findUnique({ where: { userID }, select: { status: true } });
 
 export const reconcilePendingAccountDeletions = async (limit = 10) => {
   const pending = await prisma.accountDeletion.findMany({
-    where: { status: { in: ['pending_auth', 'pending_cleanup', 'pending_storage'] } },
+    where: {
+      status: { in: ['pending_auth', 'pending_cleanup', 'pending_storage'] },
+      OR: [{ leaseExpiresAt: null }, { leaseExpiresAt: { lt: new Date() } }],
+    },
     orderBy: { requestedAt: 'asc' },
     select: { userID: true, status: true },
     take: limit,
   });
   let completed = 0;
   let failed = 0;
+  let busy = 0;
   for (const record of pending) {
     try {
-      await processAccountDeletion(record.userID);
-      completed += 1;
+      const result = await processAccountDeletion(record.userID);
+      if (result === 'busy') busy += 1;
+      else completed += 1;
     } catch {
       failed += 1;
       // Do not log credentials, user identifiers, or raw external error objects.
       console.error('Account deletion reconciliation failed.', { stage: record.status });
     }
   }
-  return { attempted: pending.length, completed, failed };
+  return { attempted: pending.length, completed, failed, busy };
 };

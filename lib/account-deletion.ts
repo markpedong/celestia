@@ -10,6 +10,31 @@ export type DeletionRecord = {
   status: DeletionStatus;
 };
 
+/** HTTP 404 alone can mean a broken Auth endpoint or invalid project URL.
+ * Only Supabase's explicit user-not-found code establishes safe absence.
+ */
+export const isConfirmedMissingAuthUser = (error: {status?: number; code?: string} | null) =>
+  error?.status === 404 && error.code === 'user_not_found';
+
+export type DeletionLease = {
+  acquire: (userID: string) => Promise<boolean>;
+  release: (userID: string) => Promise<void>;
+};
+
+/** Prevent concurrent browser/cron workers from running the same external deletion. */
+export const runLeasedDeletion = async (
+  userID: string,
+  lease: DeletionLease,
+  run: () => Promise<'complete'>,
+): Promise<'complete' | 'busy'> => {
+  if (!await lease.acquire(userID)) return 'busy';
+  try {
+    return await run();
+  } finally {
+    await lease.release(userID);
+  }
+};
+
 export type DeletionOperations = {
   load: (userID: string) => Promise<DeletionRecord | null>;
   authUserExists: (userID: string) => Promise<boolean>;
