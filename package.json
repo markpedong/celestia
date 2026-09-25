@@ -9,6 +9,8 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/*.test.ts",
+    "test:integration": "tsx --test tests/integration/*.integration.test.ts",
+    "check:staging": "node scripts/check-p0-staging.mjs",
     "watch:commits": "node scripts/auto-commit.mjs run",
     "watch:commits:start": "node scripts/auto-commit.mjs start",
     "watch:commits:stop": "node scripts/auto-commit.mjs stop",
