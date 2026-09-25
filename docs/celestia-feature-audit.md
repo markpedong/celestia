@@ -1,8 +1,8 @@
 # Celestia Current Feature Re-Audit
 
 **Audit date:** 2026-09-25 (Asia/Manila)  
-**Baseline:** branch `main`, HEAD `496e7d8fd8f036fdb5a579f09e72f57dd8285e5e`; actual working tree, including uncommitted and untracked changes, is the source of truth.  
-**Scope:** read-only source inspection and safe local verification. Only this audit and the roadmap were edited. No production data or account was changed.  
+**Repository state:** original audit began on `main` at `496e7d8`; subsequent commits moved the feature branch to `28bc83486c4d4cc5f5062411b1b849f71bb5b6a5` before this P0 follow-up. Current P0 source and docs are uncommitted in `markpedong/feat/phase-one-commit-automation`. No branch checkout was performed by this P0 implementation.
+**Scope:** original read-only re-audit plus subsequent locally implemented P0 hardening (this addendum). No production data, real account deletion or deployment change was performed. P0 changes remain an uncommitted working-tree set.
 **Classification:** COMPLETE requires suitable automated evidence; UNVERIFIED means an implementation was located but end-to-end acceptance is not established; PARTIAL means a demonstrable implementation/requirements gap; MISSING means required functionality not present; BROKEN requires a reproduced failure, not speculation.
 
 ## Executive summary
@@ -10,20 +10,20 @@
 | Status | Count |
 |---|---:|
 | COMPLETE | 3 |
-| PARTIAL | 17 |
+| PARTIAL | 19 |
 | BROKEN | 0 |
-| MISSING | 21 |
+| MISSING | 19 |
 | UNVERIFIED | 34 |
 | NOT APPLICABLE | 0 |
 | **Total independently inventoried features** | **75** |
 
-Counts are calculated once from the individual unique rows below, rather than inherited from the outdated September 24 audit. The original document previously claimed 62 complete / 16 partial / 40 missing based largely on code inspection; that historical scoring is superseded. No live production or browser acceptance is claimed.
+The current totals are calculated from the 75 unique rows below (including two newly PARTIAL operational/test features), not inherited from the September 24 audit. The original document previously claimed 62 complete / 16 partial / 40 missing based largely on code inspection; that historical scoring is superseded. No live production or browser acceptance is claimed.
 
 ### Repository state and verified architecture
 
-- The checkout began with **31 changed/untracked entries**. Modified tracked code: `app/api/auth/username/route.ts`, `app/api/votes/route.ts`, `components/feed/author-hover-card.tsx`, `hooks/useQueries.ts`, `lib/actions/security.ts`, `lib/server/rate-limit.ts`, `lib/server/redis.ts`, `prisma/schema.prisma`, `proxy.ts`. The two documentation files were untracked at audit start. Other untracked work includes deletion ledger/migration, internal reconciler, health, boundaries, tests, lockfile and workspace settings; preserve all.
-- HEAD `496e7d8fd8f036fdb5a579f09e72f57dd8285e5e` (latest committed work dated 2026-07-14). Current uncommitted additions cannot be attributed to a newer Git commit. Compare `git diff` **and** untracked files before claiming a change is committed.
-- Next.js **16.2.6** App Router / React **19.2.4** / TypeScript 5 / Tailwind 4 / Radix/shadcn; PostgreSQL with Prisma declared **^7.8.0**, locally installed/generated **7.10.0**; Supabase SSR Auth, Storage, and Realtime; TanStack Query 5; Upstash Redis; Sharp image transforms; Zod 4. `package-lock.json` tracked, `pnpm-lock.yaml` untracked.
+- At the **original audit snapshot**, the checkout had **31 changed/untracked entries**; an independent branch checkout occurred during that original audit. Those original changes have since been committed; this P0 implementation has its own uncommitted working tree. Original modified tracked code: `app/api/auth/username/route.ts`, `app/api/votes/route.ts`, `components/feed/author-hover-card.tsx`, `hooks/useQueries.ts`, `lib/actions/security.ts`, `lib/server/rate-limit.ts`, `lib/server/redis.ts`, `prisma/schema.prisma`, `proxy.ts`. The two documentation files were untracked at audit start. Other untracked work includes deletion ledger/migration, internal reconciler, health, boundaries, tests, lockfile and workspace settings; preserve all.
+- Original baseline HEAD `496e7d8` was dated 2026-07-14. At P0 follow-up start, HEAD had advanced to `28bc834` on the feature branch. This implementation's new P0 files and modifications remain uncommitted, so do not attribute them to that commit.
+- Next.js **16.2.6** App Router / React **19.2.4** / TypeScript 5 / Tailwind 4 / Radix/shadcn; PostgreSQL with Prisma declared **^7.8.0**, locally installed/generated **7.10.0**; Supabase SSR Auth, Storage, and Realtime; TanStack Query 5; Upstash Redis; Sharp image transforms; Zod 4. Both `package-lock.json` and `pnpm-lock.yaml` are now tracked; align on one package manager later.
 - Data flow: server-rendered feeds call `lib/db/*.queries.ts`; client mutations use `hooks/useQueries.ts` and `services/index.ts`; `app/api/**/route.ts` checks session/validation and writes Prisma; `proxy.ts` applies request origin and session behavior; Supabase Admin performs Auth and Storage operations. Only account deletion uses an independent persisted recovery ledger.
 
 ## Exact verification executed
@@ -32,11 +32,12 @@ Counts are calculated once from the individual unique rows below, rather than in
 |---|---|---|
 | `pnpm typecheck` | PASS, `tsc --noEmit` | Static typing only |
 | `pnpm lint` | PASS, `eslint` | Static lint only |
-| `pnpm test` | **27 pass, 0 fail, 0 skipped, 0 todo** | Tests are pure unit/SSR smoke/failure-injection; no real Prisma/Supabase integration |
+| `pnpm test` | **40 pass, 0 fail, 0 skipped, 0 todo** | Includes deletion lease, legacy recovery and per-account/IP limiter unit tests; no live Prisma/Supabase calls |
 | `pnpm build` | PASS, Prisma client generated and Next.js 16.2.6 compiled; **39/39 static pages** generated | Does not prove live HTTP/service health or browser behavior |
 | `pnpm list prisma @prisma/client --depth 0` | Both installed at 7.10.0 | Package specification is ^7.8.0; generated client matches installed |
-| Integration/E2E | NOT RUN: no integration/E2E suite located | Staging credentials and disposable database/service harness not provided |
-| Deployment/migration/cron | NOT RUN (safety) | Cannot assume migration applied or reconciliation scheduled |
+| `pnpm test:integration` | **0 pass, 1 skipped** | Dedicated-DB rollback/lease test is opt-in only; disposable staging DB env was not provided. Browser E2E still absent. |
+| `pnpm check:staging` | SKIPPED: no confirmed staging URL | Read-only health + unauthorized cron probe script exists; never run against an unverified host |
+| Deployment/migration/cron | NOT RUN (safety) | Vercel hourly cron config exists, but actual hosting, secret, migrations and scheduling were not verified |
 
 **Important:** `pnpm build` runs `prisma generate` and writes build/generated artifacts; source-code fixes were not made. Tests did not contact or delete real accounts. No dependency was installed for this audit.
 
@@ -45,14 +46,18 @@ Counts are calculated once from the individual unique rows below, rather than in
 | Previously claimed fix | Current status | Direct evidence | Test evidence and remaining acceptance |
 |---|---|---|---|
 | Cross-post vote validation | PARTIAL | `app/api/votes/route.ts` fetches actual comment `postID` and rejects a *supplied* mismatch | No dedicated route test. Missing `postID` is accepted; require/derive canonical target contract and test invalid, absent, cross-post and legitimate requests |
-| Sensitive auth rate-limit fail-close | PARTIAL | `app/api/auth/username/route.ts` passes `{failOpen:false}` to `checkRateLimit` | 3 unit tests pass; endpoint-level Redis outage, forwarded-header provenance and account enumeration behavior remain |
-| Account-deletion durable stages | PARTIAL | `lib/account-deletion.ts`, `lib/server/account-deletion.ts`; independent `AccountDeletion` model and migration; Auth before Prisma cleanup, cleanup+status in a Prisma transaction, storage separately retried | 7 injected orchestration tests pass. No cross-system atomicity; live transaction failure, racing write, concurrent cron, migration, actual Supabase Auth/Storage, recovery after sign-out and scheduling unverified |
+| Sensitive auth rate-limit fail-close | PARTIAL | Username API fails closed; global and per-name 8/600 rate limits enforced without trusting arbitrary forwarding headers; optional configured trusted IP limit | 3 existing + 5 limiter tests pass. Real Redis outage/endpoint test missing; valid username still reveals email to client. |
+| Account-deletion durable stages | PARTIAL | Independent ledger, Auth before Prisma; **new lease CAS** in `lib/server/account-deletion.ts`; migration `202609250002_account_deletion_lease`; active API requests reject pending users | 7 orchestration + 3 lease/error-classification tests pass. Actual concurrent PostgreSQL test skipped; live Supabase, in-flight write race, migration and scheduler unverified. |
 | Chat participant cleanup | UNVERIFIED | Explicit `tx.chatParticipant.deleteMany({where:{userID}})` and `ChatParticipant.user` onDelete Cascade | No real FK/integration test; ensure group conversations and direct messages behave appropriately after deletion |
 | Author hover Follow | UNVERIFIED | `author-hover-card.tsx` calls existing `useContentAction`; guest/self/loading/error UI present | 3 pure state tests, but no browser/API test for follow/unfollow, rollback and session transitions |
 | Author hover Start Chat | UNVERIFIED | `author-hover-card.tsx` calls `useStartDirectConversation`, existing API uses directKey upsert | State tests only; check success event/navigation, duplicate clicks, failures, keyboard/mobile |
 | Global and route boundaries | UNVERIFIED | `app/global-error.tsx`, both route-group `error.tsx` and shared `RouteError` | 2 SSR fallback tests; crash/retry, shell styles and meaningful production telemetry unverified |
 | Health and readiness | PARTIAL | `/api/health?probe=live` skips deps; default readiness probes DB and Auth, optionally Redis; generic JSON and 503 on mandatory failure | 6 pure injected tests pass; live HTTP during dependency outage and deployment monitoring not verified |
-| MFA backup-code behavior | PARTIAL | `verifyBackupCodeAction` atomically consumes code; `submitBackupCode` redirects after success | Supabase session AAL2 is **not** upgraded by this step; protect sensitive actions consistently; real recovery flow untested |
+| MFA backup-code behavior | PARTIAL | Legacy code now triggers controlled admin factor reset; verified factor deletion revokes sessions; UI signs out and requires new login and TOTP enrollment; AAL2 required to generate codes | 5 recovery helper unit tests pass. Real Supabase admin-factor reset, multi-factor partial failure and session invalidation still unverified; never claim AAL2 from legacy code. |
+
+## Historical risk findings from the initial re-audit
+
+The ten numbered findings below document the original snapshot. The P0 implementation described in the addendum mitigates the lease, AAL2 misrepresentation and spoofable-default-IP items, but does **not** complete staging acceptance.
 
 ## Newly identified risk and acceptance gaps
 
@@ -170,12 +175,12 @@ Each row is one distinct user-facing capability or operational acceptance item. 
 | SEO and crawl surfaces | **UNVERIFIED** | `app/sitemap.ts`, `app/robots.ts`, `app/layout.tsx` | Generated in build; external crawling and OG verification absent |
 | Redis feed cache/invalidation | **PARTIAL** | `lib/server/feed-cache.ts`, `app/api/posts/route.ts` | Write invalidation present; real cache outage/race and hit behavior untested |
 | Dependency version reproducibility | **PARTIAL** | `package.json`, `pnpm-lock.yaml`, `package-lock.json` | Installed Prisma 7.10.0 vs package ^7.8.0; two lockfiles; pinning/toolchain policy needed |
-| Unit/smoke suite | **COMPLETE** | `tests/*.test.ts`, `package.json` | pnpm test 27/27 pass, zero skipped |
+| Unit/smoke suite | **COMPLETE** | `tests/*.test.ts`, `package.json` | pnpm test **40/40 pass**, zero skipped; separate integration suite skipped |
 | Typecheck and lint gates | **COMPLETE** | `package.json`, `tsconfig.json`, `eslint.config.mjs` | pnpm typecheck and pnpm lint pass |
 | Production compilation | **COMPLETE** | `package.json`, `next.config.ts` | pnpm build pass with 39 static pages generated |
-| Database/API integration suite | **MISSING** | `tests/` | No real-test-DB API tests |
+| Database/API integration suite | **PARTIAL** | `tests/integration/account-deletion.integration.test.ts`, `package.json` | One opt-in isolated PostgreSQL fixture test added; 1 skipped without disposable DB, broad API integration absent |
 | Browser E2E suite | **MISSING** | `tests/` | No Playwright/browser automation present |
-| Production telemetry and reconciler scheduling | **MISSING** | `app/api/internal/account-deletions/route.ts`, `README.md` | Endpoint exists but no verified schedule/alerts/deployed service |
+| Production telemetry and reconciler scheduling | **PARTIAL** | `vercel.json`, `scripts/check-p0-staging.mjs`, `docs/p0-staging-runbook.md` | Optional hourly Vercel cron and read-only smoke script exist; deployment, credentials, alerts and non-Vercel scheduling unverified |
 
 ## External and manual verification still required
 
@@ -186,3 +191,11 @@ Use disposable staging credentials, seed fixtures and explicit authorization; do
 - **2026-09-24**: initial feature audit and P0 vote/rate-limit fixes; baseline totals `62 complete / 16 partial / 0 broken / 40 missing` were based heavily on inspection and are **not** current verified acceptance figures.
 - **2026-09-25**: P0.1 hover actions, P0.2 boundaries, P0.3 health and persisted, staged deletion were introduced in the *uncommitted checkout*. Locally the suite grew to 27 and compile/lint/build passed. This re-audit separates those implemented code paths from unperformed browser, database, provider and deployment acceptance.
 - Historical Prisma-first deletion reorder is **superseded** by persisted Auth-first staged cleanup; any historical lost application data is not reconstructed by the new ledger.
+
+## 2026-09-25 P0 implementation follow-up (current working tree)
+
+- Introduced a 15-minute per-account recovery lease using atomic Prisma `updateMany`, claim-scoped stage transitions and a dedicated migration. Pending user IDs are rejected by API session checks; previously authenticated in-flight mutations remain a race to test in staging. Ambiguous Auth HTTP 404 is no longer sufficient to assume deletion: only Supabase `user_not_found` qualifies.
+- Reworked legacy backup codes into explicit factor **reset**, not session AAL2 upgrade. The action is Redis-limited and fails closed; a verified code consumes once, administrative factor deletion revokes sessions, the UI signs out, and a new TOTP is required after re-login. Protected server account APIs reject incomplete AAL2. Provider-level behavior is unverified in this environment; native Supabase recovery-code APIs are experimental and a separate possible future migration.
+- Added global/per-username limiter keys that cannot be evaded via spoofed `x-forwarded-for`. Deployment may opt into a proxy-overwritten trusted header; no header trusted by default. Username-to-email lookup still returns a known user's email, so enumeration is **not fully fixed** and remains P0.
+- Added opt-in dedicated-database integration test (skipped: no test DB credentials), read-only staging health script (skipped: no staging origin) and optional hourly Vercel production cron configuration (not deployed). See `docs/p0-staging-runbook.md` for an ordered rollout without production destructive checks.
+- Post-change verification: `pnpm lint` PASS, `pnpm typecheck` PASS, `pnpm test` **40/40 pass** (zero skipped), `pnpm build` PASS (39/39 static pages); `pnpm test:integration` **0/1 run, 1 skipped**; `pnpm check:staging` skipped. No live Supabase deletion, real database transaction or deployment was executed.
