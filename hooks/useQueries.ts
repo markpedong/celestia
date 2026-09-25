@@ -355,7 +355,11 @@ export const useStartDirectConversation = () => {
       if (!response.success || !response.data) {
         if (context?.previousConversations) {
           queryClient.setQueryData(chatConversationsQueryKey, context.previousConversations);
+        } else {
+          queryClient.setQueryData<ApiResponse<ChatConversation[]>>(chatConversationsQueryKey, current =>
+            current?.data ? { ...current, data: current.data.filter(row => row.id !== context?.optimisticID) } : current);
         }
+        window.dispatchEvent(new CustomEvent<OpenChatEventDetail>(OPEN_CHAT_EVENT, { detail: {} }));
         toast.error(response.message || 'Unable to start conversation.');
         return;
       }
@@ -383,7 +387,11 @@ export const useStartDirectConversation = () => {
     onError: (error, _target, context) => {
       if (context?.previousConversations) {
         queryClient.setQueryData(chatConversationsQueryKey, context.previousConversations);
+      } else {
+        queryClient.setQueryData<ApiResponse<ChatConversation[]>>(chatConversationsQueryKey, current =>
+          current?.data ? { ...current, data: current.data.filter(row => row.id !== context?.optimisticID) } : current);
       }
+      window.dispatchEvent(new CustomEvent<OpenChatEventDetail>(OPEN_CHAT_EVENT, { detail: {} }));
       toast.error(error instanceof Error ? error.message : 'Unable to start conversation.');
     },
   });
@@ -454,8 +462,10 @@ export const useContentAction = (
       }));
       return { previous };
     },
-    onSuccess: response => {
+    onSuccess: (response, _enabled, context) => {
       if (!response.success || !response.data) {
+        if (context?.previous) queryClient.setQueryData(queryKey, context.previous);
+        else queryClient.removeQueries({ queryKey, exact: true });
         toast.error(response.message || 'Unable to update preference.');
         return;
       }
