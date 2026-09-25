@@ -16,6 +16,8 @@ export const proxy = async (request: NextRequest) => {
       return NextResponse.json({ success: false, data: null, message: 'Invalid request origin.' }, { status: 403 });
     }
   }
+  // Keep probes and independent reconciliation usable during session outages.
+  if (pathname === '/api/health' || pathname === '/api/internal/account-deletions') return NextResponse.next({ request });
   const isAuthEntryPage = pathname === '/auth/sign-in' || pathname === '/auth/sign-up';
   const isPasswordRecoverySession = request.cookies.has(PASSWORD_RECOVERY_SESSION_COOKIE);
   let response = NextResponse.next({ request });

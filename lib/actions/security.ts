@@ -5,9 +5,8 @@ import { createClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
 import { getSessionUser } from '../auth';
 import { prisma } from '../prisma';
-import { invalidateFeedCache } from '../server/feed-cache';
 import { createSupabaseAdminClient, createSupabaseServerClient } from '../supabase/server';
-import { parsePublicFileUrl } from '../storage';
+import { beginAccountDeletion, getAccountDeletionStatus, processAccountDeletion } from '../server/account-deletion';
 import type { ChangePasswordValues, ErrorFormState } from '../types';
 import { deleteAccountSchema, setPasswordSchema } from '../form-schemas';
 
@@ -226,72 +225,23 @@ export const deleteAccountAction = async (_prev: SecurityActionState, { confirma
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'Type DELETE to confirm account deletion.' };
   const user = await getSessionUser();
   if (!user) return { error: 'You must be signed in to delete your account.' };
-  const [profile, posts, comments] = await Promise.all([
-    prisma.users.findUnique({ where: { id: user.id }, select: { avatarUrl: true, coverUrl: true } }),
-    prisma.post.findMany({ where: { authorID: user.id }, select: { id: true, imageUrls: true } }),
-    prisma.comment.findMany({ where: { authorID: user.id }, select: { id: true } }),
-  ]);
-  const postIDs = posts.map(post => post.id);
-  const commentIDs = comments.map(comment => comment.id);
-  const admin = createSupabaseAdminClient();
-  const { error } = await admin.auth.admin.deleteUser(user.id);
-  if (error) return { error: error.message };
-  await prisma.$transaction([
-    prisma.backupCode.deleteMany({ where: { userID: user.id } }),
-    prisma.notification.deleteMany({ where: { OR: [{ userID: user.id }, { actorID: user.id }] } }),
-    prisma.report.deleteMany({
-      where: {
-        OR: [
-          { reporterID: user.id },
-          { reviewedByID: user.id },
-          { targetType: 'user', targetID: user.id },
-          ...(postIDs.length ? [{ targetType: 'post', targetID: { in: postIDs } }] : []),
-          ...(commentIDs.length ? [{ targetType: 'comment', targetID: { in: commentIDs } }] : []),
-        ],
-      },
-    }),
-    prisma.contentAction.deleteMany({
-      where: {
-        OR: [
-          { userID: user.id },
-          { targetType: 'user', targetID: user.id },
-          ...(postIDs.length ? [{ targetType: 'post', targetID: { in: postIDs } }] : []),
-          ...(commentIDs.length ? [{ targetType: 'comment', targetID: { in: commentIDs } }] : []),
-        ],
-      },
-    }),
-    prisma.vote.deleteMany({
-      where: {
-        OR: [
-          { userID: user.id },
-          ...(postIDs.length ? [{ targetType: 'post', targetID: { in: postIDs } }] : []),
-          ...(commentIDs.length ? [{ targetType: 'comment', targetID: { in: commentIDs } }] : []),
-        ],
-      },
-    }),
-    prisma.communityMembers.deleteMany({ where: { userID: user.id } }),
-    prisma.community.updateMany({ where: { createdByID: user.id }, data: { createdByID: null } }),
-    prisma.comment.deleteMany({ where: { authorID: user.id } }),
-    prisma.post.deleteMany({ where: { authorID: user.id } }),
-    prisma.users.deleteMany({ where: { id: user.id } }),
-  ]);
 
-  const files = [
-    { bucket: 'profile-avatars', url: profile?.avatarUrl },
-    { bucket: 'profile-covers', url: profile?.coverUrl },
-    ...posts.flatMap(post => post.imageUrls.map(url => ({ bucket: 'post-images', url }))),
-  ] as const;
-  await Promise.all([...new Set(files.map(file => file.bucket))].map(async bucket => {
-    const paths = files.flatMap(file => {
-      if (file.bucket !== bucket || !file.url) return [];
-      const parsedFile = parsePublicFileUrl(file.url);
-      return parsedFile?.bucket === bucket && parsedFile.path.startsWith(`${user.id}/`) ? [parsedFile.path] : [];
-    });
-    if (paths.length) await admin.storage.from(bucket).remove(paths);
-  })).catch(() => {
-    // The account and database records are already gone; storage cleanup is best effort.
-  });
-  revalidatePath('/', 'layout');
-  await invalidateFeedCache();
-  return { success: 'Account deleted.' };
+  try {
+    // Save the request and storage manifest first; no app data is deleted until
+    // Supabase confirms Auth deletion. A protected reconciler retries crashes.
+    await beginAccountDeletion(user.id);
+    await processAccountDeletion(user.id);
+    revalidatePath('/', 'layout');
+    return { success: 'Account deleted.' };
+  } catch {
+    const pending = await getAccountDeletionStatus(user.id).catch(() => null);
+    console.error('Account deletion requires reconciliation.', { stage: pending?.status ?? 'request' });
+    if (pending?.status === 'pending_cleanup' || pending?.status === 'pending_storage') {
+      revalidatePath('/', 'layout');
+      return { success: 'Your sign-in account was removed. Remaining data cleanup is queued for retry.' };
+    }
+    return { error: pending
+      ? 'Your deletion request is saved for automatic retry, but could not finish yet. Your application data remains intact until Auth removal is confirmed. You can retry here or contact support.'
+      : 'Unable to start account deletion. Please try again.' };
+  }
 };
