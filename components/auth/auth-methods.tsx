@@ -95,7 +95,7 @@ const AuthMethods: FC<AuthMethodsProps> = ({ mode }) => {
             <ShieldCheck className='size-5 text-muted-foreground' />
           </div>
           <h2 className='text-lg font-semibold text-card-foreground'>
-            {isBackupCode ? 'Use a backup code' : 'Two-factor authentication'}
+            {isBackupCode ? 'Recover your authenticator' : 'Two-factor authentication'}
           </h2>
         </div>
         <form
@@ -129,7 +129,7 @@ const AuthMethods: FC<AuthMethodsProps> = ({ mode }) => {
             loadingText={isBackupCode ? 'Checking code...' : 'Verifying...'}
             className='celestia-primary-action h-11 w-full'
           >
-            <ShieldCheck /> {isBackupCode ? 'Continue' : 'Verify and continue'}
+            <ShieldCheck /> {isBackupCode ? 'Reset authenticator' : 'Verify and continue'}
           </Button>
           {isBackupCode || hasBackupCodes ? (
             <Button
@@ -139,7 +139,7 @@ const AuthMethods: FC<AuthMethodsProps> = ({ mode }) => {
               onClick={() => showMfaStep(isBackupCode ? 'totp' : 'backup')}
               disabled={pending}
             >
-              {isBackupCode ? 'Use authenticator code' : 'Use backup code instead'}
+              {isBackupCode ? 'Use authenticator code' : 'Recover with a backup code'}
             </Button>
           ) : null}
           <Button type='button' variant='ghost' className='w-full' onClick={cancelMfaChallenge} disabled={pending}>

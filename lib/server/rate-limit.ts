@@ -14,8 +14,9 @@ export const checkRateLimit = async (
     const count = await redis.incr(`rate:${key}`);
     if (count === 1) await redis.expire(`rate:${key}`, windowSeconds);
     return count <= limit;
-  } catch (error) {
-    console.error('Redis rate limit failed:', error);
+  } catch {
+    // External exceptions may include URLs or credentials; never log raw details.
+    console.error('Redis rate limit failed.');
     return failOpen;
   }
 };

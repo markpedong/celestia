@@ -5,14 +5,21 @@ import { prisma } from "./prisma";
 
 export const getCurrentUserID = cache(async (): Promise<string | undefined> => {
   const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  return user?.id;
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user) return undefined;
+  const assurance = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (assurance.error || (assurance.data.nextLevel === 'aal2' && assurance.data.currentLevel !== 'aal2')) return undefined;
+  // New API mutations are rejected after a deletion request is persisted.
+  const pending = await prisma.accountDeletion.findUnique({ where: { userID: user.id }, select: { userID: true } });
+  return pending ? undefined : user.id;
 });
 
 export const getSessionUser = cache(async (): Promise<User | null> => {
   const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
+  const assurance = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (assurance.error || (assurance.data.nextLevel === 'aal2' && assurance.data.currentLevel !== 'aal2')) return null;
 
   const profile = await prisma.users.findUnique({ where: { id: user.id } });
   const displayName =

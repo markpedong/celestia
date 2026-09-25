@@ -2,7 +2,7 @@
 
 import type { Provider } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
@@ -41,6 +41,21 @@ export const useAuthForm = (mode: AuthMode) => {
   const [pending, startTransition] = useTransition();
   const isSignUp = mode === 'sign-up';
   const isSignIn = mode === 'sign-in';
+
+  useEffect(() => {
+    if (!isSignIn) return;
+    if (new URLSearchParams(window.location.search).get('recovered') === '1') {
+      void Promise.resolve().then(() => setMessage('Your authenticator was reset. Sign in again, enroll a new authenticator, and generate fresh backup codes.'));
+      return;
+    }
+    void supabase.auth.mfa.getAuthenticatorAssuranceLevel().then(async result => {
+      if (result.error || result.data.nextLevel !== 'aal2' || result.data.currentLevel === 'aal2') return;
+      const status = await getBackupCodeStatusAction();
+      setHasBackupCodes(status?.hasBackupCodes === true);
+      setMfaStep('totp');
+      setMessage('Finish signing in with your authenticator, or use a backup code to reset your lost authenticator.');
+    });
+  }, [isSignIn]);
   const schema = authSchema.superRefine((values, context) => {
     if (!isSignUp) return;
 
@@ -142,7 +157,7 @@ export const useAuthForm = (mode: AuthMode) => {
     setMfaCode('');
     setMfaStep(step);
     setMessage(step === 'backup'
-      ? 'Enter one of your saved backup codes to finish signing in.'
+      ? 'A valid backup code will reset your authenticator and sign out all sessions. You will need to sign in again and enroll a new authenticator.'
       : 'Enter the code from your authenticator app to finish signing in.');
   };
 
@@ -194,17 +209,17 @@ export const useAuthForm = (mode: AuthMode) => {
         return;
       }
 
-      if (result.remainingCodes === 0) {
+      if (result.recoveryRequired) {
         setHasBackupCodes(false);
-        toast.warning('That was your last backup code. Generate a new set after signing in.');
-      } else {
-        toast.success(result.success ?? 'Backup code accepted.');
+        setBackupCode('');
+        setMfaStep(null);
+        // Supabase revoked sessions when the verified factor was removed.
+        // Never treat the legacy code as an AAL2 login.
+        await supabase.auth.signOut({ scope: 'local' });
+        window.location.assign('/auth/sign-in?recovered=1');
+        return;
       }
-
-      setBackupCode('');
-      setMfaStep(null);
-      router.replace('/');
-      router.refresh();
+      toast.error('Recovery did not complete. Please try again.');
     });
   };
 
